@@ -1,25 +1,24 @@
-`
-./k8s/build-all.ps1
-`
+# Ethereum Scrapper
 
-## Run
+Solution to scarp ethereum event logs and store to elasticsearch.
 
-
-`docker network create eth-scrapper-dapr-network`
-
-## Local Env
-
-beware cloudfront cache errors for russia
-
-https://www.elastic.co/guide/en/elasticsearch/reference/current/run-elasticsearch-locally.html
-
-
+## Quick start
 
 ```
-docker start elasticsearch
-docker start kibana
+docker-compose up
+```
 
-```
-```
-https://github.com/dotnet/tye/blob/main/docs/recipes/dapr.md
-```
+Then open browser `http://localhost:6002`
+
+![home](assets/home.jpg "home")
+
++ Setup you ethereum provider url, most often its from infura like this `https://mainnet.infura.io/v3/xxx`
+
++ Add contract address to scrap
++ Click `start` button
+
+Start process will run, logs will be stored ro  elasticsearh (started in docker container, data volume mounted to `.docker-data/elasticsearch`)
+
+Use refresh button to update progress.
+Scrapper could be paused and resumed, progress state will be stored. If some error occurs, scrapper will be set to `Failure` state, after it could be resumed
+
