@@ -1,0 +1,139 @@
+{
+  "took": 214,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 10000,
+      "relation": "gte"
+    },
+    "max_score": 1,
+    "hits": [
+      {
+        "_index": "value-sum-usdt",
+        "_type": "_doc",
+        "_id": "MCXyaUqCs9QktwvH6BVi5q8AAAAAAAAA",
+        "_score": 1,
+        "_source": {
+          "to": "0x0842d142A372A14cF6E9B4Fc0fb7d58C2Fe829f8",
+          "value": {
+            "sum": 544500000
+          }
+        }
+      },
+      {
+        "_index": "value-sum-usdt",
+        "_type": "_doc",
+        "_id": "MDUrZkZ2jrZRejnEgym80SkAAAAAAAAA",
+        "_score": 1,
+        "_source": {
+          "to": "0x0843071c340180ca6C66aEbCea096C0Db75e1724",
+          "value": {
+            "sum": 600960000
+          }
+        }
+      },
+      {
+        "_index": "value-sum-usdt",
+        "_type": "_doc",
+        "_id": "MGWCa8aF6NRVHBkG2FPmen0AAAAAAAAA",
+        "_score": 1,
+        "_source": {
+          "to": "0x084308c916409c58C8eBdFDfd5004DAa615bea2F",
+          "value": {
+            "sum": 547000000
+          }
+        }
+      },
+      {
+        "_index": "value-sum-usdt",
+        "_type": "_doc",
+        "_id": "MMYGU8zfVorcse-TNFGA0d8AAAAAAAAA",
+        "_score": 1,
+        "_source": {
+          "to": "0x084316C5Cd98F6D58AfE86565c3ae69F7d8761ae",
+          "value": {
+            "sum": 217060000
+          }
+        }
+      },
+      {
+        "_index": "value-sum-usdt",
+        "_type": "_doc",
+        "_id": "MFIGFOnNn5cHsZgcpvtDRtsAAAAAAAAA",
+        "_score": 1,
+        "_source": {
+          "to": "0x08431e23EFCC510F0f848b79FC42A94378A723F8",
+          "value": {
+            "sum": 15000000
+          }
+        }
+      },
+      {
+        "_index": "value-sum-usdt",
+        "_type": "_doc",
+        "_id": "MHK4tFjTX7yXo9u175h9Wn8AAAAAAAAA",
+        "_score": 1,
+        "_source": {
+          "to": "0x0843285465c1C16e6E71858C59aeC3224c6A07A6",
+          "value": {
+            "sum": 1000000000
+          }
+        }
+      },
+      {
+        "_index": "value-sum-usdt",
+        "_type": "_doc",
+        "_id": "MNYNjhgkBJ5kKsAMmBzPicwAAAAAAAAA",
+        "_score": 1,
+        "_source": {
+          "to": "0x08432D2085269E4A25D7a95C8d58f4825c9b72C0",
+          "value": {
+            "sum": 9405577196
+          }
+        }
+      },
+      {
+        "_index": "value-sum-usdt",
+        "_type": "_doc",
+        "_id": "MBO9g88N7T-pWyoArQ3T0RUAAAAAAAAA",
+        "_score": 1,
+        "_source": {
+          "to": "0x084332CD7cC1C1f3Dd5Abe693F9068E0291f820c",
+          "value": {
+            "sum": 1149498300
+          }
+        }
+      },
+      {
+        "_index": "value-sum-usdt",
+        "_type": "_doc",
+        "_id": "MKJ3bncDSXN7SxqL0O8gaZgAAAAAAAAA",
+        "_score": 1,
+        "_source": {
+          "to": "0x08434449126df037653894d2870A160bA27cAE77",
+          "value": {
+            "sum": 349724137
+          }
+        }
+      },
+      {
+        "_index": "value-sum-usdt",
+        "_type": "_doc",
+        "_id": "MDA-KoJXncv1Q5OiNa5u4tgAAAAAAAAA",
+        "_score": 1,
+        "_source": {
+          "to": "0x08436BC8f5e72c6FE73C3E13d0015667236Dad6e",
+          "value": {
+            "sum": 2751588000
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+﻿$Env:PORT=5005
+
+dapr run --app-port $Env:Port --app-id scrapper-api --components-path ../../../components --dapr-http-port 3505 -- dotnet watch run

@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="DaprAppEnv.fs" />
+		<Compile Include="State.fs" />
+		<Compile Include="StateList.fs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Dapr.Client" Version="1.8.0" />
+	</ItemGroup>
+
+
+</Project>

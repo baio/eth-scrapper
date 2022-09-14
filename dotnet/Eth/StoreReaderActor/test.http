@@ -1,0 +1,7 @@
+@host=http://localhost:3504
+
+###
+
+PUT {{host}}/v1.0/actors/store-reader/xxx/method/Read
+
+{}

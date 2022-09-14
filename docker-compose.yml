@@ -1,0 +1,174 @@
+version: '3'
+services:
+  placement:
+    image: "daprio/dapr:1.8.4"
+    command: ["./placement", "-port", "50006"]
+    networks:
+      - dapr-net
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6380:6379"
+    volumes:
+      - .docker-data/redis:/data
+    networks:
+      - dapr-net
+  seq:
+    image: datalust/seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5340:80"
+    networks:
+      - dapr-net 
+  # zipkin:
+  #   image: openzipkin/zipkin-slim
+  #   ports:
+  #   - "5411:9411"
+  #   networks:
+  #     - dapr-net 
+  elasticsearch:
+    image: "elasticsearch:7.17.6"
+    networks:
+      - dapr-net 
+    ports:      
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    volumes:
+      - ./.docker-data/elasticsearch:/usr/share/elasticsearch/data      
+  kibana:
+    image: "kibana:7.17.6"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200     
+    networks:
+      - dapr-net 
+    ports:      
+      - 5601:5601
+    depends_on:
+      - elasticsearch    
+  ############################
+  # scrapper-dispatcher-actor + Dapr sidecar
+  ############################
+  scrapper-dispatcher-actor:
+    build: 
+      context: ./dotnet/Eth
+      dockerfile: ScrapperDispatcherActor/Dockerfile         
+      args:
+        - PORT=3000
+    depends_on:
+      - redis
+      - placement
+      - seq
+    networks:
+      - dapr-net
+  scrapper-dispatcher-actor-dapr:
+    image: "daprio/daprd:1.8.4"
+    command: ["./daprd",
+     "-app-id", "scrapper-dispatcher-actor",
+     "-app-port", "3000",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./docker-compose-components/:/components"
+    depends_on:
+      - scrapper-dispatcher-actor
+    network_mode: "service:scrapper-dispatcher-actor"
+  ############################
+  # scrapper-elastic-store-actor + Dapr sidecar
+  ############################
+  scrapper-elastic-store-actor:
+    build: 
+      context: ./dotnet/Eth
+      dockerfile: ScrapperElasticStoreActor/Dockerfile         
+      args:
+        - PORT=3001
+    depends_on:
+      - redis
+      - placement
+      - seq
+      - elasticsearch
+    networks:
+      - dapr-net
+  scrapper-elastic-store-actor-dapr:
+    image: "daprio/daprd:1.8.4"
+    command: ["./daprd",
+     "-app-id", "scrapper-elastic-store-actor",
+     "-app-port", "3001",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./docker-compose-components/:/components"
+    depends_on:
+      - scrapper-elastic-store-actor
+    network_mode: "service:scrapper-elastic-store-actor"    
+  ############################
+  # scrapper-actor + Dapr sidecar
+  ############################
+  scrapper-actor:
+    build: 
+      context: ./node/scrapper-actor
+      dockerfile: Dockerfile         
+      args:
+        - PORT=3002
+    depends_on:
+      - redis
+      - placement
+    networks:
+      - dapr-net
+  scrapper-actor-dapr:
+    image: "daprio/daprd:1.8.4"
+    command: ["./daprd",
+     "-app-id", "scrapper-actor",
+     "-app-port", "3002",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./docker-compose-components/:/components"
+    depends_on:
+      - scrapper-actor
+    network_mode: "service:scrapper-actor"    
+  ############################
+  # docker-scrapper-api + Dapr sidecar
+  ############################
+  scrapper-api:
+    build: 
+      context: ./dotnet/Eth
+      dockerfile: ScrapperAPI/Dockerfile         
+      args: 
+        - PORT=6000
+    ports:
+      - 6001:6000
+    depends_on:
+      - redis
+      - placement
+      - seq
+    networks:
+      - dapr-net
+  scrapper-api-dapr:
+    image: "daprio/daprd:1.8.4"
+    command: ["./daprd",
+     "-app-id", "scrapper-api",
+     "-app-port", "6000",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./docker-compose-components/:/components"
+    depends_on:
+      - scrapper-api
+    network_mode: "service:scrapper-api"
+  ############################
+  # scrapper-web
+  ############################
+  scrapper-web:
+    build: 
+      context: ./react/scrapper-web
+      dockerfile: Dockerfile         
+    ports:
+      - 6002:80
+      
+networks:
+    dapr-net:
