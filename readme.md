@@ -17,7 +17,7 @@ Then open browser `http://localhost:6002`
 + Add contract address to scrap
 + Click `start` button
 
-Start process will run, logs will be stored ro  elasticsearh (started in docker container, data volume mounted to `.docker-data/elasticsearch`)
+Start process will run, logs will be stored to  elasticsearh (started in docker container, data volume mounted to `.docker-data/elasticsearch`)
 
 Use refresh button to update progress.
 Scrapper could be paused and resumed, progress state will be stored. If some error occurs, scrapper will be set to `Failure` state, after it could be resumed
