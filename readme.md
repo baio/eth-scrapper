@@ -29,3 +29,14 @@ Use refresh button to update progress.
 Scrapper could be paused and resumed, progress state will be stored. If some error occurs, scrapper will be set to `Failure` state, after it could be resumed
 
 Once scrapper finish to gather all data it will be scheduled to scrap new blocks with 1 minute interval.
+
+## Development
+
+Application is set of [DAPR](https://dapr.io/) micro services
+
+![arch](assets/app-arch.jpg "arch")
+
++ API - asp net rest API (F#)
++ Dispatcher - DAPR actor (F#)
++ Scrapper - DAPR actor (node)
++ ElastciStore - DAPR actor (F#)
