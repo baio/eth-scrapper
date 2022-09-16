@@ -55,6 +55,14 @@ module ScrapperDispatcherActor =
 
   let private STATE_NAME = "state"
   let private SCHEDULE_TIMER_NAME = "timer"
+  let private LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE = 5
+
+  let updateLatesSuccessfullBlockRanges (state: State) range =
+    let ranges =
+      range :: state.LatestBlocksSuccessfullRangeLengths
+      |> List.take LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE
+
+    { state with LatestBlocksSuccessfullRangeLengths = ranges }
 
   [<Actor(TypeName = "scrapper-dispatcher")>]
   type ScrapperDispatcherActor(host: ActorHost) as this =
@@ -76,13 +84,19 @@ module ScrapperDispatcherActor =
           | Some state -> state.FinishDate
           | None -> None
 
+        let latestSuccesses =
+          match state with
+          | Some state -> state.LatestBlocksSuccessfullRangeLengths
+          | None -> []
+
         match result with
         | Ok _ ->
           let state: State =
             { Status = Status.Continue
               Request = scrapperRequest
               Date = epoch ()
-              FinishDate = finishDate }
+              FinishDate = finishDate
+              LatestBlocksSuccessfullRangeLengths = latestSuccesses }
 
           do! stateManager.Set state
 
@@ -97,8 +111,8 @@ module ScrapperDispatcherActor =
                 |> Status.Failure
               Request = scrapperRequest
               Date = epoch ()
-              FinishDate = finishDate }
-
+              FinishDate = finishDate
+              LatestBlocksSuccessfullRangeLengths = latestSuccesses }
 
           do! stateManager.Set state
 
@@ -138,48 +152,60 @@ module ScrapperDispatcherActor =
           let! state = stateManager.Get()
 
           match state with
-          | Some state when state.Status = Status.Pause ->
-            let error = "Actor in paused state, skip continue"
-            logger.LogDebug(error)
-            return (state, error) |> StateConflict |> Error
-          | _ ->
-            let blockRange = nextBlockRangeCalc data.Result
+          | Some state ->
+            match state.Status with
+            | Status.Pause ->
+              let error = "Actor in paused state, skip continue"
+              logger.LogDebug(error)
+              return (state, error) |> StateConflict |> Error
+            | _ ->
 
-            let scrapperRequest: ScrapperRequest =
-              { EthProviderUrl = data.EthProviderUrl
-                ContractAddress = data.ContractAddress
-                Abi = data.Abi
-                BlockRange = blockRange }
+              let successBlockRange =
+                match data.Result with
+                | Ok results ->
+                  results.BlockRange.To - results.BlockRange.From
+                  |> Some
+                | _ -> None
 
-            match checkStop data.Result with
-            | false ->
+              let state =
+                match successBlockRange with
+                | Some range -> updateLatesSuccessfullBlockRanges state range
+                | None -> state
 
-              logger.LogDebug("Stop check is false, continue", scrapperRequest)
+              let blockRange = nextBlockRangeCalc data.Result
 
+              let scrapperRequest: ScrapperRequest =
+                { EthProviderUrl = data.EthProviderUrl
+                  ContractAddress = data.ContractAddress
+                  Abi = data.Abi
+                  BlockRange = blockRange }
 
-              match state with
-              | None ->
-                logger.LogWarning("Continue, but state not found")
-                ()
-              | _ -> ()
+              match checkStop data.Result with
+              | false ->
 
-              return! runScrapper state scrapperRequest
+                logger.LogDebug("Stop check is false, continue", scrapperRequest)
 
-            | true ->
+                return! runScrapper (Some state) scrapperRequest
 
-              logger.LogInformation("Stop check is true, finish")
+              | true ->
 
-              let state: State =
-                { Status = Status.Finish
-                  Request = scrapperRequest
-                  Date = epoch ()
-                  FinishDate = epoch () |> Some }
+                logger.LogInformation("Stop check is true, finish")
 
-              do! stateManager.Set state
+                let state: State =
+                  { Status = Status.Finish
+                    Request = scrapperRequest
+                    Date = epoch ()
+                    FinishDate = epoch () |> Some
+                    LatestBlocksSuccessfullRangeLengths = state.LatestBlocksSuccessfullRangeLengths }
 
-              let! result = me.Schedule()
+                do! stateManager.Set state
 
-              return result
+                let! result = me.Schedule()
+
+                return result
+          | None ->
+            logger.LogError("State not found")
+            return StateNotFound |> Error
         }
 
 

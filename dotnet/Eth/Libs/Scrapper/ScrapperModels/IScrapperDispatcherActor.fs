@@ -52,7 +52,8 @@ type State =
   { Status: Status
     Request: ScrapperRequest
     Date: int64
-    FinishDate: int64 option }
+    FinishDate: int64 option
+    LatestBlocksSuccessfullRangeLengths: uint list }
 
 
 [<KnownType("KnownTypes")>]
