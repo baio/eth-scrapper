@@ -5,6 +5,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Include="NextBlockRangeCalc2.fs" />
 		<Compile Include="NextBlockRangeCalc.fs" />
 		<None Include="readme.md" />
 		<Compile Include="ScrapperDispatcherActor.fs" />

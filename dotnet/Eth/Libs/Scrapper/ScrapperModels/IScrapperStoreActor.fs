@@ -6,7 +6,8 @@ open System.Threading.Tasks
 type ContinueSuccessResult =
   { RequestBlockRange: RequestBlockRange
     BlockRange: BlockRange
-    IndexPayload: string }
+    IndexPayload: string
+    ItemsCount: uint }
 
 type ContinueSuccessData =
   { EthProviderUrl: string

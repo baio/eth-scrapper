@@ -53,7 +53,7 @@ type State =
     Request: ScrapperRequest
     Date: int64
     FinishDate: int64 option
-    LatestBlocksSuccessfullRangeLengths: uint list }
+    ItemsPerBlock: float32 list }
 
 
 [<KnownType("KnownTypes")>]

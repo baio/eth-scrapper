@@ -8,7 +8,8 @@ type RequestBlockRange = { From: uint option; To: uint option }
 
 type Success =
   { RequestBlockRange: RequestBlockRange
-    BlockRange: BlockRange }
+    BlockRange: BlockRange
+    ItemsCount: uint }
 
 type ErrorData =
   | EmptyResult

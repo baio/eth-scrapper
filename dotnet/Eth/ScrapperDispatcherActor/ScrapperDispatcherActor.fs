@@ -57,12 +57,19 @@ module ScrapperDispatcherActor =
   let private SCHEDULE_TIMER_NAME = "timer"
   let private LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE = 5
 
-  let updateLatesSuccessfullBlockRanges (state: State) range =
+  let updateLatesSuccessfullBlockRanges (state: State) (result: Success) =
+    let requestRange = result.BlockRange.To - result.BlockRange.From
+    let itemsLength = result.ItemsCount
+
+    let itemsPerBlock =
+      (System.Convert.ToSingle itemsLength)
+      / (System.Convert.ToSingle requestRange)
+
     let ranges =
-      range :: state.LatestBlocksSuccessfullRangeLengths
+      itemsPerBlock :: state.ItemsPerBlock
       |> List.take LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE
 
-    { state with LatestBlocksSuccessfullRangeLengths = ranges }
+    { state with ItemsPerBlock = ranges }
 
   [<Actor(TypeName = "scrapper-dispatcher")>]
   type ScrapperDispatcherActor(host: ActorHost) as this =
@@ -86,7 +93,7 @@ module ScrapperDispatcherActor =
 
         let latestSuccesses =
           match state with
-          | Some state -> state.LatestBlocksSuccessfullRangeLengths
+          | Some state -> state.ItemsPerBlock
           | None -> []
 
         match result with
@@ -96,7 +103,7 @@ module ScrapperDispatcherActor =
               Request = scrapperRequest
               Date = epoch ()
               FinishDate = finishDate
-              LatestBlocksSuccessfullRangeLengths = latestSuccesses }
+              ItemsPerBlock = latestSuccesses }
 
           do! stateManager.Set state
 
@@ -112,7 +119,7 @@ module ScrapperDispatcherActor =
               Request = scrapperRequest
               Date = epoch ()
               FinishDate = finishDate
-              LatestBlocksSuccessfullRangeLengths = latestSuccesses }
+              ItemsPerBlock = latestSuccesses }
 
           do! stateManager.Set state
 
@@ -160,19 +167,12 @@ module ScrapperDispatcherActor =
               return (state, error) |> StateConflict |> Error
             | _ ->
 
-              let successBlockRange =
-                match data.Result with
-                | Ok results ->
-                  results.BlockRange.To - results.BlockRange.From
-                  |> Some
-                | _ -> None
-
               let state =
-                match successBlockRange with
-                | Some range -> updateLatesSuccessfullBlockRanges state range
-                | None -> state
+                match data.Result with
+                | Ok success -> updateLatesSuccessfullBlockRanges state success
+                | Error _ -> state
 
-              let blockRange = nextBlockRangeCalc data.Result
+              let blockRange = NextBlockRangeCalc2.calc state.ItemsPerBlock data.Result
 
               let scrapperRequest: ScrapperRequest =
                 { EthProviderUrl = data.EthProviderUrl
@@ -196,7 +196,7 @@ module ScrapperDispatcherActor =
                     Request = scrapperRequest
                     Date = epoch ()
                     FinishDate = epoch () |> Some
-                    LatestBlocksSuccessfullRangeLengths = state.LatestBlocksSuccessfullRangeLengths }
+                    ItemsPerBlock = state.ItemsPerBlock }
 
                 do! stateManager.Set state
 

@@ -1,6 +1,6 @@
 ﻿namespace ScrapperDispatcherActor
 
-[<AutoOpen>]
+[<RequireQualifiedAccess>]
 module NextBlockRangeCalc =
   open ScrapperModels
 

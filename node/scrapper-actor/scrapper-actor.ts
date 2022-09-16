@@ -27,6 +27,7 @@ const mapEntry = (entry: Entry) => {
 };
 
 const mapPublishResultSuccess = (indexId: string, requestBlockRange: RequestBlockRange, result: Success) => {
+  const itemsCount = result.events.length;
   const events = result.events.map((evt) => {
     const meta = JSON.stringify({ create: { _index: indexId, _id: `${evt.block}_${evt.index}` } });
     const data = JSON.stringify(mapEntry(evt));
@@ -37,6 +38,7 @@ const mapPublishResultSuccess = (indexId: string, requestBlockRange: RequestBloc
     Ok: [
       {
         indexPayload: eventsElasticPayload,
+        itemsCount,
         blockRange: result.blockRange,
         requestBlockRange: mapRequestBlockRange(requestBlockRange),
       },
@@ -109,7 +111,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     return {
       contractAddress: data.contractAddress,
       abi: data.abi,
-      ethProviderUrl: data.ethProviderUrl,
+      ethProviderUrl: data.ethProviderUrl,      
       result: mapPublishResult(indexId, data.blockRange, result),
     };
   }
