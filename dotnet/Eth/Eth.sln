@@ -7,10 +7,6 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperDispatcherActor", "
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperModels", "Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj", "{E947F499-D423-4DBE-9CC2-44D6A6903D9C}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AzureTable", "Libs\Common\AzureTable\AzureTable.fsproj", "{EF5B9ACB-BB60-4831-A56D-4FFE304DACC3}"
-EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AzureBlob", "Libs\Common\AzureBlob\AzureBlob.fsproj", "{8D1E1C4F-96ED-4017-9CDA-249DDC91CC0A}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DaprActor", "Libs\Common\DaprActor\DaprActor.fsproj", "{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperAPI", "ScrapperAPI\ScrapperAPI.fsproj", "{F02BB001-5153-4A33-9A68-C4EFE4ADDC83}"
@@ -25,7 +21,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Repo", "Libs\Common\Repo\Re
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperElasticStoreActor", "ScrapperElasticStoreActor\ScrapperElasticStoreActor.fsproj", "{1B9BF615-9D9B-4C1F-B830-FD58990C62E3}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Utils", "Libs\Common\Utils\Utils.fsproj", "{78DCE15E-E1F0-49EE-A5FA-297EEBB8AB1B}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Utils", "Libs\Common\Utils\Utils.fsproj", "{78DCE15E-E1F0-49EE-A5FA-297EEBB8AB1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,14 +37,6 @@ Global
 		{E947F499-D423-4DBE-9CC2-44D6A6903D9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E947F499-D423-4DBE-9CC2-44D6A6903D9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E947F499-D423-4DBE-9CC2-44D6A6903D9C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EF5B9ACB-BB60-4831-A56D-4FFE304DACC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EF5B9ACB-BB60-4831-A56D-4FFE304DACC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EF5B9ACB-BB60-4831-A56D-4FFE304DACC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EF5B9ACB-BB60-4831-A56D-4FFE304DACC3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8D1E1C4F-96ED-4017-9CDA-249DDC91CC0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D1E1C4F-96ED-4017-9CDA-249DDC91CC0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8D1E1C4F-96ED-4017-9CDA-249DDC91CC0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D1E1C4F-96ED-4017-9CDA-249DDC91CC0A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}.Release|Any CPU.ActiveCfg = Release|Any CPU
