@@ -10,6 +10,7 @@ module PeojectsRepo =
 
   type CreateProjectEntity =
     { Name: string
+      Prefix: string
       Address: string
       Abi: string
       EthProviderUrl: string
@@ -20,6 +21,7 @@ module PeojectsRepo =
       Name: string
       Address: string
       Abi: string
+      Prefix: string
       EthProviderUrl: string }
 
   type VersionWithState =
@@ -38,6 +40,8 @@ module PeojectsRepo =
   // TODO : Multi user env
   let USER_KEY = "user_USER_KEY_projects"
 
+  let private getProjectId prefix contractAddress = $"{prefix}_${contractAddress}"
+
   let createRepo env =
     let repo = stateListRepo<ProjectEntity> env
     let versionRepo = ProjectVersionsRepo.createRepo env
@@ -49,8 +53,9 @@ module PeojectsRepo =
         fun (createEnty: CreateProjectEntity) ->
           task {
             let enty =
-              { Id = createEnty.Address
+              { Id = getProjectId createEnty.Prefix createEnty.Address
                 Name = createEnty.Name
+                Prefix = createEnty.Prefix
                 Address = createEnty.Address
                 Abi = createEnty.Abi
                 EthProviderUrl = createEnty.EthProviderUrl }

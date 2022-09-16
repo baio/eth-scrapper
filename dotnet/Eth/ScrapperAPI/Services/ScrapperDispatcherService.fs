@@ -10,36 +10,36 @@ module ScrapperDispatcherService =
   open Common.Repo
   open Common.Utils
 
-  let private getActorId contractAddress versionId =
-    let actorId = $"{contractAddress}_{versionId}"
+  let private getActorId projectId versionId =
+    let actorId = $"{projectId}_{versionId}"
     ActorId actorId
 
-  let private createActor contractAddress versionId =
-    let actorId = getActorId contractAddress versionId
+  let private createActor projectId versionId =
+    let actorId = getActorId projectId versionId
 
     ActorProxy.Create<IScrapperDispatcherActor>(actorId, "scrapper-dispatcher")
 
-  let state contractAddress versionId =
+  let state projectId versionId =
 
-    let actor = createActor contractAddress versionId
+    let actor = createActor projectId versionId
 
     actor.State()
 
-  let pause contractAddress versionId =
+  let pause projectId versionId =
 
-    let actor = createActor contractAddress versionId
+    let actor = createActor projectId versionId
 
     actor.Pause()
 
-  let resume contractAddress versionId =
+  let resume projectId versionId =
 
-    let actor = createActor contractAddress versionId
+    let actor = createActor projectId versionId
 
     actor.Resume()
 
-  let reset contractAddress versionId =
+  let reset projectId versionId =
 
-    let actor = createActor contractAddress versionId
+    let actor = createActor projectId versionId
 
     actor.Reset()
 
