@@ -46,7 +46,9 @@ export const createProject = async (data: AddProjectData): Promise<CreateProject
     return abiResult;
   } else {
     const address = data.contractAddress.toLowerCase();
+    var prefix = new URL(data.ethProviderUrl).hostname.split('.')[0].toLowerCase();
     const body = {
+      prefix,
       id: address,
       address: address,
       name: address,
