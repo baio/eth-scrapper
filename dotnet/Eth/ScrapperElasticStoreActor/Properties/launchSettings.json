@@ -11,7 +11,7 @@
     "ScrapperStoreActor": {
       "commandName": "Project",
       "dotnetRunMessages": false,
-      "launchBrowser": true,
+      "launchBrowser": false,
       "applicationUrl": "http://localhost:5097",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

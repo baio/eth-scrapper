@@ -17,7 +17,11 @@ export const VersionActions = ({ state, onAction }: VersionActionsProps) => {
   };
 
   if (!state) {
-    return <a onClick={() => onAction('start')}>start</a>;
+    return (
+      <>
+        <a onClick={() => onAction('start')}>start</a> | <a onClick={() => onAction('reset')}>reset</a>
+      </>
+    );
   } else {
     return (
       <>

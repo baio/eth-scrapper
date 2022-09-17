@@ -40,7 +40,7 @@ module PeojectsRepo =
   // TODO : Multi user env
   let USER_KEY = "user_USER_KEY_projects"
 
-  let private getProjectId prefix contractAddress = $"{prefix}_${contractAddress}"
+  let private getProjectId prefix contractAddress = $"{prefix}_{contractAddress}"
 
   let createRepo env =
     let repo = stateListRepo<ProjectEntity> env

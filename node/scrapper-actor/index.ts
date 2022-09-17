@@ -3,7 +3,7 @@ import { DaprServer } from "@dapr/dapr";
 import ScrapperActor from "./scrapper-actor";
 
 const DAPR_HOST = process.env.DAPR_HOST || "http://localhost";
-const SERVER_PORT = process.env.PORT || process.env.SERVER_PORT || "5002";
+const SERVER_PORT = process.argv[2] || process.env.PORT || process.env.SERVER_PORT || "5002";
 
 async function main() {
   const server = new DaprServer(undefined, SERVER_PORT, DAPR_HOST);

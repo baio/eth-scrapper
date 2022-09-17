@@ -36,6 +36,7 @@ module ScrapperDispatcherActor =
             | Some _to -> System.Nullable(_to)
             | None -> System.Nullable() } }
 
+  // TODO !!!
   let private checkStop (result: ScrapperResult) =
     match result with
     // read successfully till the latest block
@@ -67,7 +68,7 @@ module ScrapperDispatcherActor =
 
     let ranges =
       itemsPerBlock :: state.ItemsPerBlock
-      |> List.take LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE
+      |> List.truncate LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE
 
     { state with ItemsPerBlock = ranges }
 
@@ -161,16 +162,21 @@ module ScrapperDispatcherActor =
           match state with
           | Some state ->
             match state.Status with
-            | Status.Pause ->
-              let error = "Actor in paused state, skip continue"
+            | Status.Pause
+            | Status.Failure _ ->
+              let error = $"Actor in {state.Status} state, skip continue"
               logger.LogDebug(error)
               return (state, error) |> StateConflict |> Error
             | _ ->
+
+              logger.LogDebug("Actor in {@state} with {@data}, calc next request", state, data.Result)
 
               let state =
                 match data.Result with
                 | Ok success -> updateLatesSuccessfullBlockRanges state success
                 | Error _ -> state
+
+              logger.LogDebug("{@state} with updated block ranges", state)
 
               let blockRange = NextBlockRangeCalc2.calc state.ItemsPerBlock data.Result
 
@@ -179,6 +185,8 @@ module ScrapperDispatcherActor =
                   ContractAddress = data.ContractAddress
                   Abi = data.Abi
                   BlockRange = blockRange }
+
+              logger.LogDebug("Next scrapper request {@request}", scrapperRequest)
 
               match checkStop data.Result with
               | false ->
