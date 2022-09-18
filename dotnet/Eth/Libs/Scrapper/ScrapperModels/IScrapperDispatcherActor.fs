@@ -48,13 +48,15 @@ type Status =
   | Failure of Failure
   static member KnownTypes() = knownTypes<Status> ()
 
+type TargetBlockRange = { ToLatest: bool; Range: BlockRange }
+
 type State =
   { Status: Status
     Request: ScrapperRequest
     Date: int64
     FinishDate: int64 option
-    ItemsPerBlock: float32 list }
-
+    ItemsPerBlock: float32 list
+    Target: TargetBlockRange }
 
 [<KnownType("KnownTypes")>]
 type ScrapperDispatcherActorError =

@@ -1,7 +1,5 @@
 ﻿namespace ScrapperModels
 
-open System.Runtime.Serialization
-
 type BlockRange = { From: uint; To: uint }
 
 type RequestBlockRange = { From: uint option; To: uint option }

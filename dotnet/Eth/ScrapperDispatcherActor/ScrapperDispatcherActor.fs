@@ -11,6 +11,7 @@ module ScrapperDispatcherActor =
   open Common.DaprActor
   open Common.DaprActor.ActorResult
   open System
+  open Nethereum.Web3
 
   type BlockRangeDTO =
     { From: System.Nullable<uint>
@@ -36,17 +37,49 @@ module ScrapperDispatcherActor =
             | Some _to -> System.Nullable(_to)
             | None -> System.Nullable() } }
 
-  // TODO !!!
-  let private checkStop (result: ScrapperResult) =
+
+  let private getEthBlocksCount (ethProviderUrl: string) =
+    task {
+      let web3 = new Web3(ethProviderUrl)
+      let! result = web3.Eth.Blocks.GetBlockNumber.SendRequestAsync()
+      return result.Value |> uint
+    }
+
+  [<RequireQualifiedAccess>]
+  type private CheckStop =
+    | Continue
+    | Stop
+    | ContinueToLatest of TargetBlockRange
+
+  let private checkStop ethProviderUrl (target: TargetBlockRange) (result: ScrapperResult) =
+    let checkStopBlockRange (blockRange: BlockRange) =
+      match (target.ToLatest, blockRange.To >= target.Range.To) with
+      | (true, true) ->
+        // achive latest target block, check if latest block of eth changed
+        task {
+          let! latestBlock = getEthBlocksCount ethProviderUrl
+
+          if latestBlock > target.Range.To then
+            return
+              CheckStop.ContinueToLatest
+                { ToLatest = true
+                  Range =
+                    { From = blockRange.To
+                      To = latestBlock } }
+          else
+            return CheckStop.Stop
+        }
+      | (false, true) -> CheckStop.Stop |> Task.FromResult
+      | (_, false) -> CheckStop.Continue |> Task.FromResult
+
     match result with
     // read successfully till the latest block
-    | Ok success when success.RequestBlockRange.To = None -> true
+    | Ok success -> checkStopBlockRange success.BlockRange
     | Error error ->
       match error.Data with
       // read successfully till the latest block
-      | EmptyResult when error.RequestBlockRange.To = None -> true
-      | _ -> false
-    | _ -> false
+      | EmptyResult -> checkStopBlockRange error.BlockRange
+      | _ -> CheckStop.Continue |> Task.FromResult
 
 
   let private runScrapper (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
@@ -72,13 +105,18 @@ module ScrapperDispatcherActor =
 
     { state with ItemsPerBlock = ranges }
 
+
+  type RunScrapperState =
+    | Start of ethProviderUrl: string
+    | Continue of State
+
   [<Actor(TypeName = "scrapper-dispatcher")>]
   type ScrapperDispatcherActor(host: ActorHost) as this =
     inherit Actor(host)
     let logger = ActorLogging.create host
     let stateManager = stateManager<State> STATE_NAME this.StateManager
 
-    let runScrapper (state: State option) (scrapperRequest: ScrapperRequest) =
+    let runScrapper (state: RunScrapperState) (scrapperRequest: ScrapperRequest) =
 
       logger.LogDebug("Run scrapper with {@data} {@state}", scrapperRequest, state)
 
@@ -89,13 +127,25 @@ module ScrapperDispatcherActor =
 
         let finishDate =
           match state with
-          | Some state -> state.FinishDate
-          | None -> None
+          | Continue state -> state.FinishDate
+          | Start _ -> None
 
         let latestSuccesses =
           match state with
-          | Some state -> state.ItemsPerBlock
-          | None -> []
+          | Continue state -> state.ItemsPerBlock
+          | Start _ -> []
+
+        let! target =
+          match state with
+          | Continue state -> state.Target |> Task.FromResult
+          | Start ethProviderUrl ->
+            task {
+              let! to' = getEthBlocksCount ethProviderUrl
+
+              return
+                { ToLatest = true
+                  Range = { From = 0u; To = to' } }
+            }
 
         match result with
         | Ok _ ->
@@ -104,7 +154,8 @@ module ScrapperDispatcherActor =
               Request = scrapperRequest
               Date = epoch ()
               FinishDate = finishDate
-              ItemsPerBlock = latestSuccesses }
+              ItemsPerBlock = latestSuccesses
+              Target = target }
 
           do! stateManager.Set state
 
@@ -120,7 +171,8 @@ module ScrapperDispatcherActor =
               Request = scrapperRequest
               Date = epoch ()
               FinishDate = finishDate
-              ItemsPerBlock = latestSuccesses }
+              ItemsPerBlock = latestSuccesses
+              Target = target }
 
           do! stateManager.Set state
 
@@ -149,7 +201,7 @@ module ScrapperDispatcherActor =
                 Abi = data.Abi
                 BlockRange = { From = None; To = None } }
 
-            return! runScrapper None scrapperRequest
+            return! runScrapper (Start data.EthProviderUrl) scrapperRequest
         }
 
       member this.Continue data =
@@ -188,23 +240,50 @@ module ScrapperDispatcherActor =
 
               logger.LogDebug("Next scrapper request {@request}", scrapperRequest)
 
-              match checkStop data.Result with
-              | false ->
+              let! checkStopResult = checkStop data.EthProviderUrl state.Target data.Result
 
-                logger.LogDebug("Stop check is false, continue", scrapperRequest)
+              logger.LogDebug("Check stop {@result}", checkStopResult)
 
-                return! runScrapper (Some state) scrapperRequest
+              match checkStopResult with
+              | CheckStop.Continue ->
 
-              | true ->
+                logger.LogDebug(
+                  "Stop check is CheckStop.Continue, continue with {@request} {@state}",
+                  scrapperRequest,
+                  state
+                )
 
-                logger.LogInformation("Stop check is true, finish")
+                return! runScrapper (Continue state) scrapperRequest
+              | CheckStop.ContinueToLatest target ->
+
+                // TODO !
+                let scrapperRequest =
+                  { scrapperRequest with
+                      BlockRange =
+                        { From = (Some target.Range.From)
+                          To = (Some target.Range.To) } }
+
+                let state = { state with Target = target }
+
+                logger.LogDebug(
+                  "Stop check is CheckStop.ContinueToLatest, continue with {@request} {@state} ",
+                  scrapperRequest,
+                  state
+                )
+
+                return! runScrapper (Continue state) scrapperRequest
+
+              | CheckStop.Stop ->
+
+                logger.LogInformation("Stop check is CheckStop.Stop, finish")
 
                 let state: State =
                   { Status = Status.Finish
                     Request = scrapperRequest
                     Date = epoch ()
                     FinishDate = epoch () |> Some
-                    ItemsPerBlock = state.ItemsPerBlock }
+                    ItemsPerBlock = state.ItemsPerBlock
+                    Target = state.Target }
 
                 do! stateManager.Set state
 
@@ -259,7 +338,7 @@ module ScrapperDispatcherActor =
 
               logger.LogInformation("Resume with {@pervState} {@state}", state, updatedState)
 
-              return! runScrapper (Some state) updatedState.Request
+              return! runScrapper (Continue state) updatedState.Request
             | _ ->
               let error = "Actor in a wrong state"
               logger.LogDebug(error)
