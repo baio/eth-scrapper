@@ -53,7 +53,7 @@ module ScrapperDispatcherService =
           |> List.map (fun v ->
             task {
               try
-                let! st = state proj.Project.Address v.Id
+                let! st = state proj.Project.Id v.Id
                 return { Version = v; State = st }
               with
               | _ -> return { Version = v; State = None }
