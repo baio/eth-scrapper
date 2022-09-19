@@ -86,7 +86,7 @@ module ScrapperDispatcherActor =
 
 
   type RunScrapperState =
-    | Start of ethProviderUrl: string
+    | Start
     | Continue of State
 
   let private createScrapperRequest (data: ContinueData) (blockRange: BlockRange) : ScrapperRequest =
@@ -123,13 +123,11 @@ module ScrapperDispatcherActor =
         let! target =
           match state with
           | Continue state -> state.Target |> Task.FromResult
-          | Start ethProviderUrl ->
+          | Start ->
             task {
-              let! to' = getEthBlocksCount ethProviderUrl
-
               return
                 { ToLatest = true
-                  Range = { From = 0u; To = to' } }
+                  Range = scrapperRequest.BlockRange }
             }
 
         match result with
@@ -180,16 +178,15 @@ module ScrapperDispatcherActor =
             logger.LogError(error, data)
             return (state, error) |> StateConflict |> Error
           | None ->
-            // TODO !
-            let! to' = getEthBlocksCount data.EthProviderUrl
+            let! ethBlocksCount = getEthBlocksCount data.EthProviderUrl
 
             let scrapperRequest: ScrapperRequest =
               { EthProviderUrl = data.EthProviderUrl
                 ContractAddress = data.ContractAddress
                 Abi = data.Abi
-                BlockRange = { From = 0u; To = to' } }
+                BlockRange = { From = 0u; To = ethBlocksCount } }
 
-            return! runScrapper (Start data.EthProviderUrl) scrapperRequest
+            return! runScrapper Start scrapperRequest
         }
 
       member this.Continue data =
@@ -207,7 +204,9 @@ module ScrapperDispatcherActor =
               let error = $"Actor in {state.Status} state, skip continue"
               logger.LogDebug(error)
               return (state, error) |> StateConflict |> Error
-            | _ ->
+            | Status.Continue
+            | Status.Schedule
+            | Status.Finish ->
 
               logger.LogDebug("Actor in {@state} with {@data}, calc next request", state, data.Result)
 
