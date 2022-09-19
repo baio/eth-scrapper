@@ -87,7 +87,11 @@ module DaprAPI =
 
     app.MapControllers() |> ignore
 
-    let port = System.Environment.GetEnvironmentVariable("PORT")
+    let port =
+      if args.Length > 0 then
+        args[0]
+      else
+        System.Environment.GetEnvironmentVariable("PORT")
 
     let url = $"http://*:{port}"
 

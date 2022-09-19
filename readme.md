@@ -137,7 +137,28 @@ The current implementation calling actor methods and waits for result, but actor
 
 Consider `dispatcher` actor as root one, every expected error from other actors will be passed there with `Failure` method. Still for edge cases of unexpected errors in child actors there is no way to detect them, in this case it is possible to detect pending actors by the `State.date` field which contains latest update for the actor, when this `date` is not updated to long this is indication what something was broken along of the process and it pending.
 
+### Start dapr services manually
 
+Install dapr locally
+Install [elastic](https://www.elastic.co/guide/en/elasticsearch/reference/current/run-elasticsearch-locally.html) locally
+
+:warning: Use only 7.xxx version (7.17.6 at the moment), since its only compatible with !
+
+:warning: Do not use `--network` from doc above if you want do elasticsearch queries directly
+
+```
+
+dapr run --app-port 5005 --app-id scrapper-api --components-path ./components -- dotnet watch run --project dotnet/Eth/ScrapperAPI 5005
+
+dapr run --app-port 5001 --app-id scrapper-dispatcher-actor --components-path ./components -- dotnet watch run --project dotnet/Eth/ScrapperDispatcherActor 5001
+
+dapr run --app-port 5003 --app-id scrapper-elastic-store --components-path ./components -- dotnet watch run --project dotnet/Eth/ScrapperElasticStoreActor 5003
+
+dapr run --app-port 5002 --app-id scrapper-actor --components-path ./components -- yarn --cwd ./node/scrapper-actor start 5002
+
+yarn --cwd ./react/scrapper-web dev
+
+```
 
 
 

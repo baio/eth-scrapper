@@ -4,9 +4,9 @@ open Dapr.Actors
 open System.Threading.Tasks
 
 type ContinueSuccessResult =
-  { RequestBlockRange: RequestBlockRange
-    BlockRange: BlockRange
-    IndexPayload: string }
+  { BlockRange: BlockRange
+    IndexPayload: string
+    ItemsCount: uint }
 
 type ContinueSuccessData =
   { EthProviderUrl: string

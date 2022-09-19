@@ -5,28 +5,25 @@ const _ = require('lodash');
 
 //
 
-interface RequestBlockRange {
-  from?: number;
-  to?: number;
+interface BlockRange {
+  from: number;
+  to: number;
 }
 
 interface Data {
   ethProviderUrl: string;
   contractAddress: string;
   abi: string;
-  blockRange: RequestBlockRange;
+  blockRange: BlockRange;
 }
 
-const mapRequestBlockRange = (range: RequestBlockRange) => ({
-  from: range.from ? { Some: [range.from] } : null,
-  to: range.to ? { Some: [range.to] } : null,
-});
 
 const mapEntry = (entry: Entry) => {
   return { chain_event: entry.event, chain_block: entry.block, chain_index: entry.index, ...entry.data };
 };
 
-const mapPublishResultSuccess = (indexId: string, requestBlockRange: RequestBlockRange, result: Success) => {
+const mapPublishResultSuccess = (indexId: string, result: Success) => {
+  const itemsCount = result.events.length;
   const events = result.events.map((evt) => {
     const meta = JSON.stringify({ create: { _index: indexId, _id: `${evt.block}_${evt.index}` } });
     const data = JSON.stringify(mapEntry(evt));
@@ -37,8 +34,8 @@ const mapPublishResultSuccess = (indexId: string, requestBlockRange: RequestBloc
     Ok: [
       {
         indexPayload: eventsElasticPayload,
-        blockRange: result.blockRange,
-        requestBlockRange: mapRequestBlockRange(requestBlockRange),
+        itemsCount,
+        blockRange: result.blockRange
       },
     ],
   };
@@ -54,24 +51,23 @@ const mapPublishResultErrorData = (result: Error) => {
       return { Unknown: [] };
   }
 };
-const mapPublishResultError = (requestBlockRange: RequestBlockRange, result: Error) => {
+const mapPublishResultError = (result: Error) => {
   return {
     Error: [
       {
         data: mapPublishResultErrorData(result),
-        blockRange: result.blockRange,
-        requestBlockRange: mapRequestBlockRange(requestBlockRange),
+        blockRange: result.blockRange
       },
     ],
   };
 };
 
-const mapPublishResult = (indexId: string, requestBlockRange: RequestBlockRange, result: Result) => {
+const mapPublishResult = (indexId: string, result: Result) => {
   switch (result.kind) {
     case 'Success':
-      return mapPublishResultSuccess(indexId, requestBlockRange, result);
+      return mapPublishResultSuccess(indexId, result);
     case 'Error':
-      return mapPublishResultError(requestBlockRange, result);
+      return mapPublishResultError(result);
   }
 };
 
@@ -109,8 +105,8 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     return {
       contractAddress: data.contractAddress,
       abi: data.abi,
-      ethProviderUrl: data.ethProviderUrl,
-      result: mapPublishResult(indexId, data.blockRange, result),
+      ethProviderUrl: data.ethProviderUrl,      
+      result: mapPublishResult(indexId, result),
     };
   }
 
