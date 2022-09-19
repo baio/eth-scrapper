@@ -39,7 +39,7 @@ type FailureData = { AppId: AppId; Status: FailureStatus }
 
 type Failure =
   { Data: FailureData
-    RetriesCount: uint }
+    FailuresCount: uint }
 
 [<RequireQualifiedAccess>]
 [<KnownType("KnownTypes")>]
@@ -79,4 +79,4 @@ type IScrapperDispatcherActor =
   abstract State: unit -> Task<State option>
   abstract Reset: unit -> Task<bool>
   abstract Schedule: unit -> Task<ScrapperDispatcherActorResult>
-  abstract Failure: data: FailureData -> Task<State option>
+  abstract Failure: data: FailureData -> Task<ScrapperDispatcherActorResult>

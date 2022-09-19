@@ -73,4 +73,4 @@ module ScrapperDispatcherActor =
 
         schedule (actorEnv, scheduleHandler)
 
-      member this.Failure(data: FailureData) = failure actorEnv data
+      member this.Failure(data: FailureData) = failure (runScrapperEnv, actorEnv) data

@@ -69,7 +69,7 @@ module internal RunScrapper =
               { Data =
                   { AppId = AppId.Dispatcher
                     Status = AppId.Scrapper |> CallChildActorFailure }
-                RetriesCount = 0u }
+                FailuresCount = 0u }
               |> Status.Failure
             Request = scrapperRequest
             Date = epoch ()

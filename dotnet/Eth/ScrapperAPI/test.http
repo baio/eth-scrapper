@@ -1,10 +1,10 @@
 @appId = scrapper-api
 
 # local
-@host = http://localhost:5005
+#@host = http://localhost:5005
 
 # docker-compose
-#@host = http://localhost:6001
+@host = http://localhost:6001
 
 ###
 
@@ -45,7 +45,7 @@ Accept: application/json
 
 ###
 
-POST {{host}}/projects/0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/reset
+POST {{host}}/projects/mainnet_0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/reset
 dapr-app-id: {{appId}}
 Content-Type: application/json 
 Accept: application/json
