@@ -38,12 +38,13 @@ module internal Continue =
   let continue ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) (data: ContinueData) =
 
     let logger = env.Logger
-    let runScrapper = runScrapper runScrapperEnv env.ActorId
+    let runScrapper = runScrapper runScrapperEnv
 
     logger.LogDebug("Continue with {@data}", data)
 
     task {
       let! state = env.GetState()
+
       match state with
       | Some state ->
         match state.Status with

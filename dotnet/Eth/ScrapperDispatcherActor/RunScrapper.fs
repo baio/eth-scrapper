@@ -13,7 +13,7 @@ module internal RunScrapper =
   open Nethereum.Web3
 
   type RunScrapperEnv =
-    { InvokeActor: ActorId -> ScrapperRequest -> Task<Result<unit, exn>>
+    { InvokeActor: ScrapperRequest -> Task<Result<unit, exn>>
       Logger: ILogger
       SetState: State -> Task }
 
@@ -26,7 +26,6 @@ module internal RunScrapper =
     ({ InvokeActor = invokeActor
        Logger = logger
        SetState = setState }: RunScrapperEnv)
-    (actorId: ActorId)
     (state: RunScrapperState)
     (scrapperRequest: ScrapperRequest)
     =
@@ -34,7 +33,7 @@ module internal RunScrapper =
     logger.LogDebug("Run scrapper with {@data} {@state}", scrapperRequest, state)
 
     task {
-      let! result = invokeActor actorId scrapperRequest
+      let! result = invokeActor scrapperRequest
 
       logger.LogDebug("Run scrapper result {@result}", result)
 

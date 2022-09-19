@@ -30,5 +30,5 @@ module internal Start =
             Abi = data.Abi
             BlockRange = { From = 0u; To = ethBlocksCount } }
 
-        return! runScrapper runScrapperEnv env.ActorId Start scrapperRequest
+        return! runScrapper runScrapperEnv Start scrapperRequest
     }

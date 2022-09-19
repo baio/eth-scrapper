@@ -23,17 +23,14 @@ module ScrapperDispatcherActor =
     let stateManager = stateManager<State> STATE_NAME this.StateManager
 
     let runScrapperEnv =
-      { InvokeActor = (invokeActor host.ProxyFactory)
+      { InvokeActor = (invokeActor host.ProxyFactory host.Id)
         SetState = stateManager.Set
         Logger = logger }
 
     let actorEnv =
       { GetState = stateManager.Get
         SetState = stateManager.Set
-        Logger = logger
-        ActorId = host.Id }
-
-    let runScrapper = runScrapper runScrapperEnv host.Id
+        Logger = logger }
 
     interface IScrapperDispatcherActor with
 
