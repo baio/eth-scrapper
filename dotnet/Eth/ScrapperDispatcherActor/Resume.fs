@@ -4,14 +4,9 @@
 module internal Resume =
 
   open Dapr.Actors
-  open Dapr.Actors.Runtime
-  open System.Threading.Tasks
   open ScrapperModels
   open Microsoft.Extensions.Logging
   open Common.DaprActor
-  open Common.DaprActor.ActorResult
-  open System
-  open Nethereum.Web3
 
   let resume ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) =
     let logger = env.Logger
