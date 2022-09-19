@@ -103,6 +103,7 @@ export const handle = async (data: Data): Promise<Result> => {
           blockRange,
         };
       } else {
+        console.error('scrapper::error', err);
         return {
           kind: 'Error',
           error: 'web3-failure',
@@ -112,6 +113,7 @@ export const handle = async (data: Data): Promise<Result> => {
       }
     }
   } catch (err: any) {
+    console.error('scrapper::error', err);
     return {
       kind: 'Error',
       error: 'web3-failure',

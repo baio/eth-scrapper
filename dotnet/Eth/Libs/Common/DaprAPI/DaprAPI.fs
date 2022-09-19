@@ -87,11 +87,9 @@ module DaprAPI =
 
     app.MapControllers() |> ignore
 
-    let port = args[0]
-
     let port =
-      if port <> null then
-        port
+      if args.Length > 0 then
+        args[0]
       else
         System.Environment.GetEnvironmentVariable("PORT")
 
