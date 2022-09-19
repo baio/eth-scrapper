@@ -35,15 +35,15 @@ module internal Continue =
       Abi = data.Abi
       BlockRange = blockRange }
 
-  let continue ((env, actorId): RunScrapperEnv * ActorId) state (data: ContinueData) =
+  let continue ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) (data: ContinueData) =
 
     let logger = env.Logger
-    let runScrapper = runScrapper env actorId
+    let runScrapper = runScrapper runScrapperEnv env.ActorId
 
     logger.LogDebug("Continue with {@data}", data)
 
     task {
-
+      let! state = env.GetState()
       match state with
       | Some state ->
         match state.Status with
