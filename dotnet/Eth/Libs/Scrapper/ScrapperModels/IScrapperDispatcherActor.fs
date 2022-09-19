@@ -7,10 +7,13 @@ open System.Runtime.Serialization
 open System.Reflection
 open Microsoft.FSharp.Reflection
 
+type TargetBlockRange = { ToLatest: bool; Range: BlockRange }
+
 type StartData =
   { EthProviderUrl: string
     ContractAddress: string
-    Abi: string }
+    Abi: string
+    Target: TargetBlockRange option }
 
 type ContinueData =
   { EthProviderUrl: string
@@ -47,8 +50,6 @@ type Status =
   | Schedule
   | Failure of Failure
   static member KnownTypes() = knownTypes<Status> ()
-
-type TargetBlockRange = { ToLatest: bool; Range: BlockRange }
 
 type State =
   { Status: Status

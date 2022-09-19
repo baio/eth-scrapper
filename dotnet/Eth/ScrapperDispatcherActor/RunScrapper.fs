@@ -3,14 +3,10 @@
 [<AutoOpen>]
 module internal RunScrapper =
   open Dapr.Actors
-  open Dapr.Actors.Runtime
   open System.Threading.Tasks
   open ScrapperModels
   open Microsoft.Extensions.Logging
   open Common.DaprActor
-  open Common.DaprActor.ActorResult
-  open System
-  open Nethereum.Web3
 
   type RunScrapperEnv =
     { InvokeActor: ScrapperRequest -> Task<Result<unit, exn>>
@@ -18,7 +14,7 @@ module internal RunScrapper =
       SetState: State -> Task }
 
   type RunScrapperState =
-    | Start
+    | Start of targetIsLatest: bool
     | Continue of State
 
 
@@ -47,15 +43,12 @@ module internal RunScrapper =
         | Continue state -> state.ItemsPerBlock
         | Start _ -> []
 
-      let! target =
+      let target =
         match state with
-        | Continue state -> state.Target |> Task.FromResult
-        | Start ->
-          task {
-            return
-              { ToLatest = true
-                Range = scrapperRequest.BlockRange }
-          }
+        | Continue state -> state.Target
+        | Start targetIsLatest ->
+          { ToLatest = targetIsLatest
+            Range = scrapperRequest.BlockRange }
 
       match result with
       | Ok _ ->
