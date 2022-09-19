@@ -13,87 +13,11 @@ module ScrapperDispatcherActor =
   open System
   open Nethereum.Web3
 
-  let private getEthBlocksCount (ethProviderUrl: string) =
-    task {
-      let web3 = new Web3(ethProviderUrl)
-      let! result = web3.Eth.Blocks.GetBlockNumber.SendRequestAsync()
-      return result.Value |> uint
-    }
-
-  [<RequireQualifiedAccess>]
-  type private CheckStop =
-    | Continue
-    | Stop
-    | ContinueToLatest of BlockRange * TargetBlockRange
-
-  let private checkStop ethProviderUrl (target: TargetBlockRange) (result: ScrapperResult) =
-    let checkStopBlockRange (blockRange: BlockRange) =
-      match (target.ToLatest, blockRange.To >= target.Range.To) with
-      // update `to` block when achive target reange end (`to`)
-      | (true, true) ->
-        // achive latest target block, check if latest block of eth changed
-        task {
-          let! latestBlock = getEthBlocksCount ethProviderUrl
-
-          if latestBlock > target.Range.To then
-            let range: BlockRange =
-              { From = blockRange.To
-                To = latestBlock }
-
-            let target =
-              { ToLatest = true
-                Range =
-                  { From = target.Range.From
-                    To = latestBlock } }
-
-            return CheckStop.ContinueToLatest(range, target)
-          else
-            return CheckStop.Stop
-        }
-      | (false, true) -> CheckStop.Stop |> Task.FromResult
-      | (_, false) -> CheckStop.Continue |> Task.FromResult
-
-    match result with
-    // read successfully till the latest block
-    | Ok success -> checkStopBlockRange success.BlockRange
-    | Error error ->
-      match error.Data with
-      // read successfully till the latest block
-      | EmptyResult -> checkStopBlockRange error.BlockRange
-      | _ -> CheckStop.Continue |> Task.FromResult
-
-
-  let private runScrapper (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
+  let private invokeActor (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
     invokeActor<ScrapperRequest, bool> proxyFactory actorId "ScrapperActor" "scrap" scrapperRequest
 
   let private STATE_NAME = "state"
   let private SCHEDULE_TIMER_NAME = "timer"
-  let private LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE = 5
-
-  let updateLatesSuccessfullBlockRanges (state: State) (result: Success) =
-    let requestRange = result.BlockRange.To - result.BlockRange.From
-    let itemsLength = result.ItemsCount
-
-    let itemsPerBlock =
-      (System.Convert.ToSingle itemsLength)
-      / (System.Convert.ToSingle requestRange)
-
-    let ranges =
-      itemsPerBlock :: state.ItemsPerBlock
-      |> List.truncate LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE
-
-    { state with ItemsPerBlock = ranges }
-
-
-  type RunScrapperState =
-    | Start
-    | Continue of State
-
-  let private createScrapperRequest (data: ContinueData) (blockRange: BlockRange) : ScrapperRequest =
-    { EthProviderUrl = data.EthProviderUrl
-      ContractAddress = data.ContractAddress
-      Abi = data.Abi
-      BlockRange = blockRange }
 
   [<Actor(TypeName = "scrapper-dispatcher")>]
   type ScrapperDispatcherActor(host: ActorHost) as this =
@@ -101,92 +25,24 @@ module ScrapperDispatcherActor =
     let logger = ActorLogging.create host
     let stateManager = stateManager<State> STATE_NAME this.StateManager
 
-    let runScrapper (state: RunScrapperState) (scrapperRequest: ScrapperRequest) =
+    let runScrapperEnv =
+      { InvokeActor = (invokeActor host.ProxyFactory)
+        SetState = stateManager.Set
+        Logger = logger }
 
-      logger.LogDebug("Run scrapper with {@data} {@state}", scrapperRequest, state)
+    let actorEnv = (runScrapperEnv, host.Id)
 
-      task {
-        let! result = runScrapper this.ProxyFactory this.Id scrapperRequest
-
-        logger.LogDebug("Run scrapper result {@result}", result)
-
-        let finishDate =
-          match state with
-          | Continue state -> state.FinishDate
-          | Start _ -> None
-
-        let latestSuccesses =
-          match state with
-          | Continue state -> state.ItemsPerBlock
-          | Start _ -> []
-
-        let! target =
-          match state with
-          | Continue state -> state.Target |> Task.FromResult
-          | Start ->
-            task {
-              return
-                { ToLatest = true
-                  Range = scrapperRequest.BlockRange }
-            }
-
-        match result with
-        | Ok _ ->
-          let state: State =
-            { Status = Status.Continue
-              Request = scrapperRequest
-              Date = epoch ()
-              FinishDate = finishDate
-              ItemsPerBlock = latestSuccesses
-              Target = target }
-
-          do! stateManager.Set state
-
-          return state |> Ok
-        | Error _ ->
-          let state: State =
-            { Status =
-                { Data =
-                    { AppId = AppId.Dispatcher
-                      Status = AppId.Scrapper |> CallChildActorFailure }
-                  RetriesCount = 0u }
-                |> Status.Failure
-              Request = scrapperRequest
-              Date = epoch ()
-              FinishDate = finishDate
-              ItemsPerBlock = latestSuccesses
-              Target = target }
-
-          do! stateManager.Set state
-
-          return state |> ActorFailure |> Error
-      }
+    let runScrapper = runScrapper runScrapperEnv host.Id
 
     interface IScrapperDispatcherActor with
 
       member this.Start data =
 
-        logger.LogDebug("Start with {@data}", data)
-
         task {
 
           let! state = stateManager.Get()
 
-          match state with
-          | Some state ->
-            let error = "Trying to start version which already started"
-            logger.LogError(error, data)
-            return (state, error) |> StateConflict |> Error
-          | None ->
-            let! ethBlocksCount = getEthBlocksCount data.EthProviderUrl
-
-            let scrapperRequest: ScrapperRequest =
-              { EthProviderUrl = data.EthProviderUrl
-                ContractAddress = data.ContractAddress
-                Abi = data.Abi
-                BlockRange = { From = 0u; To = ethBlocksCount } }
-
-            return! runScrapper Start scrapperRequest
+          return! start actorEnv state data
         }
 
       member this.Continue data =
@@ -196,82 +52,14 @@ module ScrapperDispatcherActor =
         task {
           let! state = stateManager.Get()
 
-          match state with
-          | Some state ->
-            match state.Status with
-            | Status.Pause
-            | Status.Failure _ ->
-              let error = $"Actor in {state.Status} state, skip continue"
-              logger.LogDebug(error)
-              return (state, error) |> StateConflict |> Error
-            | Status.Continue
-            | Status.Schedule
-            | Status.Finish ->
+          let! result = continue actorEnv state data
 
-              logger.LogDebug("Actor in {@state} with {@data}, calc next request", state, data.Result)
+          match result with
+          | Ok result when result.Status = Status.Finish ->
+            let! result = me.Schedule()
 
-              let state =
-                match data.Result with
-                | Ok success -> updateLatesSuccessfullBlockRanges state success
-                | Error _ -> state
-
-              logger.LogDebug("{@state} with updated block ranges", state)
-
-              let! checkStopResult = checkStop data.EthProviderUrl state.Target data.Result
-
-              logger.LogDebug("Check stop {@result}", checkStopResult)
-
-              match checkStopResult with
-              | CheckStop.Continue ->
-
-                let blockRange = NextBlockRangeCalc2.calc state.ItemsPerBlock data.Result
-
-                let scrapperRequest = createScrapperRequest data blockRange
-
-                logger.LogDebug("Next scrapper request {@request}", scrapperRequest)
-
-                logger.LogDebug(
-                  "Stop check is CheckStop.Continue, continue with {@request} {@state}",
-                  scrapperRequest,
-                  state
-                )
-
-                return! runScrapper (Continue state) scrapperRequest
-              | CheckStop.ContinueToLatest (range, target) ->
-
-                let scrapperRequest =
-                  createScrapperRequest data { From = range.From; To = range.To }
-
-                let state = { state with Target = target }
-
-                logger.LogDebug(
-                  "Stop check is CheckStop.ContinueToLatest, continue with {@request} {@state} ",
-                  scrapperRequest,
-                  state
-                )
-
-                return! runScrapper (Continue state) scrapperRequest
-
-              | CheckStop.Stop ->
-
-                logger.LogInformation("Stop check is CheckStop.Stop, finish")
-
-                let state: State =
-                  { state with
-                      Status = Status.Finish
-                      Date = epoch ()
-                      FinishDate = epoch () |> Some }
-
-                do! stateManager.Set state
-
-                logger.LogDebug("New {@state} set", state)
-
-                let! result = me.Schedule()
-
-                return result
-          | None ->
-            logger.LogError("State not found")
-            return StateNotFound |> Error
+            return result
+          | _ -> return result
         }
 
 
