@@ -49,23 +49,29 @@ module ScrapperDispatcherActor =
   type private CheckStop =
     | Continue
     | Stop
-    | ContinueToLatest of TargetBlockRange
+    | ContinueToLatest of BlockRange * TargetBlockRange
 
   let private checkStop ethProviderUrl (target: TargetBlockRange) (result: ScrapperResult) =
     let checkStopBlockRange (blockRange: BlockRange) =
       match (target.ToLatest, blockRange.To >= target.Range.To) with
+      // update `to` block when achive target reange end (`to`)
       | (true, true) ->
         // achive latest target block, check if latest block of eth changed
         task {
           let! latestBlock = getEthBlocksCount ethProviderUrl
 
           if latestBlock > target.Range.To then
-            return
-              CheckStop.ContinueToLatest
-                { ToLatest = true
-                  Range =
-                    { From = blockRange.To
-                      To = latestBlock } }
+            let range: BlockRange =
+              { From = blockRange.To
+                To = latestBlock }
+
+            let target =
+              { ToLatest = true
+                Range =
+                  { From = target.Range.From
+                    To = latestBlock } }
+
+            return CheckStop.ContinueToLatest(range, target)
           else
             return CheckStop.Stop
         }
@@ -109,6 +115,12 @@ module ScrapperDispatcherActor =
   type RunScrapperState =
     | Start of ethProviderUrl: string
     | Continue of State
+
+  let private createScrapperRequest (data: ContinueData) (blockRange: RequestBlockRange) : ScrapperRequest =
+    { EthProviderUrl = data.EthProviderUrl
+      ContractAddress = data.ContractAddress
+      Abi = data.Abi
+      BlockRange = blockRange }
 
   [<Actor(TypeName = "scrapper-dispatcher")>]
   type ScrapperDispatcherActor(host: ActorHost) as this =
@@ -230,22 +242,18 @@ module ScrapperDispatcherActor =
 
               logger.LogDebug("{@state} with updated block ranges", state)
 
-              let blockRange = NextBlockRangeCalc2.calc state.ItemsPerBlock data.Result
-
-              let scrapperRequest: ScrapperRequest =
-                { EthProviderUrl = data.EthProviderUrl
-                  ContractAddress = data.ContractAddress
-                  Abi = data.Abi
-                  BlockRange = blockRange }
-
-              logger.LogDebug("Next scrapper request {@request}", scrapperRequest)
-
               let! checkStopResult = checkStop data.EthProviderUrl state.Target data.Result
 
               logger.LogDebug("Check stop {@result}", checkStopResult)
 
               match checkStopResult with
               | CheckStop.Continue ->
+
+                let blockRange = NextBlockRangeCalc2.calc state.ItemsPerBlock data.Result
+
+                let scrapperRequest = createScrapperRequest data blockRange
+
+                logger.LogDebug("Next scrapper request {@request}", scrapperRequest)
 
                 logger.LogDebug(
                   "Stop check is CheckStop.Continue, continue with {@request} {@state}",
@@ -254,14 +262,13 @@ module ScrapperDispatcherActor =
                 )
 
                 return! runScrapper (Continue state) scrapperRequest
-              | CheckStop.ContinueToLatest target ->
+              | CheckStop.ContinueToLatest (range, target) ->
 
-                // TODO !
                 let scrapperRequest =
-                  { scrapperRequest with
-                      BlockRange =
-                        { From = (Some target.Range.From)
-                          To = (Some target.Range.To) } }
+                  createScrapperRequest
+                    data
+                    { From = (Some range.From)
+                      To = (Some range.To) }
 
                 let state = { state with Target = target }
 
@@ -278,14 +285,14 @@ module ScrapperDispatcherActor =
                 logger.LogInformation("Stop check is CheckStop.Stop, finish")
 
                 let state: State =
-                  { Status = Status.Finish
-                    Request = scrapperRequest
-                    Date = epoch ()
-                    FinishDate = epoch () |> Some
-                    ItemsPerBlock = state.ItemsPerBlock
-                    Target = state.Target }
+                  { state with
+                      Status = Status.Finish
+                      Date = epoch ()
+                      FinishDate = epoch () |> Some }
 
                 do! stateManager.Set state
+
+                logger.LogDebug("New {@state} set", state)
 
                 let! result = me.Schedule()
 
