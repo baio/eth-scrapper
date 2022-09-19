@@ -13,31 +13,6 @@ module ScrapperDispatcherActor =
   open System
   open Nethereum.Web3
 
-  type BlockRangeDTO =
-    { From: System.Nullable<uint>
-      To: System.Nullable<uint> }
-
-  type ScrapperRequestDTO =
-    { EthProviderUrl: string
-      ContractAddress: string
-      Abi: string
-      BlockRange: BlockRangeDTO }
-
-  let private toDTO (request: ScrapperRequest) : ScrapperRequestDTO =
-    { EthProviderUrl = request.EthProviderUrl
-      ContractAddress = request.ContractAddress
-      Abi = request.Abi
-      BlockRange =
-        { From =
-            match request.BlockRange.From with
-            | Some from -> System.Nullable(from)
-            | None -> System.Nullable()
-          To =
-            match request.BlockRange.To with
-            | Some _to -> System.Nullable(_to)
-            | None -> System.Nullable() } }
-
-
   let private getEthBlocksCount (ethProviderUrl: string) =
     task {
       let web3 = new Web3(ethProviderUrl)
@@ -89,9 +64,7 @@ module ScrapperDispatcherActor =
 
 
   let private runScrapper (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
-    let dto = scrapperRequest |> toDTO
-    invokeActor<ScrapperRequestDTO, bool> proxyFactory actorId "ScrapperActor" "scrap" dto
-
+    invokeActor<ScrapperRequest, bool> proxyFactory actorId "ScrapperActor" "scrap" scrapperRequest
 
   let private STATE_NAME = "state"
   let private SCHEDULE_TIMER_NAME = "timer"
@@ -116,7 +89,7 @@ module ScrapperDispatcherActor =
     | Start of ethProviderUrl: string
     | Continue of State
 
-  let private createScrapperRequest (data: ContinueData) (blockRange: RequestBlockRange) : ScrapperRequest =
+  let private createScrapperRequest (data: ContinueData) (blockRange: BlockRange) : ScrapperRequest =
     { EthProviderUrl = data.EthProviderUrl
       ContractAddress = data.ContractAddress
       Abi = data.Abi
@@ -207,11 +180,14 @@ module ScrapperDispatcherActor =
             logger.LogError(error, data)
             return (state, error) |> StateConflict |> Error
           | None ->
+            // TODO !
+            let! to' = getEthBlocksCount data.EthProviderUrl
+
             let scrapperRequest: ScrapperRequest =
               { EthProviderUrl = data.EthProviderUrl
                 ContractAddress = data.ContractAddress
                 Abi = data.Abi
-                BlockRange = { From = None; To = None } }
+                BlockRange = { From = 0u; To = to' } }
 
             return! runScrapper (Start data.EthProviderUrl) scrapperRequest
         }
@@ -265,10 +241,7 @@ module ScrapperDispatcherActor =
               | CheckStop.ContinueToLatest (range, target) ->
 
                 let scrapperRequest =
-                  createScrapperRequest
-                    data
-                    { From = (Some range.From)
-                      To = (Some range.To) }
+                  createScrapperRequest data { From = range.From; To = range.To }
 
                 let state = { state with Target = target }
 

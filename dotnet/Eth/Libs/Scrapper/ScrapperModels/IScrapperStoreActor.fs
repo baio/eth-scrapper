@@ -4,8 +4,7 @@ open Dapr.Actors
 open System.Threading.Tasks
 
 type ContinueSuccessResult =
-  { RequestBlockRange: RequestBlockRange
-    BlockRange: BlockRange
+  { BlockRange: BlockRange
     IndexPayload: string
     ItemsCount: uint }
 

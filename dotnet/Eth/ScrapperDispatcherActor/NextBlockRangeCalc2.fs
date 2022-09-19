@@ -18,33 +18,29 @@ module NextBlockRangeCalc2 =
     let to' = result.BlockRange.To + blocksToRequest
 
     let resultRange =
-      { From = Some result.BlockRange.To
-        To = Some to' }
+      { From = result.BlockRange.To
+        To = to' }
 
     resultRange
 
   let private errorNextBlockRangeCalc (error: Error) ranges =
     match error.Data with
     | LimitExceeded ->
-      // Decrease range by half
-      { From = Some error.BlockRange.From
+      // Decrease range by half from `from`
+      { From = error.BlockRange.From
         To =
-          Some(
-            error.BlockRange.From
-            + (error.BlockRange.To - error.BlockRange.From) / 2u
-          ) }
+          error.BlockRange.From
+          + (error.BlockRange.To - error.BlockRange.From) / 2u }
     | EmptyResult ->
-      // Increase by half
-      { From =
-          Some(
-            error.BlockRange.From
-            + (error.BlockRange.To - error.BlockRange.From) * 2u
-          )
-        To = None }
+      // Increase by half from `to`
+      { From = error.BlockRange.To
+        To =
+          error.BlockRange.To
+          + (error.BlockRange.To - error.BlockRange.From) * 2u }
     | Unknown ->
       // Left as it is
-      { From = Some error.BlockRange.From
-        To = Some error.BlockRange.To }
+      { From = error.BlockRange.From
+        To = error.BlockRange.To }
 
   let calc itemsPerRange =
     function

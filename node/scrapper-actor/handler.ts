@@ -5,7 +5,7 @@ export interface Data {
   ethProviderUrl: string;
   contractAddress: string;
   abi: JSON;
-  blockRange: { from?: number; to?: number };
+  blockRange: { from: number; to: number };
 }
 
 export interface Entry {
@@ -61,13 +61,15 @@ export const handle = async (data: Data): Promise<Result> => {
 
     const web3 = new Web3(web3Provider);
 
-    const fromBlock = data.blockRange.from || 0;
-    const toBlock = data.blockRange.to || (await web3.eth.getBlockNumber());
+    // const fromBlock = data.blockRange.from || 0;
+    // const toBlock = data.blockRange.to || (await web3.eth.getBlockNumber());
 
-    const blockRange = {
-      from: fromBlock,
-      to: toBlock,
-    };
+    // const blockRange = {
+    //   from: fromBlock,
+    //   to: toBlock,
+    // };
+
+    const blockRange = data.blockRange;
 
     try {
       const contract = createContract(web3, data.abi, data.contractAddress);

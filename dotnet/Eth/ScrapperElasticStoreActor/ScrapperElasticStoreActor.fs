@@ -60,8 +60,7 @@ module ScrapperStoreActor =
         Result =
           (Ok
             { BlockRange = success.BlockRange
-              ItemsCount = success.ItemsCount
-              RequestBlockRange = success.RequestBlockRange }) }
+              ItemsCount = success.ItemsCount }) }
 
     actor.Continue continueData |> ignore
 

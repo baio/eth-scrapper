@@ -12,11 +12,7 @@ module private DTO =
     | None -> null
 
   let mapState (state: State) =
-    {| request =
-        {| state.Request with
-             BlockRange =
-               {| From = state.Request.BlockRange.From |> Option.toNullable
-                  To = state.Request.BlockRange.To |> Option.toNullable |} |}
+    {| request = state.Request
        date = state.Date
        finishDate = state.FinishDate
        status =
