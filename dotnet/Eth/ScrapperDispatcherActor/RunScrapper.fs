@@ -13,17 +13,12 @@ module internal RunScrapper =
       Logger: ILogger
       SetState: State -> Task }
 
-  type RunScrapperState =
-    | Start of targetIsLatest: bool
-    | Continue of State
-
-
   let runScrapper
     ({ InvokeActor = invokeActor
        Logger = logger
        SetState = setState }: RunScrapperEnv)
-    (state: RunScrapperState)
     (scrapperRequest: ScrapperRequest)
+    (state: State)
     =
 
     logger.LogDebug("Run scrapper with {@data} {@state}", scrapperRequest, state)
@@ -33,51 +28,44 @@ module internal RunScrapper =
 
       logger.LogDebug("Run scrapper result {@result}", result)
 
-      let finishDate =
-        match state with
-        | Continue state -> state.FinishDate
-        | Start _ -> None
-
-      let latestSuccesses =
-        match state with
-        | Continue state -> state.ItemsPerBlock
-        | Start _ -> []
-
-      let target =
-        match state with
-        | Continue state -> state.Target
-        | Start targetIsLatest ->
-          { ToLatest = targetIsLatest
-            Range = scrapperRequest.BlockRange }
-
       match result with
       | Ok _ ->
+
         let state: State =
-          { Status = Status.Continue
-            Request = scrapperRequest
-            Date = epoch ()
-            FinishDate = finishDate
-            ItemsPerBlock = latestSuccesses
-            Target = target }
+          { state with
+              Status = Status.Continue
+              Request = scrapperRequest
+              Date = epoch () }
 
         do! setState state
 
         return state |> Ok
       | Error _ ->
         let state: State =
-          { Status =
-              { Data =
-                  { AppId = AppId.Dispatcher
-                    Status = AppId.Scrapper |> CallChildActorFailure }
-                FailuresCount = 0u }
-              |> Status.Failure
-            Request = scrapperRequest
-            Date = epoch ()
-            FinishDate = finishDate
-            ItemsPerBlock = latestSuccesses
-            Target = target }
+          { state with
+              Status =
+                { Data =
+                    { AppId = AppId.Dispatcher
+                      Status = AppId.Scrapper |> CallChildActorFailure }
+                  FailuresCount = 0u }
+                |> Status.Failure
+              Request = scrapperRequest
+              Date = epoch () }
 
         do! setState state
 
         return state |> ActorFailure |> Error
     }
+
+  let runScrapperStart (env: RunScrapperEnv) (targetIsLatest: bool) (scrapperRequest: ScrapperRequest) =
+    let state: State =
+      { Status = Status.Continue
+        Request = scrapperRequest
+        Date = epoch ()
+        FinishDate = None
+        ItemsPerBlock = []
+        Target =
+          { ToLatest = targetIsLatest
+            Range = scrapperRequest.BlockRange } }
+
+    runScrapper env scrapperRequest state

@@ -10,11 +10,10 @@ module internal Start =
   let private getTargetBlockRange ethProviderUrl (target: TargetBlockRange option) =
     task {
       match target with
-      | Some target -> 
-        return target.ToLatest, target.Range
+      | Some target -> return target.ToLatest, target.Range
       | None ->
         let! ethBlocksCount = getEthBlocksCount ethProviderUrl
-        return true, { From = 0u; To = ethBlocksCount }          
+        return true, { From = 0u; To = ethBlocksCount }
     }
 
   let start ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) (data: StartData) =
@@ -40,5 +39,5 @@ module internal Start =
             Abi = data.Abi
             BlockRange = blockRange }
 
-        return! runScrapper runScrapperEnv (Start toLatest) scrapperRequest
+        return! runScrapperStart runScrapperEnv toLatest scrapperRequest
     }

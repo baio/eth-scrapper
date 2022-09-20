@@ -85,7 +85,7 @@ module internal Continue =
               state
             )
 
-            return! runScrapper (Continue state) scrapperRequest
+            return! runScrapper scrapperRequest state
           | CheckStop.ContinueToLatest (range, target) ->
 
             let scrapperRequest = createScrapperRequest data range
@@ -98,7 +98,7 @@ module internal Continue =
               state
             )
 
-            return! runScrapper (Continue state) scrapperRequest
+            return! runScrapper scrapperRequest state
 
           | CheckStop.Stop ->
 

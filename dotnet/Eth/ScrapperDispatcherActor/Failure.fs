@@ -35,7 +35,7 @@ module internal Failure =
 
         if failuresCount < MAX_RETRIES_COUNT then
           logger.LogWarning("Retriable failure with {@state}", state)
-          return! runScrapper runScrapperEnv (Continue state) state.Request
+          return! runScrapper runScrapperEnv state.Request state
         else
           logger.LogError("Final failure with {@state}", state)
 
