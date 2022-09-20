@@ -48,11 +48,11 @@ module internal Continue =
       match state with
       | Some state ->
         match state.Status with
-        | Status.Pause
-        | Status.Failure _ ->
+        | Status.Pause ->
           let error = $"Actor in {state.Status} state, skip continue"
           logger.LogDebug(error)
           return (state, error) |> StateConflict |> Error
+        | Status.Failure _
         | Status.Continue
         | Status.Schedule
         | Status.Finish ->
@@ -85,11 +85,10 @@ module internal Continue =
               state
             )
 
-            return! runScrapper Start scrapperRequest
+            return! runScrapper scrapperRequest state
           | CheckStop.ContinueToLatest (range, target) ->
 
-            let scrapperRequest =
-              createScrapperRequest data { From = range.From; To = range.To }
+            let scrapperRequest = createScrapperRequest data range
 
             let state = { state with Target = target }
 
@@ -99,7 +98,7 @@ module internal Continue =
               state
             )
 
-            return! runScrapper (Continue state) scrapperRequest
+            return! runScrapper scrapperRequest state
 
           | CheckStop.Stop ->
 

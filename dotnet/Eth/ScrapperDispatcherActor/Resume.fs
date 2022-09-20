@@ -28,7 +28,7 @@ module internal Resume =
 
           logger.LogInformation("Resume with {@pervState} {@state}", state, updatedState)
 
-          return! runScrapper runScrapperEnv (Continue state) updatedState.Request
+          return! runScrapper runScrapperEnv updatedState.Request state
         | _ ->
           let error = "Actor in a wrong state"
           logger.LogDebug(error)

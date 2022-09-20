@@ -8,7 +8,9 @@ module internal Failure =
   open Microsoft.Extensions.Logging
   open Common.DaprActor
 
-  let failure (env: ActorEnv) (data: FailureData) =
+  let MAX_RETRIES_COUNT = 3u
+
+  let failure ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) (data: FailureData) =
     let logger = env.Logger
 
     task {
@@ -16,21 +18,31 @@ module internal Failure =
 
       match state with
       | Some state ->
+        let failuresCount =
+          match state.Status with
+          | Status.Failure failure -> failure.FailuresCount
+          | _ -> 0u
+
         let state =
           { state with
               Status =
-                { Data = data; RetriesCount = 0u }
+                { Data = data
+                  FailuresCount = failuresCount + 1u }
                 |> Status.Failure
               Date = epoch () }
 
-        logger.LogInformation("Failure with {@state}", state)
-
         do! env.SetState(state)
 
-        return Some state
+        if failuresCount < MAX_RETRIES_COUNT then
+          logger.LogWarning("Retriable failure with {@state}", state)
+          return! runScrapper runScrapperEnv state.Request state
+        else
+          logger.LogError("Final failure with {@state}", state)
+
+          return state |> Ok
 
       | None ->
         logger.LogWarning("Failure {@failure} but state is not found", state)
 
-        return None
+        return StateNotFound |> Error
     }

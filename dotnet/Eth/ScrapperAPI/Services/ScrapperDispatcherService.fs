@@ -87,7 +87,8 @@ module ScrapperDispatcherService =
         let data: StartData =
           { EthProviderUrl = proj.EthProviderUrl
             ContractAddress = proj.Address
-            Abi = proj.Abi }
+            Abi = proj.Abi
+            Target = None }
 
         let! result = actor.Start data
 

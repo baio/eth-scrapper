@@ -7,10 +7,13 @@ open System.Runtime.Serialization
 open System.Reflection
 open Microsoft.FSharp.Reflection
 
+type TargetBlockRange = { ToLatest: bool; Range: BlockRange }
+
 type StartData =
   { EthProviderUrl: string
     ContractAddress: string
-    Abi: string }
+    Abi: string
+    Target: TargetBlockRange option }
 
 type ContinueData =
   { EthProviderUrl: string
@@ -36,7 +39,7 @@ type FailureData = { AppId: AppId; Status: FailureStatus }
 
 type Failure =
   { Data: FailureData
-    RetriesCount: uint }
+    FailuresCount: uint }
 
 [<RequireQualifiedAccess>]
 [<KnownType("KnownTypes")>]
@@ -47,8 +50,6 @@ type Status =
   | Schedule
   | Failure of Failure
   static member KnownTypes() = knownTypes<Status> ()
-
-type TargetBlockRange = { ToLatest: bool; Range: BlockRange }
 
 type State =
   { Status: Status
@@ -78,4 +79,4 @@ type IScrapperDispatcherActor =
   abstract State: unit -> Task<State option>
   abstract Reset: unit -> Task<bool>
   abstract Schedule: unit -> Task<ScrapperDispatcherActorResult>
-  abstract Failure: data: FailureData -> Task<State option>
+  abstract Failure: data: FailureData -> Task<ScrapperDispatcherActorResult>
