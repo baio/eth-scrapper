@@ -74,3 +74,6 @@ module ScrapperDispatcherActor =
         schedule (actorEnv, scheduleHandler)
 
       member this.Failure(data: FailureData) = failure (runScrapperEnv, actorEnv) data
+
+      member this.ConfirmContinue(data: ConfirmContinueData) =
+        confirmContinue (runScrapperEnv, actorEnv) data

@@ -39,5 +39,5 @@ module internal Start =
             Abi = data.Abi
             BlockRange = blockRange }
 
-        return! runScrapperStart runScrapperEnv toLatest scrapperRequest
+        return! runScrapperStart runScrapperEnv (data.ParentId, toLatest) scrapperRequest
     }

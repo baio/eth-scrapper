@@ -57,7 +57,11 @@ module internal RunScrapper =
         return state |> ActorFailure |> Error
     }
 
-  let runScrapperStart (env: RunScrapperEnv) (targetIsLatest: bool) (scrapperRequest: ScrapperRequest) =
+  let runScrapperStart
+    (env: RunScrapperEnv)
+    ((parentId, targetIsLatest): string option * bool)
+    (scrapperRequest: ScrapperRequest)
+    =
     let state: State =
       { Status = Status.Continue
         Request = scrapperRequest
@@ -66,6 +70,7 @@ module internal RunScrapper =
         ItemsPerBlock = []
         Target =
           { ToLatest = targetIsLatest
-            Range = scrapperRequest.BlockRange } }
+            Range = scrapperRequest.BlockRange }
+        ParentId = parentId }
 
     runScrapper env scrapperRequest state

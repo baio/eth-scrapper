@@ -13,7 +13,8 @@ type StartData =
   { EthProviderUrl: string
     ContractAddress: string
     Abi: string
-    Target: TargetBlockRange option }
+    Target: TargetBlockRange option
+    ParentId: string option }
 
 type ContinueData =
   { EthProviderUrl: string
@@ -57,7 +58,8 @@ type State =
     Date: int64
     FinishDate: int64 option
     ItemsPerBlock: float32 list
-    Target: TargetBlockRange }
+    Target: TargetBlockRange
+    ParentId: string option }
 
 [<KnownType("KnownTypes")>]
 type ScrapperDispatcherActorError =
@@ -67,8 +69,11 @@ type ScrapperDispatcherActorError =
   static member KnownTypes() =
     knownTypes<ScrapperDispatcherActorError> ()
 
-
 type ScrapperDispatcherActorResult = Result<State, ScrapperDispatcherActorError>
+
+type ConfirmContinueData =
+  { BlockRange: BlockRange
+    Target: TargetBlockRange }
 
 type IScrapperDispatcherActor =
   inherit IActor
@@ -80,3 +85,4 @@ type IScrapperDispatcherActor =
   abstract Reset: unit -> Task<bool>
   abstract Schedule: unit -> Task<ScrapperDispatcherActorResult>
   abstract Failure: data: FailureData -> Task<ScrapperDispatcherActorResult>
+  abstract ConfirmContinue: data: ConfirmContinueData -> Task<ScrapperDispatcherActorResult>
