@@ -10,6 +10,7 @@
     <Compile Include="Models.fs" />
     <Compile Include="IScrapperDispatcherActor.fs" />
     <Compile Include="IScrapperStoreActor.fs" />
+    <Compile Include="IJobManagerActor.fs" />
   </ItemGroup>
 
   <ItemGroup>

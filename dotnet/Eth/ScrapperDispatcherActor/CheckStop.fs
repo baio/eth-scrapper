@@ -4,6 +4,7 @@
 module internal CheckStop =
 
   open ScrapperModels
+  open ScrapperModels.ScrapperDispatcherActor
   open System.Threading.Tasks
 
   [<RequireQualifiedAccess>]

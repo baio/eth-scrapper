@@ -6,6 +6,7 @@
 
 	<ItemGroup>
 		<Compile Include="GetEthBlocksCount.fs" />
+		<Compile Include="RequestContinue.fs" />
 		<Compile Include="RunScrapper.fs" />
 		<Compile Include="CheckStop.fs" />
 		<Compile Include="NextBlockRangeCalc2.fs" />

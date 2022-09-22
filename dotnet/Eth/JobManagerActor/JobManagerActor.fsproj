@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="GetEthBlocksCount.fs" />
+    <Compile Include="JobManagerActor.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nethereum.Web3" Version="4.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\Common\DaprActor\DaprActor.fsproj" />
+    <ProjectReference Include="..\Libs\Common\Utils\Utils.fsproj" />
+    <ProjectReference Include="..\Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj" />
+  </ItemGroup>
+
+</Project>

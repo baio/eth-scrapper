@@ -5,6 +5,7 @@ module ScrapperDispatcherActor =
 
   open Dapr.Actors
   open Dapr.Actors.Runtime
+  open ScrapperModels.ScrapperDispatcherActor
   open ScrapperModels
   open Microsoft.Extensions.Logging
   open Common.DaprActor

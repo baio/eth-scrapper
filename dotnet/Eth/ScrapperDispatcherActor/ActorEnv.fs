@@ -1,6 +1,6 @@
 ﻿namespace ScrapperDispatcherActor
 
-open ScrapperModels
+open ScrapperModels.ScrapperDispatcherActor
 open System.Threading.Tasks
 open Microsoft.Extensions.Logging
 open Dapr.Actors

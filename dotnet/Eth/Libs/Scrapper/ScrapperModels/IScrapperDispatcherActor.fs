@@ -1,5 +1,6 @@
-﻿namespace ScrapperModels
+﻿namespace ScrapperModels.ScrapperDispatcherActor
 
+open ScrapperModels
 open Dapr.Actors
 open System.Threading.Tasks
 open Common.DaprActor.ActorResult
@@ -28,6 +29,7 @@ type AppId =
   | Dispatcher
   | ElasticStore
   | Scrapper
+  | JobManager
 
 [<KnownType("KnownTypes")>]
 type FailureStatus =
