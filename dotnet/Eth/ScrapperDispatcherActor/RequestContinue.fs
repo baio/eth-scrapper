@@ -5,7 +5,7 @@ module internal RequestContinue =
   open Dapr.Actors
   open System.Threading.Tasks
   open ScrapperModels.JobManager
-  open ScrapperModels.ScrapperDispatcherActor
+  open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
   open Common.DaprActor
 

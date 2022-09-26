@@ -1,7 +1,7 @@
 ﻿namespace ScrapperAPI.Controllers
 
 module private DTO =
-  open ScrapperModels
+  open ScrapperModels.ScrapperDispatcher
   open Scrapper.Repo.PeojectsRepo
   open Microsoft.AspNetCore.Mvc
 

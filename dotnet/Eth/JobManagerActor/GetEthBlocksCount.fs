@@ -1,4 +1,4 @@
-﻿namespace JobManagerActor
+﻿namespace JobManager
 
 [<AutoOpen>]
 module internal GetEthBlocksCount =

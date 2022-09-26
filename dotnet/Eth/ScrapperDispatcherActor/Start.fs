@@ -1,5 +1,7 @@
 ﻿namespace ScrapperDispatcherActor
 
+open ScrapperModels.ScrapperDispatcher
+
 [<AutoOpen>]
 module internal Start =
 

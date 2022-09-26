@@ -1,9 +1,8 @@
 ﻿namespace ScrapperDispatcherActor
 
-open ScrapperModels.ScrapperDispatcherActor
+open ScrapperModels.ScrapperDispatcher
 open System.Threading.Tasks
 open Microsoft.Extensions.Logging
-open Dapr.Actors
 
 type ActorEnv =
   { SetState: State -> Task

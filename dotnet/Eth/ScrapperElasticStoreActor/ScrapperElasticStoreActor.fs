@@ -5,7 +5,8 @@ module ScrapperStoreActor =
 
   open Dapr.Actors
   open Dapr.Actors.Runtime
-  open ScrapperModels
+  open ScrapperModels.ScrapperDispatcher
+  open ScrapperModels.ScrapperStore
   open Microsoft.Extensions.Configuration
   open Elasticsearch.Net
   open Microsoft.Extensions.Logging
@@ -63,6 +64,7 @@ module ScrapperStoreActor =
               ItemsCount = success.ItemsCount }) }
 
     actor.Continue continueData |> ignore
+
 
   let runScrapperDispatcherFailure (proxyFactory: Client.IActorProxyFactory) id =
     let actor =

@@ -4,7 +4,7 @@
 module internal ConfirmContinue =
 
   open Dapr.Actors
-  open ScrapperModels.ScrapperDispatcherActor
+  open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
   open Common.DaprActor
 

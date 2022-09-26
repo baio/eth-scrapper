@@ -3,8 +3,8 @@
 
 module Program =
   open Common.DaprActor
-  open ScrapperModels.ScrapperDispatcherActor
+  open JobManager
 
   [<EntryPoint>]
   let main args =
-    createDaprActor (fun opts -> opts.Actors.RegisterActor<ScrapperDispatcherActor>()) args
+    createDaprActor (fun opts -> opts.Actors.RegisterActor<JobManagerActor>()) args

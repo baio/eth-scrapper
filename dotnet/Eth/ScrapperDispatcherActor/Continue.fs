@@ -7,7 +7,7 @@ module internal Continue =
   open Dapr.Actors.Runtime
   open System.Threading.Tasks
   open ScrapperModels
-  open ScrapperModels.ScrapperDispatcherActor
+  open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
   open Common.DaprActor
   open Common.DaprActor.ActorResult

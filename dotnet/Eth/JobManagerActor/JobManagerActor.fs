@@ -1,4 +1,4 @@
-﻿namespace JobManagerActor
+﻿namespace JobManager
 
 [<AutoOpen>]
 module JobManagerActor =
@@ -56,14 +56,14 @@ module JobManagerActor =
               |> List.map (fun (from, to', isFinal) ->
                 let range = { From = from; To = to' }
 
-                let target: ScrapperDispatcherActor.TargetBlockRange =
+                let target: ScrapperDispatcher.TargetBlockRange =
                   { Range = range; ToLatest = isFinal }
 
                 { EthProviderUrl = data.EthProviderUrl
                   ContractAddress = data.ContractAddress
                   Abi = data.Abi
                   Target = Some target
-                  ParentId = (Some(this.Id.ToString())) }: ScrapperDispatcherActor.StartData)
+                  ParentId = (Some(this.Id.ToString())) }: ScrapperDispatcher.StartData)
 
             let calls =
               rangeStartData
@@ -71,7 +71,7 @@ module JobManagerActor =
                 let childId = ActorId($"{this.Id}_s{i}")
 
                 let actor =
-                  host.ProxyFactory.CreateActorProxy<ScrapperDispatcherActor.IScrapperDispatcherActor>(
+                  host.ProxyFactory.CreateActorProxy<ScrapperDispatcher.IScrapperDispatcherActor>(
                     childId,
                     "scrapper-dispatcher"
                   )

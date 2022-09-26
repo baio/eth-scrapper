@@ -1,4 +1,4 @@
-﻿namespace ScrapperModels.ScrapperDispatcherActor
+﻿namespace ScrapperModels.ScrapperDispatcher
 
 open ScrapperModels
 open Dapr.Actors

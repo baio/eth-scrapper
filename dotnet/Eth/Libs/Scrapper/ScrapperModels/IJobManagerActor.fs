@@ -4,7 +4,7 @@ open Dapr.Actors
 open System.Threading.Tasks
 open ScrapperModels
 open System.Runtime.Serialization
-open ScrapperModels.ScrapperDispatcherActor
+open ScrapperModels.ScrapperDispatcher
 
 type RequestContinueData =
   { ActorId: string

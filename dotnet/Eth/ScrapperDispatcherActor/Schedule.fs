@@ -5,7 +5,7 @@ module internal Schedule =
 
   open Dapr.Actors
   open System.Threading.Tasks
-  open ScrapperModels.ScrapperDispatcherActor
+  open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
   open Common.DaprActor
 

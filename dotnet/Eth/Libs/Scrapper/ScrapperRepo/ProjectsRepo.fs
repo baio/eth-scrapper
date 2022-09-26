@@ -5,7 +5,7 @@ module PeojectsRepo =
   open Common.DaprState.StateList
   open Common.Repo
   open Common.Utils
-  open ScrapperModels.ScrapperDispatcherActor
+  open ScrapperModels.ScrapperDispatcher
 
   type CreateProjectEntity =
     { Name: string

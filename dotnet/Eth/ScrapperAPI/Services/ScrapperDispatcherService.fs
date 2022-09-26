@@ -4,7 +4,7 @@ module ScrapperDispatcherService =
 
   open Dapr.Actors
   open Dapr.Actors.Client
-  open ScrapperModels
+  open ScrapperModels.ScrapperDispatcher
   open Scrapper.Repo.PeojectsRepo
   open Common.DaprState
   open Common.Repo
