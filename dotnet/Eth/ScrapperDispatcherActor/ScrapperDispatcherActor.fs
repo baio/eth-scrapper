@@ -11,8 +11,12 @@ module ScrapperDispatcherActor =
   open Common.DaprActor
   open System
 
-  let private invokeActor (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
+  let private invokeScrapper (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
     invokeActor<ScrapperRequest, bool> proxyFactory actorId "ScrapperActor" "scrap" scrapperRequest
+      
+  let private invokeRequestContinue (proxyFactory: Client.IActorProxyFactory) actorId request =
+    let actor = proxyFactory.CreateActorProxy<JobManager.IJobManagerActor>(actorId, "job-manager")
+    actor.RequestContinue request
 
   let private STATE_NAME = "state"
   let private SCHEDULE_TIMER_NAME = "timer"
@@ -23,10 +27,16 @@ module ScrapperDispatcherActor =
     let logger = ActorLogging.create host
     let stateManager = stateManager<State> STATE_NAME this.StateManager
 
-    let runScrapperEnv =
-      { InvokeActor = (invokeActor host.ProxyFactory host.Id)
+    let runScrapperEnv: RunScrapperEnv =
+      { InvokeActor = (invokeScrapper host.ProxyFactory host.Id)
         SetState = stateManager.Set
         Logger = logger }
+
+    let requestContinueEnv: RequestContinueEnv =
+      { InvokeActor = (invokeRequestContinue host.ProxyFactory host.Id)
+        SetState = stateManager.Set
+        Logger = logger }
+
 
     let actorEnv =
       { GetState = stateManager.Get
@@ -42,7 +52,7 @@ module ScrapperDispatcherActor =
         let me = this :> IScrapperDispatcherActor
 
         task {
-          let! result = continue (runScrapperEnv, actorEnv) data
+          let! result = continue (requestContinueEnv, actorEnv) host.Id data
 
           match result with
           | Ok result when result.Status = Status.Finish ->

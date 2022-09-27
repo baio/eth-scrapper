@@ -11,14 +11,12 @@ type RequestContinueData =
     BlockRange: BlockRange
     Target: TargetBlockRange }
 
-type Job =
-  { ActorId: ActorId
-    Status: Status
-    BlockRange: BlockRange
-    Target: TargetBlockRange }
+type JobId = JobId of string
+
+type Job = ScrapperDispatcherActorResult
 
 type State =
-  { Jobs: Job list
+  { Jobs: Map<JobId, Job>
     AvailableJobsCount: uint }
 
 type StartData =

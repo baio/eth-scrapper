@@ -10,9 +10,6 @@ module internal Continue =
   open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
   open Common.DaprActor
-  open Common.DaprActor.ActorResult
-  open System
-  open Nethereum.Web3
 
   let private LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE = 5
 
@@ -36,10 +33,12 @@ module internal Continue =
       Abi = data.Abi
       BlockRange = blockRange }
 
-  let continue ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) (data: ContinueData) =
+  // TODO : Request continue or Scrap
+  let continue ((requestContinueEnv, env): RequestContinueEnv * ActorEnv) (actorId: ActorId) (data: ContinueData) =
 
     let logger = env.Logger
-    let runScrapper = runScrapper runScrapperEnv
+
+    let requestContinue = requestContinue requestContinueEnv
 
     logger.LogDebug("Continue with {@data}", data)
 
@@ -76,31 +75,30 @@ module internal Continue =
 
             let blockRange = NextBlockRangeCalc2.calc state.ItemsPerBlock data.Result
 
-            let scrapperRequest = createScrapperRequest data blockRange
+            logger.LogDebug("Stop check is CheckStop.Continue, continue with {@blockRange} {@state}", blockRange, state)
 
-            logger.LogDebug("Next scrapper request {@request}", scrapperRequest)
+            let requestContinueData: JobManager.RequestContinueData =
+              { ActorId = (actorId.ToString())
+                BlockRange = blockRange
+                Target = state.Target }
 
-            logger.LogDebug(
-              "Stop check is CheckStop.Continue, continue with {@request} {@state}",
-              scrapperRequest,
-              state
-            )
-
-            return! runScrapper scrapperRequest state
-          | CheckStop.ContinueToLatest (range, target) ->
-
-            let scrapperRequest = createScrapperRequest data range
+            return! requestContinue requestContinueData state
+          | CheckStop.ContinueToLatest (blockRange, target) ->
 
             let state = { state with Target = target }
 
             logger.LogDebug(
-              "Stop check is CheckStop.ContinueToLatest, continue with {@request} {@state} ",
-              scrapperRequest,
+              "Stop check is CheckStop.ContinueToLatest, continue with {@blockRange} {@state} ",
+              blockRange,
               state
             )
 
-            return! runScrapper scrapperRequest state
+            let requestContinueData: JobManager.RequestContinueData =
+              { ActorId = (actorId.ToString())
+                BlockRange = blockRange
+                Target = state.Target }
 
+            return! requestContinue requestContinueData state
           | CheckStop.Stop ->
 
             logger.LogInformation("Stop check is CheckStop.Stop, finish")

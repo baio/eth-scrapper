@@ -5,7 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="ActorEnv.fs" />
     <Compile Include="GetEthBlocksCount.fs" />
+    <Compile Include="SetJobsCount.fs" />
+    <Compile Include="Start.fs" />
+    <Compile Include="RequestContinue.fs" />
     <Compile Include="JobManagerActor.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

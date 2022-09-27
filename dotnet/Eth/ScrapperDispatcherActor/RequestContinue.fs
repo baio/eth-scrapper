@@ -10,7 +10,7 @@ module internal RequestContinue =
   open Common.DaprActor
 
   type RequestContinueEnv =
-    { InvokeActor: RequestContinueData -> Task<Result<unit, exn>>
+    { InvokeActor: RequestContinueData -> Task<ScrapperModels.JobManager.Result>
       Logger: ILogger
       SetState: State -> Task }
 
@@ -36,6 +36,7 @@ module internal RequestContinue =
           { state with
               Status = Status.Continue
               Request = { state.Request with BlockRange = data.BlockRange }
+              Target = data.Target
               Date = epoch () }
 
         do! setState state
@@ -45,13 +46,13 @@ module internal RequestContinue =
         let state: State =
           { state with
               Status =
-                // TODO !
                 { Data =
                     { AppId = AppId.Dispatcher
                       Status = AppId.JobManager |> CallChildActorFailure }
                   FailuresCount = 0u }
                 |> Status.Failure
               Request = { state.Request with BlockRange = data.BlockRange }
+              Target = data.Target
               Date = epoch () }
 
         do! setState state
