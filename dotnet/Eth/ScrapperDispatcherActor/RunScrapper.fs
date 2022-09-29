@@ -60,7 +60,7 @@ module internal RunScrapper =
 
   let runScrapperStart
     (env: RunScrapperEnv)
-    ((parentId, targetIsLatest): string option * bool)
+    ((parentId, targetIsLatest): string * bool)
     (scrapperRequest: ScrapperRequest)
     =
     let state: State =

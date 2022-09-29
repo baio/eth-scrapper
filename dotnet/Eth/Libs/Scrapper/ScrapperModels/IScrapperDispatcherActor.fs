@@ -15,7 +15,7 @@ type StartData =
     ContractAddress: string
     Abi: string
     Target: TargetBlockRange option
-    ParentId: string option }
+    ParentId: string }
 
 type ContinueData =
   { EthProviderUrl: string
@@ -23,13 +23,6 @@ type ContinueData =
     Abi: string
     Result: ScrapperResult }
 
-
-[<RequireQualifiedAccess>]
-type AppId =
-  | Dispatcher
-  | ElasticStore
-  | Scrapper
-  | JobManager
 
 [<KnownType("KnownTypes")>]
 type FailureStatus =
@@ -61,7 +54,7 @@ type State =
     FinishDate: int64 option
     ItemsPerBlock: float32 list
     Target: TargetBlockRange
-    ParentId: string option }
+    ParentId: string }
 
 [<KnownType("KnownTypes")>]
 type ScrapperDispatcherActorError =

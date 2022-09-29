@@ -11,15 +11,23 @@ module Start =
 
   let private createChildId id idx = $"{id}_s{idx}"
 
-  type ScrapperDispatcherStart = string -> ScrapperDispatcher.StartData -> Task<Job>
+  type ScrapperDispatcherStart =
+    string -> ScrapperDispatcher.StartData -> Task<Result<ScrapperDispatcher.ScrapperDispatcherActorResult, exn>>
 
   type StartEnv =
     { ScrapperDispatcherStart: ScrapperDispatcherStart }
 
+
+
   let start ((actorEnv, startEnv): ActorEnv * StartEnv) (actorId: string) (data: StartData) : Task<Result> =
+
+    let logger = actorEnv.Logger
+    logger.LogDebug("start with {actorId} {@data}", actorId, data)
 
     task {
       let! state = actorEnv.GetState()
+
+      logger.LogDebug("state {@state}", state)
 
       match state with
       | Some state ->
@@ -27,9 +35,16 @@ module Start =
         let! blocksCount = getEthBlocksCount data.EthProviderUrl
         let blockSize = Math.Ceiling(blocksCount / jobsCount) |> uint
 
+        logger.LogDebug(
+          "data to calculate range {jobsCount} {blocksCount} {blockSize}",
+          jobsCount,
+          blocksCount,
+          blockSize
+        )
+
         let rangeStartData =
-          [ 0u .. (blocksCount - 1u) ]
-          |> List.map (fun x -> (x * blockSize, x * blockSize + blockSize, x = blocksCount - 1u))
+          [ 0u .. (jobsCount - 1u) ]
+          |> List.map (fun x -> (x * blockSize, x * blockSize + blockSize, x = jobsCount - 1u))
           |> List.map (fun (from, to', isFinal) ->
             let range = { From = from; To = to' }
 
@@ -42,7 +57,9 @@ module Start =
               ContractAddress = data.ContractAddress
               Abi = data.Abi
               Target = Some target
-              ParentId = Some parentId }: ScrapperDispatcher.StartData)
+              ParentId = parentId }: ScrapperDispatcher.StartData)
+
+        logger.LogDebug("calculated start data {@rangeStartData}", rangeStartData)
 
         let calls =
           rangeStartData
@@ -56,10 +73,13 @@ module Start =
 
         let! result = Common.Utils.Task.all calls
 
-        let jobs = result |> Map.ofList
+        let state =
+          JobResult.updateStateWithJobsListResult ChildActorMethodName.Start state result
 
-        let state = { state with Jobs = jobs }
+        logger.LogDebug("updated  {@state}", state)
 
         return state |> Ok
-      | None -> return StateNotFound |> Error
+      | None ->
+        logger.LogError("state not found")
+        return StateNotFound |> Error
     }

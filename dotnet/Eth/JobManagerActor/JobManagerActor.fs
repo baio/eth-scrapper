@@ -16,9 +16,8 @@ module JobManagerActor =
 
   let private defaultState: State =
     { AvailableJobsCount = 1u
-      Jobs = Map.empty }
-
-  let private createChildId id idx = $"{id}_s{idx}"
+      Jobs = Map.empty
+      Status = Initial }
 
   [<Actor(TypeName = "job-manager")>]
   type JobManagerActor(host: ActorHost) as this =
@@ -41,15 +40,30 @@ module JobManagerActor =
       { ScrapperDispatcherStart =
           fun id data ->
             let actor = createDispatcherActor id
-            actor.Start(data) }
+            actor.Start(data) |> ActorResult.wrapException }
 
     let requestContinueEnv: RequestContinueEnv =
       { ScrapperDispatcherConfirmContiunue =
           fun id data ->
             let actor = createDispatcherActor id
-            actor.ConfirmContinue(data) }
+
+            actor.ConfirmContinue(data)
+            |> ActorResult.wrapException }
+
+    override this.OnActivateAsync() =
+      stateManager.AddOrUpdateState defaultState id
 
     interface IJobManagerActor with
+
+      member this.Pause() : Task<Result> =
+        raise (System.NotImplementedException())
+
+      member this.Reset() : Task<Result> =
+        raise (System.NotImplementedException())
+
+      member this.Resume() : Task<Result> =
+        raise (System.NotImplementedException())
+
       member this.SetJobsCount(count: uint) : Task<Result> = setJobsCount actorEnv count
 
       member this.Start(data: StartData) : Task<Result> =
@@ -57,3 +71,5 @@ module JobManagerActor =
 
       member this.RequestContinue(data: RequestContinueData) : Task<Result> =
         requestContinue (actorEnv, requestContinueEnv) data
+
+      member this.State() : Task<State option> = stateManager.Get()

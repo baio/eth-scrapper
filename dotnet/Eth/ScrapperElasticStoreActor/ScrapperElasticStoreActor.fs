@@ -11,6 +11,7 @@ module ScrapperStoreActor =
   open Elasticsearch.Net
   open Microsoft.Extensions.Logging
   open Common.DaprActor
+  open ScrapperModels
 
   let elasticConfig (config: IConfiguration) =
     let connectionString = config.GetConnectionString("ElasticSearch")

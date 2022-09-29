@@ -8,7 +8,10 @@ module RequestContinue =
   open ScrapperModels.JobManager
   open System.Threading.Tasks
 
-  type ScrapperDispatcherConfirmContiunue = string -> ScrapperDispatcher.ConfirmContinueData -> Task<Job>
+  type ScrapperDispatcherConfirmContiunue =
+    string
+      -> ScrapperDispatcher.ConfirmContinueData
+      -> Task<Result<ScrapperDispatcher.ScrapperDispatcherActorResult, exn>>
 
   type RequestContinueEnv =
     { ScrapperDispatcherConfirmContiunue: ScrapperDispatcherConfirmContiunue }
@@ -31,8 +34,10 @@ module RequestContinue =
         let! result = requestContinueEnv.ScrapperDispatcherConfirmContiunue data.ActorId confirmData
 
         let jobId = JobId data.ActorId
-        let jobs = state.Jobs |> Map.add jobId result
-        let state = { state with Jobs = jobs }
+
+        let state =
+          JobResult.updateStateWithJobResult ChildActorMethodName.ConfirmContinue state (jobId, result)
+
         do! actorEnv.SetState state
         return state |> Ok
       | None -> return StateNotFound |> Error

@@ -156,6 +156,8 @@ dapr run --app-port 5003 --app-id scrapper-elastic-store --components-path ./com
 
 dapr run --app-port 5002 --app-id scrapper-actor --components-path ./components -- yarn --cwd ./node/scrapper-actor start 5002
 
+dapr run --app-port 5004 --app-id job-manager-actor --dapr-http-port 6004 --components-path ./components -- dotnet watch run --project dotnet/Eth/JobManagerActor 5004
+
 yarn --cwd ./react/scrapper-web dev
 
 ```

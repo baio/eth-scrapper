@@ -13,10 +13,28 @@ type RequestContinueData =
 
 type JobId = JobId of string
 
-type Job = ScrapperDispatcherActorResult
+type Job = ScrapperDispatcher.State
+
+type Status =
+  | Initial
+  | Continue
+  | Success
+  | PartialFailure
+  | Failure
+
+type ChildActorMethodName =
+  | Start
+  | ConfirmContinue
+
+type JobError =
+  | CallChildActorFailure of AppId * ChildActorMethodName
+  | JobError of AppId * ChildActorMethodName * ScrapperDispatcherActorError
+
+type JobResult = Result<Job, JobError>
 
 type State =
-  { Jobs: Map<JobId, Job>
+  { Status: Status
+    Jobs: Map<JobId, JobResult>
     AvailableJobsCount: uint }
 
 type StartData =
@@ -40,3 +58,7 @@ type IJobManagerActor =
   abstract Start: data: StartData -> Task<Result>
   abstract RequestContinue: data: RequestContinueData -> Task<Result>
   abstract SetJobsCount: count: uint -> Task<Result>
+  abstract State: unit -> Task<State option>
+  abstract Pause: unit -> Task<Result>
+  abstract Resume: unit -> Task<Result>
+  abstract Reset: unit -> Task<Result>

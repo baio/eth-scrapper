@@ -22,3 +22,10 @@ type ScrapperRequest =
     ContractAddress: string
     Abi: string
     BlockRange: BlockRange }
+
+[<RequireQualifiedAccess>]
+type AppId =
+  | Dispatcher
+  | ElasticStore
+  | Scrapper
+  | JobManager

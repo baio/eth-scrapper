@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="JobResult.fs" />
+    <Compile Include="CalculateState.fs" />
     <Compile Include="ActorEnv.fs" />
     <Compile Include="GetEthBlocksCount.fs" />
     <Compile Include="SetJobsCount.fs" />

@@ -8,9 +8,10 @@ module internal RequestContinue =
   open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
   open Common.DaprActor
+  open ScrapperModels
 
   type RequestContinueEnv =
-    { InvokeActor: RequestContinueData -> Task<ScrapperModels.JobManager.Result>
+    { InvokeActor: string -> RequestContinueData -> Task<ScrapperModels.JobManager.Result>
       Logger: ILogger
       SetState: State -> Task }
 
@@ -25,7 +26,7 @@ module internal RequestContinue =
     logger.LogDebug("Request continue with {@data} {@state}", data, state)
 
     task {
-      let! result = invokeActor data
+      let! result = invokeActor state.ParentId data
 
       logger.LogDebug("Request continue result {@result}", result)
 

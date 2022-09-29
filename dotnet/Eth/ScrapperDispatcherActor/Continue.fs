@@ -27,12 +27,6 @@ module internal Continue =
 
     { state with ItemsPerBlock = ranges }
 
-  let private createScrapperRequest (data: ContinueData) (blockRange: BlockRange) : ScrapperRequest =
-    { EthProviderUrl = data.EthProviderUrl
-      ContractAddress = data.ContractAddress
-      Abi = data.Abi
-      BlockRange = blockRange }
-
   // TODO : Request continue or Scrap
   let continue ((requestContinueEnv, env): RequestContinueEnv * ActorEnv) (actorId: ActorId) (data: ContinueData) =
 

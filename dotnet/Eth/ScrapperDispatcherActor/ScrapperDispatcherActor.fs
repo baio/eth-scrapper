@@ -13,9 +13,11 @@ module ScrapperDispatcherActor =
 
   let private invokeScrapper (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
     invokeActor<ScrapperRequest, bool> proxyFactory actorId "ScrapperActor" "scrap" scrapperRequest
-      
+
   let private invokeRequestContinue (proxyFactory: Client.IActorProxyFactory) actorId request =
-    let actor = proxyFactory.CreateActorProxy<JobManager.IJobManagerActor>(actorId, "job-manager")
+    let actor =
+      proxyFactory.CreateActorProxy<JobManager.IJobManagerActor>(actorId, "job-manager")
+
     actor.RequestContinue request
 
   let private STATE_NAME = "state"
@@ -33,7 +35,7 @@ module ScrapperDispatcherActor =
         Logger = logger }
 
     let requestContinueEnv: RequestContinueEnv =
-      { InvokeActor = (invokeRequestContinue host.ProxyFactory host.Id)
+      { InvokeActor = fun parentId -> (invokeRequestContinue host.ProxyFactory (ActorId parentId))
         SetState = stateManager.Set
         Logger = logger }
 
