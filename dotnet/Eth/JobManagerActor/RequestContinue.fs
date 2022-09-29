@@ -36,7 +36,7 @@ module RequestContinue =
         let jobId = JobId data.ActorId
 
         let state =
-          JobResult.updateStateWithJobResult ChildActorMethodName.ConfirmContinue state (jobId, result)
+          JobResult.updateStateWithJobResult (CallChildActorData.ConfirmContinue confirmData) state (jobId, result)
 
         do! actorEnv.SetState state
         return state |> Ok

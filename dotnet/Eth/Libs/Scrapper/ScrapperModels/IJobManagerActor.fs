@@ -22,13 +22,18 @@ type Status =
   | PartialFailure
   | Failure
 
-type ChildActorMethodName =
-  | Start
-  | ConfirmContinue
+type StartData =
+  { EthProviderUrl: string
+    ContractAddress: string
+    Abi: string }
+
+type CallChildActorData =
+  | Start of ScrapperDispatcher.StartData
+  | ConfirmContinue of ConfirmContinueData
 
 type JobError =
-  | CallChildActorFailure of AppId * ChildActorMethodName
-  | JobError of AppId * ChildActorMethodName * ScrapperDispatcherActorError
+  | CallChildActorFailure of CallChildActorData
+  | JobError of CallChildActorData * ScrapperDispatcherActorError
 
 type JobResult = Result<Job, JobError>
 
@@ -36,12 +41,6 @@ type State =
   { Status: Status
     Jobs: Map<JobId, JobResult>
     AvailableJobsCount: uint }
-
-type StartData =
-  { EthProviderUrl: string
-    ContractAddress: string
-    Abi: string }
-
 
 [<KnownType("KnownTypes")>]
 type Error =

@@ -17,8 +17,6 @@ module Start =
   type StartEnv =
     { ScrapperDispatcherStart: ScrapperDispatcherStart }
 
-
-
   let start ((actorEnv, startEnv): ActorEnv * StartEnv) (actorId: string) (data: StartData) : Task<Result> =
 
     let logger = actorEnv.Logger
@@ -63,18 +61,17 @@ module Start =
 
         let calls =
           rangeStartData
-          |> List.mapi (fun i x ->
+          |> List.mapi (fun i data ->
             let childId = createChildId actorId i
 
             task {
-              let! result = startEnv.ScrapperDispatcherStart childId x
-              return (JobId childId), result
+              let! result = startEnv.ScrapperDispatcherStart childId data
+              return (JobId childId), result, (CallChildActorData.Start data)
             })
 
         let! result = Common.Utils.Task.all calls
 
-        let state =
-          JobResult.updateStateWithJobsListResult ChildActorMethodName.Start state result
+        let state = JobResult.updateStateWithJobsListResult state result
 
         logger.LogDebug("updated  {@state}", state)
 

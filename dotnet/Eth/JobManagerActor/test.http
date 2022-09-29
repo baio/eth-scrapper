@@ -18,7 +18,7 @@ PUT {{host}}/v1.0/actors/job-manager/v1/method/Resume
 
 ###
 
-PUT {{host}}/v1.0/actors/job-manager/v1/method/Reset
+PUT {{host}}/v1.0/actors/job-manager/{{actorId}}/method/Reset
 
 ### USDT
 PUT {{host}}/v1.0/actors/job-manager/{{actorId}}/method/Start
