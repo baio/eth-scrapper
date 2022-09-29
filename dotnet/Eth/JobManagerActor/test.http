@@ -1,15 +1,16 @@
 @host=http://localhost:6004
+@actorId=main_0xdac17f958d2ee523a2206206994597c13d831ec7_v1
 #@host=http://localhost:3500
 
 ###
 
-PUT {{host}}/v1.0/actors/job-manager/v1/method/State
+PUT {{host}}/v1.0/actors/job-manager/{{actorId}}/method/State
 
 {}
 
 ###
 
-PUT {{host}}/v1.0/actors/job-manager/v1/method/Pause
+PUT {{host}}/v1.0/actors/job-manager/{{actorId}}/method/Pause
 
 ###
 
@@ -20,7 +21,7 @@ PUT {{host}}/v1.0/actors/job-manager/v1/method/Resume
 PUT {{host}}/v1.0/actors/job-manager/v1/method/Reset
 
 ### USDT
-PUT {{host}}/v1.0/actors/job-manager/v1/method/Start
+PUT {{host}}/v1.0/actors/job-manager/{{actorId}}/method/Start
 
 {
   "contractAddress": "0xdac17f958d2ee523a2206206994597c13d831ec7",  

@@ -78,7 +78,7 @@ module Start =
 
         logger.LogDebug("updated  {@state}", state)
 
-        return state |> Ok
+        return state |> ReduceStateStatus.reduce |> Ok
       | None ->
         logger.LogError("state not found")
         return StateNotFound |> Error

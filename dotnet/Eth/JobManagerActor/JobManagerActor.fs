@@ -59,7 +59,11 @@ module JobManagerActor =
         raise (System.NotImplementedException())
 
       member this.Reset() : Task<Result> =
-        raise (System.NotImplementedException())
+        task {
+          let! _ = stateManager.Remove()
+          let! state = stateManager.AddOrUpdateState defaultState id
+          return state |> Ok
+        }
 
       member this.Resume() : Task<Result> =
         raise (System.NotImplementedException())
