@@ -71,11 +71,14 @@ module Start =
 
         let! result = Common.Utils.Task.all calls
 
-        let state = JobResult.updateStateWithJobsListResult state result
+        let state =
+          JobResult.updateStateWithJobsListResult state result          
+
+        do! actorEnv.SetState state
 
         logger.LogDebug("updated  {@state}", state)
 
-        return state |> ReduceStateStatus.reduce |> Ok
+        return state |> Ok
       | None ->
         logger.LogError("state not found")
         return StateNotFound |> Error

@@ -24,6 +24,7 @@ module JobResult =
       |> Map.ofList
 
     { state with Jobs = jobs }
+    |> ReduceStateStatus.reduce
 
   let updateStateWithJobResult
     (childData: CallChildActorData)
@@ -32,3 +33,4 @@ module JobResult =
     =
     let job = mapJobResult childData result
     { state with Jobs = state.Jobs.Add(jobId, job) }
+    |> ReduceStateStatus.reduce
