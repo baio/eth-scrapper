@@ -34,3 +34,11 @@ module JobResult =
     let job = mapJobResult childData result
     { state with Jobs = state.Jobs.Add(jobId, job) }
     |> ReduceStateStatus.reduce
+
+  let updateStateWithJob
+    (state: State)
+    ((jobId, job): (JobId * Job))
+    =
+    let jobResult = Ok job
+    { state with Jobs = state.Jobs.Add(jobId, jobResult) }
+    |> ReduceStateStatus.reduce

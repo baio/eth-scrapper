@@ -20,6 +20,22 @@ module ScrapperDispatcherActor =
 
     actor.RequestContinue request
 
+  let private invokeReportJobState (proxyFactory: Client.IActorProxyFactory) (actorId: ActorId) (state: State) =
+
+    let parentId = ActorId state.ParentId
+
+    let actor =
+      proxyFactory.CreateActorProxy<JobManager.IJobManagerActor>(parentId, "job-manager")
+
+    let data: JobManager.JobStateData =
+      { ActorId = (actorId.ToString())
+        Job = state }
+
+    task {
+      let! _ = actor.ReportJobState data
+      return ()
+    }
+
   let private STATE_NAME = "state"
   let private SCHEDULE_TIMER_NAME = "timer"
 
@@ -39,11 +55,17 @@ module ScrapperDispatcherActor =
         SetState = stateManager.Set
         Logger = logger }
 
-
     let actorEnv =
       { GetState = stateManager.Get
-        SetState = stateManager.Set
-        Logger = logger }
+        SetState =
+          fun state ->
+            task {
+              do! stateManager.Set state
+              do! invokeReportJobState host.ProxyFactory host.Id state
+            }
+        Logger = logger
+
+      }
 
     interface IScrapperDispatcherActor with
 
@@ -56,12 +78,13 @@ module ScrapperDispatcherActor =
         task {
           let! result = continue (requestContinueEnv, actorEnv) host.Id data
 
-          match result with
-          | Ok result when result.Status = Status.Finish ->
-            let! result = me.Schedule()
+          return result
+        // match result with
+        // | Ok result when result.Status = Status.Finish ->
+        //   let! result = me.Schedule()
 
-            return result
-          | _ -> return result
+        //   return result
+        // | _ -> return result
         }
 
 

@@ -11,7 +11,9 @@
     <Compile Include="GetEthBlocksCount.fs" />
     <Compile Include="SetJobsCount.fs" />
     <Compile Include="Start.fs" />
+    <Compile Include="Reset.fs" />
     <Compile Include="RequestContinue.fs" />
+    <Compile Include="ReportJobState.fs" />
     <Compile Include="JobManagerActor.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

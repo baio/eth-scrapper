@@ -37,6 +37,10 @@ type JobError =
 
 type JobResult = Result<Job, JobError>
 
+type JobStateData =
+  { ActorId: string
+    Job: Job }
+
 type State =
   { Status: Status
     Jobs: Map<JobId, JobResult>
@@ -61,3 +65,4 @@ type IJobManagerActor =
   abstract Pause: unit -> Task<Result>
   abstract Resume: unit -> Task<Result>
   abstract Reset: unit -> Task<Result>
+  abstract ReportJobState: data: JobStateData -> Task<Result>

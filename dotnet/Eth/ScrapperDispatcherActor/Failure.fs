@@ -31,14 +31,13 @@ module internal Failure =
                 |> Status.Failure
               Date = epoch () }
 
-        do! env.SetState(state)
+        do! env.SetState state
 
         if failuresCount < MAX_RETRIES_COUNT then
           logger.LogWarning("Retriable failure with {@state}", state)
           return! runScrapper runScrapperEnv state.Request state
         else
           logger.LogError("Final failure with {@state}", state)
-
           return state |> Ok
 
       | None ->

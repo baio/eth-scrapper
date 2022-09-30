@@ -42,6 +42,12 @@ module JobManagerActor =
             let actor = createDispatcherActor id
             actor.Start(data) |> ActorResult.wrapException }
 
+    let resetEnv: ResetEnv =
+      { ScrapperDispatcherReset =
+          fun (JobId id) ->
+            let actor = createDispatcherActor id
+            actor.Reset() |> ActorResult.wrapException }
+
     let requestContinueEnv: RequestContinueEnv =
       { ScrapperDispatcherConfirmContiunue =
           fun id data ->
@@ -58,12 +64,7 @@ module JobManagerActor =
       member this.Pause() : Task<Result> =
         raise (System.NotImplementedException())
 
-      member this.Reset() : Task<Result> =
-        task {
-          let! _ = stateManager.Remove()
-          let! state = stateManager.AddOrUpdateState defaultState id
-          return state |> Ok
-        }
+      member this.Reset() : Task<Result> = reset (actorEnv, resetEnv) defaultState
 
       member this.Resume() : Task<Result> =
         raise (System.NotImplementedException())
@@ -77,3 +78,5 @@ module JobManagerActor =
         requestContinue (actorEnv, requestContinueEnv) data
 
       member this.State() : Task<State option> = stateManager.Get()
+
+      member this.ReportJobState(data: JobStateData) : Task<Result> = reportJobState actorEnv data
