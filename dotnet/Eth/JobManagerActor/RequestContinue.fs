@@ -9,25 +9,14 @@ module RequestContinue =
   open System.Threading.Tasks
   open Microsoft.Extensions.Logging
 
-  type ScrapperDispatcherConfirmContiunue =
-    string
-      -> ScrapperDispatcher.ConfirmContinueData
-      -> Task<Result<ScrapperDispatcher.ScrapperDispatcherActorResult, exn>>
-
-  type RequestContinueEnv =
-    { ScrapperDispatcherConfirmContiunue: ScrapperDispatcherConfirmContiunue }
-
-  let requestContinue
-    ((actorEnv, requestContinueEnv): ActorEnv * RequestContinueEnv)
-    (data: RequestContinueData)
-    : Task<Result> =
+  let requestContinue (env: Env) (data: RequestContinueData) : Task<Result> =
     task {
 
-      let logger = actorEnv.Logger
+      let logger = env.Logger
 
       logger.LogDebug("Request continue  with {@data}")
 
-      let! state = actorEnv.GetState()
+      let! state = env.GetState()
 
       match state with
       | Some state ->
@@ -40,17 +29,22 @@ module RequestContinue =
 
         logger.LogDebug("Confirm data {@data}", confirmData)
 
-        let! result = requestContinueEnv.ScrapperDispatcherConfirmContiunue data.ActorId confirmData
+        let actor = env.CreateScrapperDispatcherActor data.ActorId
+
+        let! result =
+          actor.ConfirmContinue confirmData
+          |> Common.Utils.Task.wrapException
 
         logger.LogDebug("Scrapper dispatch continue {@result}", result)
 
-        let jobId = JobId data.ActorId
-
         let state =
-          JobResult.updateStateWithJobResult (CallChildActorData.ConfirmContinue confirmData) state (jobId, result)
+          JobResult.updateStateWithJobResult
+            (CallChildActorData.ConfirmContinue confirmData)
+            state
+            (data.ActorId, result)
 
         logger.LogDebug("New state {@state}", state)
-        do! actorEnv.SetState state
+        do! env.SetState state
         return state |> Ok
       | None ->
         logger.LogWarning("State not found")

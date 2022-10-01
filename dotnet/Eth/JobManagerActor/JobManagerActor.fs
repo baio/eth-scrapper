@@ -14,69 +14,45 @@ module JobManagerActor =
 
   let private STATE_NAME = "state"
 
-  let private defaultState: State =
-    { AvailableJobsCount = 1u
-      Jobs = Map.empty
-      Status = Initial }
-
   [<Actor(TypeName = "job-manager")>]
   type JobManagerActor(host: ActorHost) as this =
     inherit Actor(host)
     let logger = ActorLogging.create host
     let stateManager = stateManager<State> STATE_NAME this.StateManager
 
-    let createDispatcherActor id =
+    let createScrapperDispatcherActor (JobId id) =
       host.ProxyFactory.CreateActorProxy<ScrapperDispatcher.IScrapperDispatcherActor>(
         (ActorId id),
         "scrapper-dispatcher"
       )
 
-    let actorEnv: ActorEnv =
+    let env: Env =
       { Logger = logger
+        GetState = stateManager.Get
         SetState = stateManager.Set
-        GetState = stateManager.Get }
+        SetStateIfNotExist = fun state -> stateManager.AddOrUpdateState state id
+        CreateScrapperDispatcherActor = createScrapperDispatcherActor
+        ActorId = host.Id.ToString() |> JobManagerId }
 
-    let startEnv: StartEnv =
-      { ScrapperDispatcherStart =
-          fun id data ->
-            let actor = createDispatcherActor id
-            actor.Start(data) |> ActorResult.wrapException }
+    let actor' = env |> JobManagerBaseActor
+    let actor = actor' :> IJobManagerActor
 
-    let resetEnv: ResetEnv =
-      { ScrapperDispatcherReset =
-          fun (JobId id) ->
-            let actor = createDispatcherActor id
-            actor.Reset() |> ActorResult.wrapException }
-
-    let requestContinueEnv: RequestContinueEnv =
-      { ScrapperDispatcherConfirmContiunue =
-          fun id data ->
-            let actor = createDispatcherActor id
-
-            actor.ConfirmContinue(data)
-            |> ActorResult.wrapException }
-
-    override this.OnActivateAsync() =
-      stateManager.AddOrUpdateState defaultState id
+    override this.OnActivateAsync() = actor'.Init()
 
     interface IJobManagerActor with
 
-      member this.Pause() : Task<Result> =
-        raise (System.NotImplementedException())
+      member this.Pause() : Task<Result> = actor.Pause()
 
-      member this.Reset() : Task<Result> = reset (actorEnv, resetEnv) defaultState
+      member this.Reset() : Task<Result> = actor.Reset()
 
-      member this.Resume() : Task<Result> =
-        raise (System.NotImplementedException())
+      member this.Resume() : Task<Result> = actor.Resume()
 
-      member this.SetJobsCount(count: uint) : Task<Result> = setJobsCount actorEnv count
+      member this.SetJobsCount(count: uint) : Task<Result> = actor.SetJobsCount(count)
 
-      member this.Start(data: StartData) : Task<Result> =
-        start (actorEnv, startEnv) (host.Id.ToString()) data
+      member this.Start(data: StartData) : Task<Result> = actor.Start data
 
-      member this.RequestContinue(data: RequestContinueData) : Task<Result> =
-        requestContinue (actorEnv, requestContinueEnv) data
+      member this.RequestContinue(data: RequestContinueData) : Task<Result> = actor.RequestContinue data
 
-      member this.State() : Task<State option> = stateManager.Get()
+      member this.State() : Task<State option> = actor.State()
 
-      member this.ReportJobState(data: JobStateData) : Task<Result> = reportJobState actorEnv data
+      member this.ReportJobState(data: JobStateData) : Task<Result> = actor.ReportJobState data

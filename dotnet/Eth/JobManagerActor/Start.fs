@@ -11,19 +11,13 @@ module Start =
 
   let private createChildId id idx = $"{id}_s{idx}"
 
-  type ScrapperDispatcherStart =
-    string -> ScrapperDispatcher.StartData -> Task<Result<ScrapperDispatcher.ScrapperDispatcherActorResult, exn>>
+  let start (env: Env) (data: StartData) : Task<Result> =
 
-  type StartEnv =
-    { ScrapperDispatcherStart: ScrapperDispatcherStart }
-
-  let start ((actorEnv, startEnv): ActorEnv * StartEnv) (actorId: string) (data: StartData) : Task<Result> =
-
-    let logger = actorEnv.Logger
-    logger.LogDebug("start with {actorId} {@data}", actorId, data)
+    let logger = env.Logger
+    logger.LogDebug("start with {actorId} {@data}", env.ActorId, data)
 
     task {
-      let! state = actorEnv.GetState()
+      let! state = env.GetState()
 
       logger.LogDebug("state {@state}", state)
 
@@ -40,6 +34,8 @@ module Start =
           blockSize
         )
 
+        let (JobManagerId parentId) = env.ActorId
+
         let rangeStartData =
           [ 0u .. (jobsCount - 1u) ]
           |> List.map (fun x -> (x * blockSize, x * blockSize + blockSize, x = jobsCount - 1u))
@@ -48,8 +44,6 @@ module Start =
 
             let target: ScrapperDispatcher.TargetBlockRange =
               { Range = range; ToLatest = isFinal }
-
-            let parentId = actorId
 
             { EthProviderUrl = data.EthProviderUrl
               ContractAddress = data.ContractAddress
@@ -62,19 +56,25 @@ module Start =
         let calls =
           rangeStartData
           |> List.mapi (fun i data ->
-            let childId = createChildId actorId i
+            let childId = createChildId parentId i
+            let jobId = JobId childId
 
             task {
-              let! result = startEnv.ScrapperDispatcherStart childId data
-              return (JobId childId), result, (CallChildActorData.Start data)
+              let actor = env.CreateScrapperDispatcherActor jobId
+
+              let! result =
+                data
+                |> actor.Start
+                |> Common.Utils.Task.wrapException
+
+              return jobId, result, (CallChildActorData.Start data)
             })
 
         let! result = Common.Utils.Task.all calls
 
-        let state =
-          JobResult.updateStateWithJobsListResult state result          
+        let state = JobResult.updateStateWithJobsListResult state result
 
-        do! actorEnv.SetState state
+        do! env.SetState state
 
         logger.LogDebug("updated  {@state}", state)
 

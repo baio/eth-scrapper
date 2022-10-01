@@ -9,12 +9,12 @@ module ReportJobState =
   open System.Threading.Tasks
   open System
 
-  let reportJobState (actorEnv: ActorEnv) (data: JobStateData) =
-    let logger = actorEnv.Logger
+  let reportJobState (env: Env) (data: JobStateData) =
+    let logger = env.Logger
     logger.LogDebug("Report job state {@data}", data)
 
     task {
-      let! state = actorEnv.GetState()
+      let! state = env.GetState()
       logger.LogDebug("state: {@state}", state)
 
       match state with

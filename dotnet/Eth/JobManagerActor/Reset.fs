@@ -9,19 +9,13 @@ module Reset =
   open System.Threading.Tasks
   open System
 
+  let reset (env: Env) (defaultState: State) : Task<Result> =
 
-  type ScrapperDispatcherReset = JobId -> Task<Result<bool, exn>>
-
-  type ResetEnv =
-    { ScrapperDispatcherReset: ScrapperDispatcherReset }
-
-  let reset ((actorEnv, resetEnv): ActorEnv * ResetEnv) (defaultState: State) : Task<Result> =
-
-    let logger = actorEnv.Logger
+    let logger = env.Logger
     logger.LogDebug("Reset")
 
     task {
-      let! state = actorEnv.GetState()
+      let! state = env.GetState()
 
       logger.LogDebug("State {@state}")
 
@@ -34,7 +28,9 @@ module Reset =
           jobIds
           |> List.map (fun jobId ->
             task {
-              let! result = resetEnv.ScrapperDispatcherReset jobId
+              let actor = env.CreateScrapperDispatcherActor jobId
+              let! result = actor.Reset() |> Common.Utils.Task.wrapException
+
               return (jobId, result)
             })
 
@@ -44,7 +40,7 @@ module Reset =
 
         let state = defaultState
 
-        do! actorEnv.SetState state
+        do! env.SetState state
 
         logger.LogDebug("updated  {@state}", state)
 

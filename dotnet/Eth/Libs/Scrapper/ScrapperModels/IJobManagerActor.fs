@@ -6,12 +6,12 @@ open ScrapperModels
 open System.Runtime.Serialization
 open ScrapperModels.ScrapperDispatcher
 
+type JobId = JobId of string
+
 type RequestContinueData =
-  { ActorId: string
+  { ActorId: JobId
     BlockRange: BlockRange
     Target: TargetBlockRange }
-
-type JobId = JobId of string
 
 type Job = ScrapperDispatcher.State
 
@@ -37,9 +37,7 @@ type JobError =
 
 type JobResult = Result<Job, JobError>
 
-type JobStateData =
-  { ActorId: string
-    Job: Job }
+type JobStateData = { ActorId: string; Job: Job }
 
 type State =
   { Status: Status

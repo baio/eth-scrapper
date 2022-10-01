@@ -14,6 +14,7 @@
     <Compile Include="Reset.fs" />
     <Compile Include="RequestContinue.fs" />
     <Compile Include="ReportJobState.fs" />
+    <Compile Include="JobManagerBaseActor.fs" />
     <Compile Include="JobManagerActor.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

@@ -7,7 +7,7 @@ module SetJobsCount =
   open Microsoft.Extensions.Logging
   open System.Threading.Tasks
 
-  let setJobsCount (env: ActorEnv) (count: uint) : Task<Result> =
+  let setJobsCount (env: Env) (count: uint) : Task<Result> =
 
     let logger = env.Logger
 

@@ -18,12 +18,3 @@ module ActorResult =
       let result = { Data = result }
       return result
     }
-
-  let wrapException<'a> (t: Task<'a>) =
-    task {
-      try
-        let! result = t
-        return result |> Ok
-      with
-      | _ as ex -> return ex |> Error
-    }
