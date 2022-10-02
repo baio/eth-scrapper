@@ -34,7 +34,7 @@ module Start =
           blockSize
         )
 
-        let (JobManagerId parentId) = env.ActorId
+        let parentId = env.ActorId
 
         let rangeStartData =
           [ 0u .. (jobsCount - 1u) ]

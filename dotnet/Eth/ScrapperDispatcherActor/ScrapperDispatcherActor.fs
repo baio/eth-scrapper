@@ -11,33 +11,18 @@ module ScrapperDispatcherActor =
   open Common.DaprActor
   open System
 
-  let private invokeScrapper (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
-    invokeActor<ScrapperRequest, bool> proxyFactory actorId "ScrapperActor" "scrap" scrapperRequest
-
-  let private invokeRequestContinue (proxyFactory: Client.IActorProxyFactory) actorId request =
-    let actor =
-      proxyFactory.CreateActorProxy<JobManager.IJobManagerActor>(actorId, "job-manager")
-
-    actor.RequestContinue request
-
-  let private invokeReportJobState (proxyFactory: Client.IActorProxyFactory) (actorId: ActorId) (state: State) =
-
-    let parentId = ActorId state.ParentId
-
-    let actor =
-      proxyFactory.CreateActorProxy<JobManager.IJobManagerActor>(parentId, "job-manager")
-
-    let data: JobManager.JobStateData =
-      { ActorId = (actorId.ToString())
-        Job = state }
-
-    task {
-      let! _ = actor.ReportJobState data
-      return ()
-    }
 
   let private STATE_NAME = "state"
-  let private SCHEDULE_TIMER_NAME = "timer"
+
+
+  type ScrapperActor(proxyFactory, jobId) =
+    let (JobId id) = jobId
+    let proxy = createActorProxy proxyFactory (ActorId id) "ScrapperActor"
+
+    interface ScrapperModels.Scrapper.IScrapperActor with
+      member this.Scrap data =
+        invokeActorProxyMethod<ScrapperRequest, bool> proxy "Scrap" data
+
 
   [<Actor(TypeName = "scrapper-dispatcher")>]
   type ScrapperDispatcherActor(host: ActorHost) as this =
@@ -45,71 +30,37 @@ module ScrapperDispatcherActor =
     let logger = ActorLogging.create host
     let stateManager = stateManager<State> STATE_NAME this.StateManager
 
-    let runScrapperEnv: RunScrapperEnv =
-      { InvokeActor = (invokeScrapper host.ProxyFactory host.Id)
-        SetState = stateManager.Set
-        Logger = logger }
+    let createJobManagerActor (JobManagerId id) =
+      host.ProxyFactory.CreateActorProxy<JobManager.IJobManagerActor>((ActorId id), "job-manager")
 
-    let requestContinueEnv: RequestContinueEnv =
-      { InvokeActor = fun parentId -> (invokeRequestContinue host.ProxyFactory (ActorId parentId))
-        SetState = stateManager.Set
-        Logger = logger }
+    let createScrapperActor jobId =
+      ScrapperActor(host.ProxyFactory, jobId) :> ScrapperModels.Scrapper.IScrapperActor
 
-    let actorEnv =
-      { GetState = stateManager.Get
-        SetState =
-          fun state ->
-            task {
-              do! stateManager.Set state
-              do! invokeReportJobState host.ProxyFactory host.Id state
-            }
+    let env: Env =
+      { ActorId = JobId(host.Id.ToString())
+        GetState = stateManager.Get
+        SetState = stateManager.Set
+        RemoveState = stateManager.Remove
         Logger = logger
+        CreateJobManagerActor = createJobManagerActor
+        CreateScrapperActor = createScrapperActor }
 
-      }
+    let actor = ScrapperDispatcherBaseActor env :> IScrapperDispatcherActor
 
     interface IScrapperDispatcherActor with
 
-      member this.Start data = start (runScrapperEnv, actorEnv) data
+      member this.Start data = actor.Start data
 
-      member this.Continue data =
-        logger.LogDebug("Continue with {@data}", data)
-        let me = this :> IScrapperDispatcherActor
+      member this.Continue data = actor.Continue data
 
-        task {
-          let! result = continue (requestContinueEnv, actorEnv) host.Id data
+      member this.Pause() = actor.Pause()
 
-          return result
-        // match result with
-        // | Ok result when result.Status = Status.Finish ->
-        //   let! result = me.Schedule()
+      member this.Resume() = actor.Resume()
 
-        //   return result
-        // | _ -> return result
-        }
+      member this.State() = actor.State()
 
+      member this.Reset() = actor.Reset()
 
-      member this.Pause() = pause actorEnv
+      member this.Failure data = actor.Failure data
 
-      member this.Resume() = resume (runScrapperEnv, actorEnv)
-
-      member this.State() = stateManager.Get()
-
-      member this.Reset() = stateManager.Remove()
-
-      member this.Schedule() =
-        let me = this :> Actor
-
-        let scheduleHandler dueTime =
-          task {
-            let! _ =
-              me.RegisterTimerAsync(SCHEDULE_TIMER_NAME, "Resume", [||], TimeSpan.FromSeconds(dueTime), TimeSpan.Zero)
-
-            return ()
-          }
-
-        schedule (actorEnv, scheduleHandler)
-
-      member this.Failure(data: FailureData) = failure (runScrapperEnv, actorEnv) data
-
-      member this.ConfirmContinue(data: ConfirmContinueData) =
-        confirmContinue (runScrapperEnv, actorEnv) data
+      member this.ConfirmContinue data = actor.ConfirmContinue data

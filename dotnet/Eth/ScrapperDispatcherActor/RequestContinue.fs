@@ -10,23 +10,17 @@ module internal RequestContinue =
   open Common.DaprActor
   open ScrapperModels
 
-  type RequestContinueEnv =
-    { InvokeActor: string -> RequestContinueData -> Task<ScrapperModels.JobManager.Result>
-      Logger: ILogger
-      SetState: State -> Task }
+  let requestContinue (env: Env) (data: RequestContinueData) (state: State) =
 
-  let requestContinue
-    ({ InvokeActor = invokeActor
-       Logger = logger
-       SetState = setState }: RequestContinueEnv)
-    (data: RequestContinueData)
-    (state: State)
-    =
+    let logger = env.Logger
 
     logger.LogDebug("Request continue with {@data} {@state}", data, state)
 
     task {
-      let! result = invokeActor state.ParentId data
+
+      let actor = env.CreateJobManagerActor(state.ParentId)
+
+      let! result = actor.RequestContinue data
 
       logger.LogDebug("Request continue result {@result}", result)
 
@@ -40,7 +34,7 @@ module internal RequestContinue =
               Target = data.Target
               Date = epoch () }
 
-        do! setState state
+        do! env.SetState state
 
         return state |> Ok
       | Error _ ->
@@ -56,7 +50,7 @@ module internal RequestContinue =
               Target = data.Target
               Date = epoch () }
 
-        do! setState state
+        do! env.SetState state
 
         return state |> ActorFailure |> Error
     }

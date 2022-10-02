@@ -11,7 +11,7 @@ module internal Schedule =
 
   type ScheduleEnv = float -> Task<unit>
 
-  let schedule ((env, scheduleEnv): ActorEnv * ScheduleEnv) =
+  let schedule (env: Env) =
     let dueTime = 60.
     let logger = env.Logger
     logger.LogInformation("Try schedule {dueTime}", dueTime)
@@ -31,7 +31,8 @@ module internal Schedule =
 
           do! env.SetState updatedState
 
-          do! scheduleEnv dueTime
+          // TODO : !!!
+          // do! scheduleEnv dueTime
 
           return state |> Ok
         else

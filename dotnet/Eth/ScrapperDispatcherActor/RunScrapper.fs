@@ -9,23 +9,19 @@ module internal RunScrapper =
   open Microsoft.Extensions.Logging
   open Common.DaprActor
 
-  type RunScrapperEnv =
-    { InvokeActor: ScrapperRequest -> Task<Result<unit, exn>>
-      Logger: ILogger
-      SetState: State -> Task }
 
-  let runScrapper
-    ({ InvokeActor = invokeActor
-       Logger = logger
-       SetState = setState }: RunScrapperEnv)
-    (scrapperRequest: ScrapperRequest)
-    (state: State)
-    =
+  let runScrapper (env: Env) (scrapperRequest: ScrapperRequest) (state: State) =
+
+    let logger = env.Logger
 
     logger.LogDebug("Run scrapper with {@data} {@state}", scrapperRequest, state)
 
     task {
-      let! result = invokeActor scrapperRequest
+      let actor = env.CreateScrapperActor(env.ActorId)
+
+      let! result =
+        actor.Scrap scrapperRequest
+        |> Common.Utils.Task.wrapException
 
       logger.LogDebug("Run scrapper result {@result}", result)
 
@@ -38,7 +34,7 @@ module internal RunScrapper =
               Request = scrapperRequest
               Date = epoch () }
 
-        do! setState state
+        do! env.SetState state
 
         return state |> Ok
       | Error _ ->
@@ -53,16 +49,12 @@ module internal RunScrapper =
               Request = scrapperRequest
               Date = epoch () }
 
-        do! setState state
+        do! env.SetState state
 
         return state |> ActorFailure |> Error
     }
 
-  let runScrapperStart
-    (env: RunScrapperEnv)
-    ((parentId, targetIsLatest): string * bool)
-    (scrapperRequest: ScrapperRequest)
-    =
+  let runScrapperStart (env: Env) ((parentId, targetIsLatest): JobManagerId * bool) (scrapperRequest: ScrapperRequest) =
     let state: State =
       { Status = Status.Continue
         Request = scrapperRequest

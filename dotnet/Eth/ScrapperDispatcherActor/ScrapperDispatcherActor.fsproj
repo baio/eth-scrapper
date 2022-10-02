@@ -19,6 +19,7 @@
 		<Compile Include="Resume.fs" />
 		<Compile Include="Failure.fs" />
 		<Compile Include="Schedule.fs" />
+		<Compile Include="ScrapperDispatcherBaseActor.fs" />
 		<Compile Include="ScrapperDispatcherActor.fs" />
 		<Compile Include="Program.fs" />
     <None Include="readme.md" />
@@ -33,6 +34,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Libs\Common\DaprActor\DaprActor.fsproj" />
+	  <ProjectReference Include="..\Libs\Common\Utils\Utils.fsproj" />
 	  <ProjectReference Include="..\Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj" />
 	</ItemGroup>
 

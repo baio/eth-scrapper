@@ -8,7 +8,7 @@ module internal Pause =
   open Microsoft.Extensions.Logging
   open Common.DaprActor
 
-  let pause (env: ActorEnv) =
+  let pause (env: Env) =
     task {
       let! state = env.GetState()
 

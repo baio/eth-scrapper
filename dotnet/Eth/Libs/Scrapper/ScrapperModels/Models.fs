@@ -29,3 +29,6 @@ type AppId =
   | ElasticStore
   | Scrapper
   | JobManager
+
+type JobManagerId = JobManagerId of string
+type JobId = JobId of string

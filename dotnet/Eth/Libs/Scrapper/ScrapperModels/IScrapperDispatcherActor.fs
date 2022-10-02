@@ -5,8 +5,6 @@ open Dapr.Actors
 open System.Threading.Tasks
 open Common.DaprActor.ActorResult
 open System.Runtime.Serialization
-open System.Reflection
-open Microsoft.FSharp.Reflection
 
 type TargetBlockRange = { ToLatest: bool; Range: BlockRange }
 
@@ -15,7 +13,7 @@ type StartData =
     ContractAddress: string
     Abi: string
     Target: TargetBlockRange option
-    ParentId: string }
+    ParentId: JobManagerId }
 
 type ContinueData =
   { EthProviderUrl: string
@@ -54,7 +52,7 @@ type State =
     FinishDate: int64 option
     ItemsPerBlock: float32 list
     Target: TargetBlockRange
-    ParentId: string }
+    ParentId: JobManagerId }
 
 [<KnownType("KnownTypes")>]
 type ScrapperDispatcherActorError =
@@ -78,6 +76,6 @@ type IScrapperDispatcherActor =
   abstract Resume: unit -> Task<ScrapperDispatcherActorResult>
   abstract State: unit -> Task<State option>
   abstract Reset: unit -> Task<bool>
-  abstract Schedule: unit -> Task<ScrapperDispatcherActorResult>
+  //abstract Schedule: unit -> Task<ScrapperDispatcherActorResult>
   abstract Failure: data: FailureData -> Task<ScrapperDispatcherActorResult>
   abstract ConfirmContinue: data: ConfirmContinueData -> Task<ScrapperDispatcherActorResult>

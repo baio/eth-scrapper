@@ -1,5 +1,7 @@
 ﻿namespace ScrapperAPI.Services
 
+open ScrapperModels
+
 module JobManagerService =
 
   open Dapr.Actors
@@ -69,7 +71,7 @@ module JobManagerService =
                     Target =
                       { ToLatest = true
                         Range = { From = 0u; To = 0u } }
-                    ParentId = "xxx" }
+                    ParentId = JobManagerId "xxx" }
 
                 return { Version = v; State = (Some st) }
               with

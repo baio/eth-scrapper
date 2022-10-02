@@ -18,7 +18,7 @@ module internal Start =
         return true, { From = 0u; To = ethBlocksCount }
     }
 
-  let start ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) (data: StartData) =
+  let start (env: Env) (data: StartData) =
 
     let logger = env.Logger
 
@@ -41,5 +41,5 @@ module internal Start =
             Abi = data.Abi
             BlockRange = blockRange }
 
-        return! runScrapperStart runScrapperEnv (data.ParentId, toLatest) scrapperRequest
+        return! runScrapperStart env (data.ParentId, toLatest) scrapperRequest
     }

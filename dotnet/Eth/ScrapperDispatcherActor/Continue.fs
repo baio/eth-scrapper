@@ -27,12 +27,11 @@ module internal Continue =
 
     { state with ItemsPerBlock = ranges }
 
-  // TODO : Request continue or Scrap
-  let continue ((requestContinueEnv, env): RequestContinueEnv * ActorEnv) (actorId: ActorId) (data: ContinueData) =
+  let continue (env: Env) (data: ContinueData) =
 
     let logger = env.Logger
 
-    let requestContinue = requestContinue requestContinueEnv
+    let requestContinue = requestContinue env
 
     logger.LogDebug("Continue with {@data}", data)
 
@@ -72,7 +71,7 @@ module internal Continue =
             logger.LogDebug("Stop check is CheckStop.Continue, continue with {@blockRange} {@state}", blockRange, state)
 
             let requestContinueData: JobManager.RequestContinueData =
-              { ActorId = (actorId.ToString())
+              { ActorId = env.ActorId
                 BlockRange = blockRange
                 Target = state.Target }
 
@@ -88,7 +87,7 @@ module internal Continue =
             )
 
             let requestContinueData: JobManager.RequestContinueData =
-              { ActorId = (actorId.ToString())
+              { ActorId = env.ActorId
                 BlockRange = blockRange
                 Target = state.Target }
 

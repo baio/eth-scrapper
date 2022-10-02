@@ -10,7 +10,7 @@ module internal Failure =
 
   let MAX_RETRIES_COUNT = 3u
 
-  let failure ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) (data: FailureData) =
+  let failure (env: Env) (data: FailureData) =
     let logger = env.Logger
 
     task {
@@ -35,7 +35,7 @@ module internal Failure =
 
         if failuresCount < MAX_RETRIES_COUNT then
           logger.LogWarning("Retriable failure with {@state}", state)
-          return! runScrapper runScrapperEnv state.Request state
+          return! runScrapper env state.Request state
         else
           logger.LogError("Final failure with {@state}", state)
           return state |> Ok

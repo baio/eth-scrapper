@@ -8,7 +8,7 @@ module internal Resume =
   open Microsoft.Extensions.Logging
   open Common.DaprActor
 
-  let resume ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) =
+  let resume (env: Env) =
     let logger = env.Logger
 
     task {
@@ -28,7 +28,7 @@ module internal Resume =
 
           logger.LogInformation("Resume with {@pervState} {@state}", state, updatedState)
 
-          return! runScrapper runScrapperEnv updatedState.Request state
+          return! runScrapper env updatedState.Request state
         | _ ->
           let error = "Actor in a wrong state"
           logger.LogDebug(error)

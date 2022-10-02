@@ -6,8 +6,6 @@ open ScrapperModels
 open System.Runtime.Serialization
 open ScrapperModels.ScrapperDispatcher
 
-type JobId = JobId of string
-
 type RequestContinueData =
   { ActorId: JobId
     BlockRange: BlockRange

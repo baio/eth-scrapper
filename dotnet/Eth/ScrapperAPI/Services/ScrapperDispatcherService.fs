@@ -1,5 +1,7 @@
 ﻿namespace ScrapperAPI.Services
 
+open ScrapperModels
+
 module ScrapperDispatcherService =
 
   open Dapr.Actors
@@ -89,7 +91,8 @@ module ScrapperDispatcherService =
             ContractAddress = proj.Address
             Abi = proj.Abi
             Target = None
-            ParentId = "None" }
+            // TDODO : !!!
+            ParentId = JobManagerId "None" }
 
         let! result = actor.Start data
 
