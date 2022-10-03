@@ -9,7 +9,7 @@ module internal Continue =
   open ScrapperModels
   open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
+  open Common.Utils
 
   let private LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE = 5
 
@@ -96,11 +96,13 @@ module internal Continue =
 
             logger.LogInformation("Stop check is CheckStop.Stop, finish")
 
+            let epoch = env.Date() |> toEpoch
+
             let state: State =
               { state with
                   Status = Status.Finish
-                  Date = epoch ()
-                  FinishDate = epoch () |> Some }
+                  Date = epoch
+                  FinishDate = epoch |> Some }
 
             do! env.SetState state
 

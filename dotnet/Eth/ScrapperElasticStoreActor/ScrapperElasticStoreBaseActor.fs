@@ -2,20 +2,20 @@
 
 open System.Threading.Tasks
 
+open Dapr.Actors
+open ScrapperModels.ScrapperDispatcher
+open ScrapperModels.ScrapperStore
+open Microsoft.Extensions.Logging
+open ScrapperModels
+
+type Env =
+  { Logger: ILogger
+    ActorId: JobId
+    CreateScrapperDispatcherActor: JobId -> IScrapperDispatcherActor
+    Store: string -> Task<bool> }
+
 [<AutoOpen>]
 module ScrapperStoreBaseActor =
-
-  open Dapr.Actors
-  open ScrapperModels.ScrapperDispatcher
-  open ScrapperModels.ScrapperStore
-  open Microsoft.Extensions.Logging
-  open ScrapperModels
-
-  type Env =
-    { Logger: ILogger
-      ActorId: JobId
-      CreateScrapperDispatcherActor: JobId -> IScrapperDispatcherActor
-      Store: string -> Task<bool> }
 
   let runScrapperDispatcherContinue (env: Env) (data: ContinueSuccessData) =
     let actor = env.CreateScrapperDispatcherActor env.ActorId

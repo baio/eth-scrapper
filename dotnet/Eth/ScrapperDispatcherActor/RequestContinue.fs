@@ -7,7 +7,7 @@ module internal RequestContinue =
   open ScrapperModels.JobManager
   open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
+  open Common.Utils
   open ScrapperModels
 
   let requestContinue (env: Env) (data: RequestContinueData) (state: State) =
@@ -32,7 +32,7 @@ module internal RequestContinue =
               Status = Status.Continue
               Request = { state.Request with BlockRange = data.BlockRange }
               Target = data.Target
-              Date = epoch () }
+              Date = (env.Date() |> toEpoch) }
 
         do! env.SetState state
 
@@ -48,7 +48,7 @@ module internal RequestContinue =
                 |> Status.Failure
               Request = { state.Request with BlockRange = data.BlockRange }
               Target = data.Target
-              Date = epoch () }
+              Date = env.Date() |> toEpoch }
 
         do! env.SetState state
 

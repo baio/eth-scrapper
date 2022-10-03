@@ -38,6 +38,7 @@ module ScrapperDispatcherActor =
 
     let env: Env =
       { ActorId = JobId(host.Id.ToString())
+        Date = fun () -> System.DateTime.UtcNow
         GetState = stateManager.Get
         SetState = stateManager.Set
         RemoveState = stateManager.Remove

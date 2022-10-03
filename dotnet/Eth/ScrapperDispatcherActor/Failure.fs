@@ -6,7 +6,7 @@ module internal Failure =
   open Dapr.Actors
   open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
+  open Common.Utils
 
   let MAX_RETRIES_COUNT = 3u
 
@@ -23,13 +23,15 @@ module internal Failure =
           | Status.Failure failure -> failure.FailuresCount
           | _ -> 0u
 
+        let epoch = env.Date() |> toEpoch
+
         let state =
           { state with
               Status =
                 { Data = data
                   FailuresCount = failuresCount + 1u }
                 |> Status.Failure
-              Date = epoch () }
+              Date = epoch }
 
         do! env.SetState state
 

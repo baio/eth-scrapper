@@ -9,6 +9,7 @@ open Microsoft.Extensions.Logging
 
 type Env =
   { ActorId: JobId
+    Date: unit -> System.DateTime
     SetState: State -> Task
     GetState: unit -> Task<State option>
     RemoveState: unit -> Task<bool>

@@ -4,12 +4,7 @@
 module ScrapperDispatcherBaseActor =
 
   open Dapr.Actors
-  open Dapr.Actors.Runtime
   open ScrapperModels.ScrapperDispatcher
-  open ScrapperModels
-  open Microsoft.Extensions.Logging
-  open Common.DaprActor
-  open System
 
   type ScrapperDispatcherBaseActor(env: Env) =
 

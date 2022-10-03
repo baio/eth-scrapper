@@ -7,8 +7,7 @@ module internal RunScrapper =
   open ScrapperModels.ScrapperDispatcher
   open ScrapperModels
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
-
+  open Common.Utils
 
   let runScrapper (env: Env) (scrapperRequest: ScrapperRequest) (state: State) =
 
@@ -32,7 +31,7 @@ module internal RunScrapper =
           { state with
               Status = Status.Continue
               Request = scrapperRequest
-              Date = epoch () }
+              Date = env.Date() |> toEpoch }
 
         do! env.SetState state
 
@@ -47,7 +46,7 @@ module internal RunScrapper =
                   FailuresCount = 0u }
                 |> Status.Failure
               Request = scrapperRequest
-              Date = epoch () }
+              Date = env.Date() |> toEpoch }
 
         do! env.SetState state
 
@@ -58,7 +57,7 @@ module internal RunScrapper =
     let state: State =
       { Status = Status.Continue
         Request = scrapperRequest
-        Date = epoch ()
+        Date = env.Date() |> toEpoch
         FinishDate = None
         ItemsPerBlock = []
         Target =

@@ -6,7 +6,7 @@ module internal Pause =
   open Dapr.Actors
   open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
+  open Common.Utils
 
   let pause (env: Env) =
     task {
@@ -19,7 +19,7 @@ module internal Pause =
           let state =
             { state with
                 Status = Status.Pause
-                Date = epoch () }
+                Date = (env.Date() |> toEpoch) }
 
           do! env.SetState state
 

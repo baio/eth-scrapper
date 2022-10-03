@@ -9,7 +9,7 @@ module Start =
   open System.Threading.Tasks
   open System
 
-  let private createChildId id idx = $"{id}_s{idx}"
+  let private createChildId (JobManagerId id) idx = $"{id}_s{idx}"
 
   let start (env: Env) (data: StartData) : Task<Result> =
 
@@ -24,7 +24,7 @@ module Start =
       match state with
       | Some state ->
         let jobsCount = state.AvailableJobsCount
-        let! blocksCount = getEthBlocksCount data.EthProviderUrl
+        let! blocksCount = env.GetEthBlocksCount data.EthProviderUrl //getEthBlocksCount data.EthProviderUrl
         let blockSize = Math.Ceiling(blocksCount / jobsCount) |> uint
 
         logger.LogDebug(

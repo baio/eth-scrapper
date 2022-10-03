@@ -7,7 +7,6 @@
 
 	<ItemGroup>
 		<Compile Include="ActorResult.fs" />
-		<Compile Include="DateTime.fs" />
 		<Compile Include="ActorRunner.fs" />
 		<Compile Include="ActorState.fs" />
 		<Compile Include="ActorLogging.fs" />

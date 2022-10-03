@@ -7,7 +7,7 @@ module internal Schedule =
   open System.Threading.Tasks
   open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
+  open Common.Utils
 
   type ScheduleEnv = float -> Task<unit>
 
@@ -27,7 +27,7 @@ module internal Schedule =
           let updatedState =
             { state with
                 Status = Status.Schedule
-                Date = epoch () }
+                Date = env.Date() |> toEpoch }
 
           do! env.SetState updatedState
 

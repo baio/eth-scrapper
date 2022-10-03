@@ -6,7 +6,7 @@ module internal Resume =
   open Dapr.Actors
   open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
+  open Common.Utils
 
   let resume (env: Env) =
     let logger = env.Logger
@@ -24,7 +24,7 @@ module internal Resume =
           let updatedState =
             { state with
                 Status = Status.Continue
-                Date = epoch () }
+                Date = (env.Date() |> toEpoch) }
 
           logger.LogInformation("Resume with {@pervState} {@state}", state, updatedState)
 

@@ -3,7 +3,7 @@
 module Task =
 
   open System.Threading.Tasks
-  
+
   let all tasks =
     async {
       let! result =
@@ -22,3 +22,6 @@ module Task =
       with
       | _ as ex -> return ex |> Error
     }
+
+  let runSynchronously x =
+    x |> Async.AwaitTask |> Async.RunSynchronously

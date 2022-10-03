@@ -32,7 +32,8 @@ module JobManagerActor =
         SetState = stateManager.Set
         SetStateIfNotExist = fun state -> stateManager.AddOrUpdateState state id
         CreateScrapperDispatcherActor = createScrapperDispatcherActor
-        ActorId = host.Id.ToString() |> JobManagerId }
+        ActorId = host.Id.ToString() |> JobManagerId
+        GetEthBlocksCount = getEthBlocksCount }
 
     let actor' = env |> JobManagerBaseActor
     let actor = actor' :> IJobManagerActor

@@ -1,4 +1,4 @@
-﻿namespace Common.DaprActor
+﻿namespace Common.Utils
 
 // TODO : Once more common library added, move there
 
@@ -9,4 +9,4 @@ module DateTime =
       .DateTimeOffset(dateTime)
       .ToUnixTimeSeconds()
 
-  let epoch () = System.DateTime.UtcNow |> toEpoch
+//let epoch () = System.DateTime.UtcNow |> toEpoch
