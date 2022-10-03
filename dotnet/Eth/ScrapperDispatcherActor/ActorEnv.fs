@@ -15,4 +15,5 @@ type Env =
     RemoveState: unit -> Task<bool>
     Logger: ILogger
     CreateJobManagerActor: JobManagerId -> IJobManagerActor
-    CreateScrapperActor: JobId -> IScrapperActor }
+    CreateScrapperActor: JobId -> IScrapperActor
+    GetEthBlocksCount: string -> Task<uint> }

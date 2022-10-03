@@ -35,7 +35,7 @@ type JobError =
 
 type JobResult = Result<Job, JobError>
 
-type JobStateData = { ActorId: string; Job: Job }
+type JobStateData = { ActorId: JobId; Job: Job }
 
 type State =
   { Status: Status

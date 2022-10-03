@@ -15,16 +15,16 @@ module ReportJobState =
 
     task {
       let! state = env.GetState()
-      logger.LogDebug("state: {@state}", state)
+      logger.LogDebug("Previous state: {@state}", state)
 
       match state with
       | Some state ->
-        let jobId = JobId data.ActorId
+        let jobId = data.ActorId
 
         let state = JobResult.updateStateWithJob state (jobId, data.Job)
-
+        do! env.SetState state
         return state |> Ok
       | None ->
-        logger.LogError("state not found")
+        logger.LogError("State not found")
         return StateNotFound |> Error
     }

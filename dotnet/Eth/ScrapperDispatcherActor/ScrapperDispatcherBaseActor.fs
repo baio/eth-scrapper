@@ -8,6 +8,22 @@ module ScrapperDispatcherBaseActor =
 
   type ScrapperDispatcherBaseActor(env: Env) =
 
+    // override set state in order to report manager immediately
+    let setState (state: State) =
+      let manager = env.CreateJobManagerActor(state.ParentId)
+
+      task {
+        do! env.SetState state
+        printfn "setState %O" state
+        manager.ReportJobState { Job = state; ActorId = env.ActorId }
+        |> ignore
+
+        return ()
+      }
+      :> System.Threading.Tasks.Task
+
+    let env = { env with SetState = setState }
+
     interface IScrapperDispatcherActor with
 
       member this.Start data = start env data

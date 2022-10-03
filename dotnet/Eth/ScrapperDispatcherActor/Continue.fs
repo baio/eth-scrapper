@@ -29,13 +29,15 @@ module internal Continue =
 
   let continue (env: Env) (data: ContinueData) =
 
-    let logger = env.Logger
+    let logger = env.Logger    
 
     let requestContinue = requestContinue env
 
-    logger.LogDebug("Continue with {@data}", data)
+    task {    
 
-    task {
+      logger.LogDebug("Continue with {@data}", data)
+
+
       let! state = env.GetState()
 
       match state with
@@ -59,7 +61,7 @@ module internal Continue =
 
           logger.LogDebug("{@state} with updated block ranges", state)
 
-          let! checkStopResult = checkStop data.EthProviderUrl state.Target data.Result
+          let! checkStopResult = checkStop env data.EthProviderUrl state.Target data.Result
 
           logger.LogDebug("Check stop {@result}", checkStopResult)
 
@@ -112,4 +114,4 @@ module internal Continue =
       | None ->
         logger.LogError("State not found")
         return StateNotFound |> Error
-    }
+    } 

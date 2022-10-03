@@ -72,6 +72,8 @@ module Start =
 
         let! result = Common.Utils.Task.all calls
 
+        logger.LogDebug("Result after executing start {@result}", result)
+
         let state = JobResult.updateStateWithJobsListResult state result
 
         do! env.SetState state

@@ -5,9 +5,6 @@ open ScrapperModels
 open System.Threading.Tasks
 open Common.Utils.Test
 
-let jobManagerMap = createMapHelper<JobManagerId, JobManager.State> ()
-
-let jobMap = createMapHelper<JobId, ScrapperDispatcher.State> ()
 
 type OnScrap = ScrapperModels.ScrapperRequest -> ScrapperResult
 
@@ -21,44 +18,68 @@ type ScrapperActorEnv =
     OnScrap: OnScrap }
 
 type ScrapperActor(env: ScrapperActorEnv) =
+
   interface ScrapperModels.Scrapper.IScrapperActor with
     member this.Scrap data =
       let result = env.OnScrap data
 
-      match result with
-      | Ok result ->
-        let data: ScrapperModels.ScrapperStore.ContinueSuccessData =
-          { EthProviderUrl = data.EthProviderUrl
-            Abi = data.Abi
-            ContractAddress = data.ContractAddress
-            Result =
-              { BlockRange = result.BlockRange
-                ItemsCount = result.ItemsCount
-                IndexPayload = "test payload" } }
+      task {
+        env.Logger.LogDebug("Scrap result {@result}", result)
 
-        let actor = env.CreateStoreActor(env.ActorId)
-        actor.Store data
-      | Error _ ->
-        let data: ScrapperModels.ScrapperDispatcher.ContinueData =
-          { EthProviderUrl = data.EthProviderUrl
-            Abi = data.Abi
-            ContractAddress = data.ContractAddress
-            Result = result }
+        match result with
+        | Ok result ->
+          let data: ScrapperModels.ScrapperStore.ContinueSuccessData =
+            { EthProviderUrl = data.EthProviderUrl
+              Abi = data.Abi
+              ContractAddress = data.ContractAddress
+              Result =
+                { BlockRange = result.BlockRange
+                  ItemsCount = result.ItemsCount
+                  IndexPayload = "test payload" } }
 
-        let actor = env.CreateScrapperDispatcherActor(env.ActorId)
+          let actor = env.CreateStoreActor(env.ActorId)
 
-        task {
-          let! _ = actor.Continue data
+          task {
+            // imitate waiting
+            System.Threading.Thread.Sleep(1)
+            let! _ = actor.Store data
+            return ()
+          }
+          |> ignore
+
           return true
-        }
+        | Error _ ->
+          let data: ScrapperModels.ScrapperDispatcher.ContinueData =
+            { EthProviderUrl = data.EthProviderUrl
+              Abi = data.Abi
+              ContractAddress = data.ContractAddress
+              Result = result }
 
+          let actor = env.CreateScrapperDispatcherActor(env.ActorId)
 
+          task {
+            // imitate waiting
+            do! Task.Delay(1) |> Async.AwaitTask
+            let! _ = actor.Continue data
+            return ()
+          }
+          |> ignore
+
+          return true
+      }
 
 type ContextEnv =
   { Date: unit -> System.DateTime
     OnScrap: OnScrap }
 
 type Context(env: ContextEnv) =
+
+  let jobManagerMap = createMapHelper<JobManagerId, JobManager.State> ()
+
+  let jobMap = createMapHelper<JobId, ScrapperDispatcher.State> ()
+
+  member this.JobManagerMap = jobManagerMap
+  member this.JobMap = jobMap
 
   // store
   member this.createScrapperEnv(jobId: JobId) : ScrapperActorEnv =
@@ -100,7 +121,8 @@ type Context(env: ContextEnv) =
       RemoveState = fun () -> jobMap.RemoveItem jobId
       GetState = fun () -> jobMap.GetItem jobId
       CreateJobManagerActor = this.createJobManager
-      CreateScrapperActor = this.createScrapper }
+      CreateScrapperActor = this.createScrapper
+      GetEthBlocksCount = fun cnt -> cnt |> System.UInt32.Parse |> Task.FromResult }
 
   member this.createScrapperDispatcher(id: JobId) =
     id

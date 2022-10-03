@@ -44,7 +44,8 @@ module ScrapperDispatcherActor =
         RemoveState = stateManager.Remove
         Logger = logger
         CreateJobManagerActor = createJobManagerActor
-        CreateScrapperActor = createScrapperActor }
+        CreateScrapperActor = createScrapperActor
+        GetEthBlocksCount = getEthBlocksCount }
 
     let actor = ScrapperDispatcherBaseActor env :> IScrapperDispatcherActor
 

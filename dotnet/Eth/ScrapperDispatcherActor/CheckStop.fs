@@ -13,14 +13,14 @@ module internal CheckStop =
     | Stop
     | ContinueToLatest of BlockRange * TargetBlockRange
 
-  let checkStop ethProviderUrl (target: TargetBlockRange) (result: ScrapperResult) =
+  let checkStop (env: Env) ethProviderUrl (target: TargetBlockRange) (result: ScrapperResult) =
     let checkStopBlockRange (blockRange: BlockRange) =
       match (target.ToLatest, blockRange.To >= target.Range.To) with
       // update `to` block when achive target reange end (`to`)
       | (true, true) ->
         // achive latest target block, check if latest block of eth changed
         task {
-          let! latestBlock = getEthBlocksCount ethProviderUrl
+          let! latestBlock = env.GetEthBlocksCount ethProviderUrl
 
           if latestBlock > target.Range.To then
             let range: BlockRange =

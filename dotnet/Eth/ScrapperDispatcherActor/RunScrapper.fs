@@ -16,24 +16,23 @@ module internal RunScrapper =
     logger.LogDebug("Run scrapper with {@data} {@state}", scrapperRequest, state)
 
     task {
+
       let actor = env.CreateScrapperActor(env.ActorId)
 
-      let! result =
-        actor.Scrap scrapperRequest
-        |> Common.Utils.Task.wrapException
+      let! result = actor.Scrap scrapperRequest |> Task.wrapException
 
-      logger.LogDebug("Run scrapper result {@result}", result)
+      logger.LogDebug("Run scrapper result +++ {@result}", result)
 
       match result with
       | Ok _ ->
 
-        let state: State =
-          { state with
-              Status = Status.Continue
-              Request = scrapperRequest
-              Date = env.Date() |> toEpoch }
+        // let state: State =
+        //   { state with
+        //       Status = Status.Continue
+        //       Request = scrapperRequest
+        //       Date = env.Date() |> toEpoch }
 
-        do! env.SetState state
+        // do! env.SetState state
 
         return state |> Ok
       | Error _ ->
@@ -65,4 +64,7 @@ module internal RunScrapper =
             Range = scrapperRequest.BlockRange }
         ParentId = parentId }
 
-    runScrapper env scrapperRequest state
+    task {
+      do! env.SetState state
+      return! runScrapper env scrapperRequest state
+    }

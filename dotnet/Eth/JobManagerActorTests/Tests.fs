@@ -5,6 +5,9 @@ open ScrapperModels
 open Common.Utils.Task
 open Common.Utils
 open Context
+open System.Threading.Tasks
+
+let wait () = Task.Delay(2) |> Async.AwaitTask
 
 [<Tests>]
 let tests =
@@ -12,9 +15,7 @@ let tests =
   let onScrap: OnScrap =
     fun request ->
       { Data = EmptyResult
-        BlockRange = request.BlockRange
-
-      }
+        BlockRange = request.BlockRange }
       |> Error: ScrapperModels.ScrapperResult
 
   let date = System.DateTime.UtcNow
@@ -26,19 +27,19 @@ let tests =
   let context = Context env
 
   let expected: JobManager.State =
-    { Status = JobManager.Status.Continue
+    { Status = JobManager.Status.Success
       AvailableJobsCount = 1u
       Jobs =
         [ (JobId "1_s0",
            Ok(
-             { Status = ScrapperDispatcher.Status.Continue
+             { Status = ScrapperDispatcher.Status.Finish
                Request =
                  { EthProviderUrl = "100"
                    ContractAddress = ""
                    Abi = ""
                    BlockRange = { From = 0u; To = 100u } }
                Date = date |> toEpoch
-               FinishDate = None
+               FinishDate = date |> toEpoch |> Some
                ItemsPerBlock = []
                Target =
                  { ToLatest = true
@@ -47,7 +48,7 @@ let tests =
            )) ]
         |> Map.ofList }
 
-  testCase "full swing" (fun _ ->
+  testCase "when scrapper returns empty result (0 events) the job should finish" (fun _ ->
     task {
 
       let jobManagerId = JobManagerId "1"
@@ -60,8 +61,11 @@ let tests =
 
       let! _ = jobManager.Start(startData)
 
-      let! jobManangerState = jobManagerMap.GetItem jobManagerId
+      do! wait ()
+
+      let! jobManangerState = context.JobManagerMap.GetItem jobManagerId
 
       Expect.equal jobManangerState (Some expected) "job mananger state is not expected"
+
     }
     |> runSynchronously)
