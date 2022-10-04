@@ -10,7 +10,7 @@ open System.Threading.Tasks
 let ethBlocksCount = 100u
 let maxEthItemsInResponse = 50u
 
-[<FTests>]
+[<Tests>]
 let tests =
 
   let mutable scrapCnt = 0

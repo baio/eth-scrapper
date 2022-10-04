@@ -9,12 +9,12 @@ module internal Start =
   open ScrapperModels
   open Microsoft.Extensions.Logging
 
-  let private getTargetBlockRange ethProviderUrl (target: TargetBlockRange option) =
+  let private getTargetBlockRange (env: Env) ethProviderUrl (target: TargetBlockRange option) =
     task {
       match target with
       | Some target -> return target.ToLatest, target.Range
       | None ->
-        let! ethBlocksCount = getEthBlocksCount ethProviderUrl
+        let! ethBlocksCount = env.GetEthBlocksCount ethProviderUrl
         return true, { From = 0u; To = ethBlocksCount }
     }
 
@@ -33,7 +33,7 @@ module internal Start =
         logger.LogError(error, data)
         return (state, error) |> StateConflict |> Error
       | None ->
-        let! (toLatest, blockRange) = getTargetBlockRange data.EthProviderUrl data.Target
+        let! (toLatest, blockRange) = getTargetBlockRange env data.EthProviderUrl data.Target
 
         let scrapperRequest: ScrapperRequest =
           { EthProviderUrl = data.EthProviderUrl
