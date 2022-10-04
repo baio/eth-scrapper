@@ -49,7 +49,7 @@ module Start =
               ContractAddress = data.ContractAddress
               Abi = data.Abi
               Target = Some target
-              ParentId = parentId }: ScrapperDispatcher.StartData)
+              ParentId = Some parentId }: ScrapperDispatcher.StartData)
 
         logger.LogDebug("Calculated start data {@rangeStartData}", rangeStartData)
 

@@ -91,8 +91,7 @@ module ScrapperDispatcherService =
             ContractAddress = proj.Address
             Abi = proj.Abi
             Target = None
-            // TDODO : !!!
-            ParentId = JobManagerId "None" }
+            ParentId = None }
 
         let! result = actor.Start data
 

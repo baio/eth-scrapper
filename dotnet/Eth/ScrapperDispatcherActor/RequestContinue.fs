@@ -10,7 +10,7 @@ module internal RequestContinue =
   open Common.Utils
   open ScrapperModels
 
-  let requestContinue (env: Env) (data: RequestContinueData) (state: State) =
+  let requestContinue (env: Env) (parentId: JobManagerId) (data: RequestContinueData) (state: State) =
 
     let logger = env.Logger
 
@@ -18,7 +18,7 @@ module internal RequestContinue =
 
     task {
 
-      let actor = env.CreateJobManagerActor(state.ParentId)
+      let actor = env.CreateJobManagerActor(parentId)
 
       let! result = actor.RequestContinue data
 

@@ -13,7 +13,7 @@ type StartData =
     ContractAddress: string
     Abi: string
     Target: TargetBlockRange option
-    ParentId: JobManagerId }
+    ParentId: JobManagerId option }
 
 type ContinueData =
   { EthProviderUrl: string
@@ -52,7 +52,7 @@ type State =
     FinishDate: int64 option
     ItemsPerBlock: float32 list
     Target: TargetBlockRange
-    ParentId: JobManagerId }
+    ParentId: JobManagerId option }
 
 [<KnownType("KnownTypes")>]
 type ScrapperDispatcherActorError =

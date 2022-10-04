@@ -71,7 +71,7 @@ module JobManagerService =
                     Target =
                       { ToLatest = true
                         Range = { From = 0u; To = 0u } }
-                    ParentId = JobManagerId "xxx" }
+                    ParentId = None }
 
                 return { Version = v; State = (Some st) }
               with

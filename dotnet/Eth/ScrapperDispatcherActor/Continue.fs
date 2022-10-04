@@ -27,11 +27,27 @@ module internal Continue =
 
     { state with ItemsPerBlock = ranges }
 
+  let private continue' (env: Env) (data: ContinueData) (state: State) (blockRange: BlockRange) =
+    match state.ParentId with
+    | Some parentId ->
+      let requestContinueData: JobManager.RequestContinueData =
+        { ActorId = env.ActorId
+          BlockRange = blockRange
+          Target = state.Target }
+
+      requestContinue env parentId requestContinueData state
+    | None ->
+      let request: ScrapperRequest =
+        { EthProviderUrl = data.EthProviderUrl
+          ContractAddress = data.ContractAddress
+          Abi = data.Abi
+          BlockRange = blockRange }
+
+      runScrapper env request state
+
   let continue (env: Env) (data: ContinueData) =
 
     let logger = env.Logger
-
-    let requestContinue = requestContinue env
 
     task {
 
@@ -73,12 +89,7 @@ module internal Continue =
 
             logger.LogDebug("Stop check is CheckStop.Continue, continue with {@blockRange} {@state}", blockRange, state)
 
-            let requestContinueData: JobManager.RequestContinueData =
-              { ActorId = env.ActorId
-                BlockRange = blockRange
-                Target = state.Target }
-
-            return! requestContinue requestContinueData state
+            return! continue' env data state blockRange
           | CheckStop.ContinueToLatest (blockRange, target) ->
 
             let state = { state with Target = target }
@@ -89,12 +100,7 @@ module internal Continue =
               state
             )
 
-            let requestContinueData: JobManager.RequestContinueData =
-              { ActorId = env.ActorId
-                BlockRange = blockRange
-                Target = state.Target }
-
-            return! requestContinue requestContinueData state
+            return! continue' env data state blockRange
           | CheckStop.Stop ->
 
             logger.LogInformation("Stop check is CheckStop.Stop, finish")

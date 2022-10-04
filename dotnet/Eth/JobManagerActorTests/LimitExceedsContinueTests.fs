@@ -67,7 +67,7 @@ let tests =
                Target =
                  { ToLatest = true
                    Range = { From = 0u; To = 100u } }
-               ParentId = JobManagerId "1" }: ScrapperDispatcher.State
+               ParentId = Some(JobManagerId "1") }: ScrapperDispatcher.State
            )) ]
         |> Map.ofList }
 

@@ -21,7 +21,7 @@ module internal RunScrapper =
 
       let! result = actor.Scrap scrapperRequest |> Task.wrapException
 
-      logger.LogDebug("Run scrapper result +++ {@result}", result)
+      logger.LogDebug("Run scrapper result {@result}", result)
 
       match result with
       | Ok _ ->
@@ -52,7 +52,11 @@ module internal RunScrapper =
         return state |> ActorFailure |> Error
     }
 
-  let runScrapperStart (env: Env) ((parentId, targetIsLatest): JobManagerId * bool) (scrapperRequest: ScrapperRequest) =
+  let runScrapperStart
+    (env: Env)
+    ((parentId, targetIsLatest): JobManagerId option * bool)
+    (scrapperRequest: ScrapperRequest)
+    =
     let state: State =
       { Status = Status.Continue
         Request = scrapperRequest
