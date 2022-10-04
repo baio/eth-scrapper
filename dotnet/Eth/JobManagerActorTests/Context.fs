@@ -5,10 +5,9 @@ open ScrapperModels
 open System.Threading.Tasks
 open Common.Utils.Test
 
+let createLogger = Common.Logger.SerilogLogger.createDefault
 
 type OnScrap = ScrapperModels.ScrapperRequest -> ScrapperResult
-
-let createLogger = createConsoleLogger LogLevel.Trace
 
 type ScrapperActorEnv =
   { Logger: ILogger
@@ -150,3 +149,6 @@ type Context(env: ContextEnv) =
 
     actor.Init() |> ignore
     actor :> JobManager.IJobManagerActor
+
+  member this.wait(scrapCnt: int) =
+    Task.Delay(scrapCnt + 1) |> Async.AwaitTask

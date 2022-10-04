@@ -8,14 +8,8 @@
   <ItemGroup>
     <Compile Include="DateTime.fs" />
     <Compile Include="TestMap.fs" />
-    <Compile Include="TestLogger.fs" />
     <Compile Include="Opt.fs" />
     <Compile Include="Task.fs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
   </ItemGroup>
 
 </Project>

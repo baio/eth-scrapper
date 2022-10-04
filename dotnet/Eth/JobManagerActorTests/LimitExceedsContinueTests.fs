@@ -1,4 +1,4 @@
-module JobManagerActorTests
+module LimitExceedsContinueTests
 
 open Expecto
 open ScrapperModels
@@ -7,16 +7,28 @@ open Common.Utils
 open Context
 open System.Threading.Tasks
 
-let wait () = Task.Delay(2) |> Async.AwaitTask
 
-[<Tests>]
+[<FTests>]
 let tests =
+
+  let mutable scrapCnt = 0
 
   let onScrap: OnScrap =
     fun request ->
-      { Data = EmptyResult
-        BlockRange = request.BlockRange }
-      |> Error: ScrapperModels.ScrapperResult
+      printfn "=== %i" scrapCnt
+      match scrapCnt with
+      | 0 ->
+        scrapCnt <- scrapCnt + 1
+
+        { Data = LimitExceeded
+          BlockRange = request.BlockRange }
+        |> Error: ScrapperModels.ScrapperResult
+      | 1 ->
+        scrapCnt <- scrapCnt + 1
+
+        { ItemsCount = 10u
+          BlockRange = request.BlockRange }
+        |> Ok: ScrapperModels.ScrapperResult
 
   let date = System.DateTime.UtcNow
 
@@ -48,7 +60,7 @@ let tests =
            )) ]
         |> Map.ofList }
 
-  testCase "when scrapper returns empty result (0 events) the job should finish" (fun _ ->
+  testCase "when scrapper returns limit exceeds and then success state should be success" (fun _ ->
     task {
 
       let jobManagerId = JobManagerId "1"
@@ -61,7 +73,7 @@ let tests =
 
       let! _ = jobManager.Start(startData)
 
-      do! wait ()
+      do! context.wait (2)
 
       let! jobManangerState = context.JobManagerMap.GetItem jobManagerId
 

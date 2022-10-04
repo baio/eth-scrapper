@@ -8,19 +8,28 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Compile Include="Context.fs" />
-    <Compile Include="Tests.fs" />
+    <Compile Include="EmptyResultFinishTests.fs" />
+    <Compile Include="LimitExceedsContinueTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Expecto" Version="9.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.1" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.13.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\JobManagerActor\JobManagerActor.fsproj" />
+    <ProjectReference Include="..\Libs\Common\Logger\Logger.fsproj" />
     <ProjectReference Include="..\Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj" />
     <ProjectReference Include="..\ScrapperDispatcherActor\ScrapperDispatcherActor.fsproj" />
     <ProjectReference Include="..\ScrapperElasticStoreActor\ScrapperElasticStoreActor.fsproj" />

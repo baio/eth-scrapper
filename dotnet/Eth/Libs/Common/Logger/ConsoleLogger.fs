@@ -1,7 +1,7 @@
-﻿namespace Common.Utils.Test
+﻿namespace Common.Logger
 
-[<AutoOpen>]
-module Logger =
+[<RequireQualifiedAccess>]
+module ConsoleLogger =
   open Microsoft.Extensions.Logging
 
   let createConsoleLogger logLevel name =

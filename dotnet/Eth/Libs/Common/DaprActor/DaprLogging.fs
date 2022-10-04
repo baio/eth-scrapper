@@ -1,16 +1,12 @@
 ﻿namespace Common.DaprActor
 
-open Microsoft.Extensions.Hosting
-
 [<AutoOpen>]
 module DaprLogging =
 
   open Microsoft.Extensions.Configuration
-  open Microsoft.AspNetCore.Hosting
-  open System
   open Serilog
-  open Serilog.Sinks.Elasticsearch
   open Serilog.Enrichers.Span
+  open Microsoft.Extensions.Hosting
 
   let createSerilogLogger (configuration: IConfiguration) (webHostBuilder: IHostBuilder) =
 
