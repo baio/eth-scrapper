@@ -4,12 +4,10 @@
 module NextBlockRangeCalc2 =
   open ScrapperModels
 
-  let private MAX_ITEMS_IN_RESPONSE = 10000
-
-  let private successNextBlockRangeCalc (result: Success) (itemsPerBlock: float32 list) =
+  let private successNextBlockRangeCalc (maxEthItemsInResponse: uint) (result: Success) (itemsPerBlock: float32 list) =
     let avgItemsPerBlock = itemsPerBlock |> List.average
 
-    let blocksToRequest = (float32 MAX_ITEMS_IN_RESPONSE) / avgItemsPerBlock
+    let blocksToRequest = (float32 maxEthItemsInResponse) / avgItemsPerBlock
     // Minus some sqew
     let blocksToRequest =
       (blocksToRequest - (blocksToRequest * 0.1f))
@@ -42,7 +40,7 @@ module NextBlockRangeCalc2 =
       { From = error.BlockRange.From
         To = error.BlockRange.To }
 
-  let calc itemsPerRange =
+  let calc maxEthItemsInResponse itemsPerRange =
     function
-    | Ok success -> successNextBlockRangeCalc success itemsPerRange
+    | Ok success -> successNextBlockRangeCalc maxEthItemsInResponse success itemsPerRange
     | Error error -> errorNextBlockRangeCalc error itemsPerRange

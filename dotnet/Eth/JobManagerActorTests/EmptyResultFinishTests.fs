@@ -21,7 +21,9 @@ let tests =
   let date = System.DateTime.UtcNow
 
   let env =
-    { OnScrap = onScrap
+    { EthBlocksCount = 1000u
+      MaxEthItemsInResponse = 100u
+      OnScrap = onScrap
       Date = fun () -> date }
 
   let context = Context env
@@ -34,7 +36,7 @@ let tests =
            Ok(
              { Status = ScrapperDispatcher.Status.Finish
                Request =
-                 { EthProviderUrl = "100"
+                 { EthProviderUrl = ""
                    ContractAddress = ""
                    Abi = ""
                    BlockRange = { From = 0u; To = 100u } }
@@ -55,7 +57,7 @@ let tests =
       let jobManager = context.createJobManager jobManagerId
 
       let startData: JobManager.StartData =
-        { EthProviderUrl = "100"
+        { EthProviderUrl = ""
           ContractAddress = ""
           Abi = "" }
 

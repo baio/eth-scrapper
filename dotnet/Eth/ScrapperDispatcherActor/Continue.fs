@@ -29,11 +29,11 @@ module internal Continue =
 
   let continue (env: Env) (data: ContinueData) =
 
-    let logger = env.Logger    
+    let logger = env.Logger
 
     let requestContinue = requestContinue env
 
-    task {    
+    task {
 
       logger.LogDebug("Continue with {@data}", data)
 
@@ -68,7 +68,8 @@ module internal Continue =
           match checkStopResult with
           | CheckStop.Continue ->
 
-            let blockRange = NextBlockRangeCalc2.calc state.ItemsPerBlock data.Result
+            let blockRange =
+              NextBlockRangeCalc2.calc env.MaxEthItemsInResponse state.ItemsPerBlock data.Result
 
             logger.LogDebug("Stop check is CheckStop.Continue, continue with {@blockRange} {@state}", blockRange, state)
 
@@ -114,4 +115,4 @@ module internal Continue =
       | None ->
         logger.LogError("State not found")
         return StateNotFound |> Error
-    } 
+    }

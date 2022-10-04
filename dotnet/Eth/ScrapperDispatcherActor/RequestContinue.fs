@@ -27,14 +27,14 @@ module internal RequestContinue =
       match result with
       | Ok _ ->
 
-        let state: State =
-          { state with
-              Status = Status.Continue
-              Request = { state.Request with BlockRange = data.BlockRange }
-              Target = data.Target
-              Date = (env.Date() |> toEpoch) }
+        //let state: State =
+        //  { state with
+        //      Status = Status.Continue
+        //      Request = { state.Request with BlockRange = data.BlockRange }
+        //      Target = data.Target
+        //      Date = (env.Date() |> toEpoch) }
 
-        do! env.SetState state
+        //do! env.SetState state
 
         return state |> Ok
       | Error _ ->

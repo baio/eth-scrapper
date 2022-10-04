@@ -14,7 +14,7 @@ module RequestContinue =
 
       let logger = env.Logger
 
-      logger.LogDebug("Request continue  with {@data}")
+      logger.LogDebug("Request continue  with {@data}", data)
 
       let! state = env.GetState()
 

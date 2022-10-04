@@ -42,6 +42,16 @@ type ScrapperActor(env: ScrapperActorEnv) =
             // imitate waiting
             System.Threading.Thread.Sleep(1)
             let! _ = actor.Store data
+
+            let actor = env.CreateScrapperDispatcherActor(env.ActorId)
+
+            let data: ScrapperModels.ScrapperDispatcher.ContinueData =
+              { EthProviderUrl = data.EthProviderUrl
+                Abi = data.Abi
+                ContractAddress = data.ContractAddress
+                Result = result |> Ok }
+
+            let! _ = actor.Continue(data)
             return ()
           }
           |> ignore
@@ -68,7 +78,9 @@ type ScrapperActor(env: ScrapperActorEnv) =
       }
 
 type ContextEnv =
-  { Date: unit -> System.DateTime
+  { EthBlocksCount: uint
+    MaxEthItemsInResponse: uint
+    Date: unit -> System.DateTime
     OnScrap: OnScrap }
 
 type Context(env: ContextEnv) =
@@ -113,7 +125,8 @@ type Context(env: ContextEnv) =
   member this.createScrapperDispatcherEnv(jobId: JobId) : ScrapperDispatcherActor.Env =
     let (JobId id) = jobId
 
-    { Logger = createLogger $"job_{id}"
+    { MaxEthItemsInResponse = env.MaxEthItemsInResponse
+      Logger = createLogger $"job_{id}"
       ActorId = jobId
       Date = env.Date
       SetState = jobMap.AddItem jobId
@@ -121,7 +134,7 @@ type Context(env: ContextEnv) =
       GetState = fun () -> jobMap.GetItem jobId
       CreateJobManagerActor = this.createJobManager
       CreateScrapperActor = this.createScrapper
-      GetEthBlocksCount = fun cnt -> cnt |> System.UInt32.Parse |> Task.FromResult }
+      GetEthBlocksCount = fun _ -> env.EthBlocksCount |> Task.FromResult }
 
   member this.createScrapperDispatcher(id: JobId) =
     id
@@ -139,7 +152,7 @@ type Context(env: ContextEnv) =
       SetStateIfNotExist = jobManagerMap.AddIfNotExist jobManagerId
       GetState = fun () -> jobManagerMap.GetItem jobManagerId
       CreateScrapperDispatcherActor = this.createScrapperDispatcher
-      GetEthBlocksCount = fun cnt -> cnt |> System.UInt32.Parse |> Task.FromResult }
+      GetEthBlocksCount = fun _ -> env.EthBlocksCount |> Task.FromResult }
 
   member this.createJobManager(id: JobManagerId) =
     let actor =

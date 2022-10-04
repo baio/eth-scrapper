@@ -8,7 +8,8 @@ open System.Threading.Tasks
 open Microsoft.Extensions.Logging
 
 type Env =
-  { ActorId: JobId
+  { MaxEthItemsInResponse: uint
+    ActorId: JobId
     Date: unit -> System.DateTime
     SetState: State -> Task
     GetState: unit -> Task<State option>

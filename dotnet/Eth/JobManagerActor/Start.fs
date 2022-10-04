@@ -14,12 +14,12 @@ module Start =
   let start (env: Env) (data: StartData) : Task<Result> =
 
     let logger = env.Logger
-    logger.LogDebug("start with {actorId} {@data}", env.ActorId, data)
+    logger.LogDebug("Start with {actorId} {@data}", env.ActorId, data)
 
     task {
       let! state = env.GetState()
 
-      logger.LogDebug("state {@state}", state)
+      logger.LogDebug("State {@state}", state)
 
       match state with
       | Some state ->
@@ -28,7 +28,7 @@ module Start =
         let blockSize = Math.Ceiling(blocksCount / jobsCount) |> uint
 
         logger.LogDebug(
-          "data to calculate range {jobsCount} {blocksCount} {blockSize}",
+          "Data to calculate range {jobsCount} {blocksCount} {blockSize}",
           jobsCount,
           blocksCount,
           blockSize
@@ -51,7 +51,7 @@ module Start =
               Target = Some target
               ParentId = parentId }: ScrapperDispatcher.StartData)
 
-        logger.LogDebug("calculated start data {@rangeStartData}", rangeStartData)
+        logger.LogDebug("Calculated start data {@rangeStartData}", rangeStartData)
 
         let calls =
           rangeStartData
@@ -78,10 +78,10 @@ module Start =
 
         do! env.SetState state
 
-        logger.LogDebug("updated  {@state}", state)
+        logger.LogDebug("Updated  {@state}", state)
 
         return state |> Ok
       | None ->
-        logger.LogError("state not found")
+        logger.LogError("State not found")
         return StateNotFound |> Error
     }

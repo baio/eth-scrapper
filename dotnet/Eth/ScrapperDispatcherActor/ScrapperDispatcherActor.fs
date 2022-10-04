@@ -37,7 +37,8 @@ module ScrapperDispatcherActor =
       ScrapperActor(host.ProxyFactory, jobId) :> ScrapperModels.Scrapper.IScrapperActor
 
     let env: Env =
-      { ActorId = JobId(host.Id.ToString())
+      { MaxEthItemsInResponse = 10000u
+        ActorId = JobId(host.Id.ToString())
         Date = fun () -> System.DateTime.UtcNow
         GetState = stateManager.Get
         SetState = stateManager.Set

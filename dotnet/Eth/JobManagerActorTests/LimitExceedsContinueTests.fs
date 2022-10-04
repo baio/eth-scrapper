@@ -7,6 +7,8 @@ open Common.Utils
 open Context
 open System.Threading.Tasks
 
+let ethBlocksCount = 100u
+let maxEthItemsInResponse = 50u
 
 [<FTests>]
 let tests =
@@ -15,7 +17,6 @@ let tests =
 
   let onScrap: OnScrap =
     fun request ->
-      printfn "=== %i" scrapCnt
       match scrapCnt with
       | 0 ->
         scrapCnt <- scrapCnt + 1
@@ -29,11 +30,21 @@ let tests =
         { ItemsCount = 10u
           BlockRange = request.BlockRange }
         |> Ok: ScrapperModels.ScrapperResult
+      | 2 ->
+        scrapCnt <- scrapCnt + 1
+
+        { Data = EmptyResult
+          BlockRange = request.BlockRange }
+        |> Error: ScrapperModels.ScrapperResult
+      | _ -> failwith "not expected"
+
 
   let date = System.DateTime.UtcNow
 
   let env =
-    { OnScrap = onScrap
+    { EthBlocksCount = ethBlocksCount
+      MaxEthItemsInResponse = maxEthItemsInResponse
+      OnScrap = onScrap
       Date = fun () -> date }
 
   let context = Context env
@@ -46,13 +57,13 @@ let tests =
            Ok(
              { Status = ScrapperDispatcher.Status.Finish
                Request =
-                 { EthProviderUrl = "100"
+                 { EthProviderUrl = ""
                    ContractAddress = ""
                    Abi = ""
-                   BlockRange = { From = 0u; To = 100u } }
+                   BlockRange = { From = 50u; To = 100u } }
                Date = date |> toEpoch
                FinishDate = date |> toEpoch |> Some
-               ItemsPerBlock = []
+               ItemsPerBlock = [ 0.1f ]
                Target =
                  { ToLatest = true
                    Range = { From = 0u; To = 100u } }
@@ -67,13 +78,13 @@ let tests =
       let jobManager = context.createJobManager jobManagerId
 
       let startData: JobManager.StartData =
-        { EthProviderUrl = "100"
+        { EthProviderUrl = ""
           ContractAddress = ""
           Abi = "" }
 
       let! _ = jobManager.Start(startData)
 
-      do! context.wait (2)
+      do! context.wait (1000)
 
       let! jobManangerState = context.JobManagerMap.GetItem jobManagerId
 
