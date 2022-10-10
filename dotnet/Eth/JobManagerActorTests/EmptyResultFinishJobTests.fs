@@ -6,7 +6,7 @@ open Common.Utils.Task
 open Common.Utils
 open Context
 
-[<FTests>]
+[<Tests>]
 let tests =
   let ethBlocksCount = 1000u
   let maxEthItemsInResponse = 100u
