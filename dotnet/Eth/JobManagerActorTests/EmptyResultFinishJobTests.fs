@@ -58,7 +58,7 @@ let tests =
 
       let! _ = job.Start(startData)
 
-      do! context.wait (100)
+      do! context.wait (500)
 
       let! jobManangerState = context.JobMap.GetItem jobId
 

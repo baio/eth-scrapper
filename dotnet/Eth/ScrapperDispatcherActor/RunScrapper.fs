@@ -33,15 +33,6 @@ module internal RunScrapper =
 
       match result with
       | Ok _ ->
-
-        //let state: State =
-        //  { state with
-        //      Status = Status.Continue
-        //      Request = scrapperRequest
-        //      Date = env.Date() |> toEpoch }
-
-        //do! env.SetState state
-
         return state |> Ok
       | Error _ ->
         let state: State =
@@ -77,6 +68,5 @@ module internal RunScrapper =
         ParentId = parentId }
 
     task {
-      do! env.SetState state
       return! runScrapper env scrapperRequest state
     }
