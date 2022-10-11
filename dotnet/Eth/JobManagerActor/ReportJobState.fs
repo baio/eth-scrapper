@@ -21,9 +21,9 @@ module ReportJobState =
       | Some state ->
         let jobId = data.ActorId
 
-        let state = JobResult.updateStateWithJob state (jobId, data.Job)
-        do! env.SetState state
-        return state |> Ok
+        let state1 = JobResult.updateStateWithJob state (jobId, data.Job)
+        do! env.SetState state1
+        return state1 |> Ok
       | None ->
         logger.LogError("State not found")
         return StateNotFound |> Error

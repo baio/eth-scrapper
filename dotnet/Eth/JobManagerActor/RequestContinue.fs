@@ -37,14 +37,14 @@ module RequestContinue =
 
         logger.LogDebug("Scrapper dispatch continue {@result}", result)
 
-        let state =
-          JobResult.updateStateWithJobResult
-            (CallChildActorData.ConfirmContinue confirmData)
-            state
-            (data.ActorId, result)
+        //let state =
+        //  JobResult.updateStateWithJobResult
+        //    (CallChildActorData.ConfirmContinue confirmData)
+        //    state
+        //    (data.ActorId, result)
 
-        logger.LogDebug("New state {@state}", state)
-        do! env.SetState state
+        //logger.LogDebug("New state {@state}", state)
+        //do! env.SetState state
         return state |> Ok
       | None ->
         logger.LogWarning("State not found")

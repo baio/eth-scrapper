@@ -4,13 +4,13 @@
 module NextBlockRangeCalc2 =
   open ScrapperModels
 
-  let private successNextBlockRangeCalc (maxEthItemsInResponse: uint) (result: Success) (itemsPerBlock: float32 list) =
+  let private successNextBlockRangeCalc (maxEthItemsInResponse: uint) (result: Success) (itemsPerBlock: float list) =
     let avgItemsPerBlock = itemsPerBlock |> List.average
 
-    let blocksToRequest = (float32 maxEthItemsInResponse) / avgItemsPerBlock
+    let blocksToRequest = (float maxEthItemsInResponse) / avgItemsPerBlock
     // Minus some sqew
     let blocksToRequest =
-      (blocksToRequest - (blocksToRequest * 0.1f))
+      (blocksToRequest - (blocksToRequest * 0.1))
       |> System.Convert.ToUInt32
 
     let to' = result.BlockRange.To + blocksToRequest

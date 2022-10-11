@@ -17,6 +17,14 @@ module internal RunScrapper =
 
     task {
 
+      let state: State =
+        { state with
+            Status = Status.Continue
+            Request = scrapperRequest
+            Date = env.Date() |> toEpoch }
+
+      do! env.SetState state
+
       let actor = env.CreateScrapperActor(env.ActorId)
 
       let! result = actor.Scrap scrapperRequest |> Task.wrapException
@@ -26,13 +34,13 @@ module internal RunScrapper =
       match result with
       | Ok _ ->
 
-        // let state: State =
-        //   { state with
-        //       Status = Status.Continue
-        //       Request = scrapperRequest
-        //       Date = env.Date() |> toEpoch }
+        //let state: State =
+        //  { state with
+        //      Status = Status.Continue
+        //      Request = scrapperRequest
+        //      Date = env.Date() |> toEpoch }
 
-        // do! env.SetState state
+        //do! env.SetState state
 
         return state |> Ok
       | Error _ ->

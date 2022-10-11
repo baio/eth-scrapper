@@ -18,6 +18,15 @@ module internal RequestContinue =
 
     task {
 
+      let state: State =
+        { state with
+            Status = Status.Continue
+            Request = { state.Request with BlockRange = data.BlockRange }
+            Target = data.Target
+            Date = (env.Date() |> toEpoch) }
+
+      do! env.SetState state
+
       let actor = env.CreateJobManagerActor(parentId)
 
       let! result = actor.RequestContinue data
@@ -26,15 +35,6 @@ module internal RequestContinue =
 
       match result with
       | Ok _ ->
-
-        //let state: State =
-        //  { state with
-        //      Status = Status.Continue
-        //      Request = { state.Request with BlockRange = data.BlockRange }
-        //      Target = data.Target
-        //      Date = (env.Date() |> toEpoch) }
-
-        //do! env.SetState state
 
         return state |> Ok
       | Error _ ->

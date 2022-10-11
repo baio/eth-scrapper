@@ -1,4 +1,4 @@
-module LimitExceedsContinueJobTests
+module EmptyResultFinishJobTests
 
 open Expecto
 open ScrapperModels
@@ -11,11 +11,30 @@ let tests =
   let ethBlocksCount = 1000u
   let maxEthItemsInResponse = 100u
 
+  let mutable scrapCnt = 0
+
   let onScrap: OnScrap =
     fun request ->
-      { Data = EmptyResult
-        BlockRange = request.BlockRange }
-      |> Error: ScrapperModels.ScrapperResult
+      match scrapCnt with
+      | 0 ->
+        scrapCnt <- scrapCnt + 1
+
+        { Data = LimitExceeded
+          BlockRange = request.BlockRange }
+        |> Error: ScrapperModels.ScrapperResult
+      | 1 ->
+        scrapCnt <- scrapCnt + 1
+
+        { ItemsCount = 10u
+          BlockRange = request.BlockRange }
+        |> Ok: ScrapperModels.ScrapperResult
+      | 2 ->
+        scrapCnt <- scrapCnt + 1
+
+        { Data = EmptyResult
+          BlockRange = request.BlockRange }
+        |> Error: ScrapperModels.ScrapperResult
+      | _ -> failwith "not expected"
 
   let date = System.DateTime.UtcNow
 
@@ -33,17 +52,18 @@ let tests =
         { EthProviderUrl = "http://test"
           ContractAddress = ""
           Abi = ""
-          BlockRange = { From = 0u; To = ethBlocksCount } }
+          BlockRange =
+            { From = ethBlocksCount / 2u
+              To = 5000u } } // itemsPerBlock * blockCount
       Date = date |> toEpoch
       FinishDate = date |> toEpoch |> Some
-      ItemsPerBlock = []
+      ItemsPerBlock = [ 0.02 ]
       Target =
         { ToLatest = true
           Range = { From = 0u; To = ethBlocksCount } }
       ParentId = None }: ScrapperDispatcher.State
 
-
-  testCase "job: when scrapper returns limit exceeds the job should continue" (fun _ ->
+  testCase "job: when scrapper returns empty result (0 events) the job should finish" (fun _ ->
     task {
 
       let jobId = JobId "1"
@@ -58,11 +78,13 @@ let tests =
 
       let! _ = job.Start(startData)
 
-      do! context.wait (100)
+      do! context.wait (500)
 
-      let! jobManangerState = context.JobMap.GetItem jobId
+      Expect.equal scrapCnt 3 "scrap should be called 3 times"
 
-      Expect.equal jobManangerState (Some expected) "job state is not expected"
+      let! jobState = context.JobMap.GetItem jobId
+
+      Expect.equal jobState (Some expected) "job state is not expected"
 
     }
     |> runSynchronously)

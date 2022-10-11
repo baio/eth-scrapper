@@ -74,9 +74,10 @@ module Start =
 
         logger.LogDebug("Result after executing start {@result}", result)
 
-        let state = JobResult.updateStateWithJobsListResult state result
+        // TODO : Update only for errors !!!
+        //let state = JobResult.updateStateWithJobsListResult state result
 
-        do! env.SetState state
+        //do! env.SetState state
 
         logger.LogDebug("Updated  {@state}", state)
 

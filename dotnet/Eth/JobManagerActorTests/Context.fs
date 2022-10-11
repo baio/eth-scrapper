@@ -40,18 +40,8 @@ type ScrapperActor(env: ScrapperActorEnv) =
 
           task {
             // imitate waiting
-            System.Threading.Thread.Sleep(1)
+            do! Task.Delay(1) |> Async.AwaitTask
             let! _ = actor.Store data
-
-            let actor = env.CreateScrapperDispatcherActor(env.ActorId)
-
-            let data: ScrapperModels.ScrapperDispatcher.ContinueData =
-              { EthProviderUrl = data.EthProviderUrl
-                Abi = data.Abi
-                ContractAddress = data.ContractAddress
-                Result = result |> Ok }
-
-            let! _ = actor.Continue(data)
             return ()
           }
           |> ignore

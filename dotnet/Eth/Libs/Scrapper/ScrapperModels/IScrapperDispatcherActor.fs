@@ -50,7 +50,7 @@ type State =
     Request: ScrapperRequest
     Date: int64
     FinishDate: int64 option
-    ItemsPerBlock: float32 list
+    ItemsPerBlock: float list
     Target: TargetBlockRange
     ParentId: JobManagerId option }
 

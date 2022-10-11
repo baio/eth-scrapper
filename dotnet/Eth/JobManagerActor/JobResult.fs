@@ -40,5 +40,6 @@ module JobResult =
     ((jobId, job): (JobId * Job))
     =
     let jobResult = Ok job
-    { state with Jobs = state.Jobs.Add(jobId, jobResult) }
-    |> ReduceStateStatus.reduce
+    let jobs = state.Jobs.Add(jobId, jobResult)
+    let result = { state with Jobs = jobs } |> ReduceStateStatus.reduce
+    result

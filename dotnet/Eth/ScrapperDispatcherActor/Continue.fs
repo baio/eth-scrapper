@@ -17,9 +17,7 @@ module internal Continue =
     let requestRange = result.BlockRange.To - result.BlockRange.From
     let itemsLength = result.ItemsCount
 
-    let itemsPerBlock =
-      (System.Convert.ToSingle itemsLength)
-      / (System.Convert.ToSingle requestRange)
+    let itemsPerBlock = ((float) itemsLength) / ((float) requestRange)
 
     let ranges =
       itemsPerBlock :: state.ItemsPerBlock
@@ -58,6 +56,8 @@ module internal Continue =
 
       match state with
       | Some state ->
+
+
         match state.Status with
         | Status.Pause ->
           let error = $"Actor in {state.Status} state, skip continue"
@@ -75,7 +75,7 @@ module internal Continue =
             | Ok success -> updateLatesSuccessfullBlockRanges state success
             | Error _ -> state
 
-          logger.LogDebug("{@state} with updated block ranges", state)
+          logger.LogDebug("{@state} with updated items per block", state)
 
           let! checkStopResult = checkStop env data.EthProviderUrl state.Target data.Result
 

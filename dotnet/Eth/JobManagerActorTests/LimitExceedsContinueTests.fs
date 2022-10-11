@@ -60,10 +60,10 @@ let tests =
                  { EthProviderUrl = ""
                    ContractAddress = ""
                    Abi = ""
-                   BlockRange = { From = 50u; To = 100u } }
+                   BlockRange = { From = 50u; To = 275u } }
                Date = date |> toEpoch
                FinishDate = date |> toEpoch |> Some
-               ItemsPerBlock = [ 0.1f ]
+               ItemsPerBlock = [ 0.2 ]
                Target =
                  { ToLatest = true
                    Range = { From = 0u; To = 100u } }
@@ -74,6 +74,7 @@ let tests =
   testCase "when scrapper returns limit exceeds and then success state should be success" (fun _ ->
     task {
 
+      let jobId = JobId "1_s0"
       let jobManagerId = JobManagerId "1"
       let jobManager = context.createJobManager jobManagerId
 
@@ -84,7 +85,15 @@ let tests =
 
       let! _ = jobManager.Start(startData)
 
-      do! context.wait (1000)
+      do! context.wait (100)
+
+      Expect.equal scrapCnt 3 "scrap calls should be 3"
+
+      let! jobState = context.JobMap.GetItem jobId
+
+      let job = Map.tryFind jobId expected.Jobs
+
+      Expect.equal (jobState  |> Option.map Ok)  job "job state is not expected"
 
       let! jobManangerState = context.JobManagerMap.GetItem jobManagerId
 
