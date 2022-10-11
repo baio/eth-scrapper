@@ -1,21 +1,23 @@
 ﻿namespace Common.Logger
 
-open Serilog.Extensions.Logging
-
 [<RequireQualifiedAccess>]
 module SerilogLogger =
 
   open Microsoft.Extensions.Configuration
   open Serilog
   open Serilog.Enrichers.Span
+  open Serilog.Extensions.Logging
+  open Destructurama
+
 
   let createSerilog (configuration: IConfiguration) =
 
     let loggerConfig =
-      LoggerConfiguration()
-        .ReadFrom.Configuration(configuration)
+      LoggerConfiguration()                
+        .ReadFrom.Configuration(configuration)        
         .Enrich.FromLogContext()
         .Enrich.WithSpan()
+        .Destructure.UsingAttributes()
 
     let logger = loggerConfig.CreateLogger()
     Log.Logger <- logger

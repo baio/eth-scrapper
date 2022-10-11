@@ -11,6 +11,7 @@ type TargetBlockRange = { ToLatest: bool; Range: BlockRange }
 type StartData =
   { EthProviderUrl: string
     ContractAddress: string
+    [<Destructurama.Attributed.NotLogged>]
     Abi: string
     Target: TargetBlockRange option
     ParentId: JobManagerId option }
@@ -18,6 +19,7 @@ type StartData =
 type ContinueData =
   { EthProviderUrl: string
     ContractAddress: string
+    [<Destructurama.Attributed.NotLogged>]
     Abi: string
     Result: ScrapperResult }
 

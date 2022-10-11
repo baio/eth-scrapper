@@ -20,6 +20,7 @@ type ScrapperResult = Result<Success, Error>
 type ScrapperRequest =
   { EthProviderUrl: string
     ContractAddress: string
+    [<Destructurama.Attributed.NotLogged>]
     Abi: string
     BlockRange: BlockRange }
 

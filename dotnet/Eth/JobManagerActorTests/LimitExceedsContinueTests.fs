@@ -71,7 +71,7 @@ let tests =
            )) ]
         |> Map.ofList }
 
-  testCase "when scrapper returns limit exceeds and then success state should be success" (fun _ ->
+  testCase "manager: when scrapper returns limit exceeds and then success state should be success" (fun _ ->
     task {
 
       let jobId = JobId "1_s0"
@@ -85,7 +85,7 @@ let tests =
 
       let! _ = jobManager.Start(startData)
 
-      do! context.wait (100)
+      do! context.wait (500)
 
       Expect.equal scrapCnt 3 "scrap calls should be 3"
 

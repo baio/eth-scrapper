@@ -11,9 +11,10 @@ module ReportJobState =
 
   let reportJobState (env: Env) (data: JobStateData) =
     let logger = env.Logger
-    logger.LogDebug("Report job state {@data}", data)
 
     task {
+      use scope = logger.BeginScope("reportJobState {@data}", data)
+      logger.LogDebug("reportJobState")
       let! state = env.GetState()
       logger.LogDebug("Previous state: {@state}", state)
 

@@ -9,10 +9,14 @@ module RequestContinue =
   open System.Threading.Tasks
   open Microsoft.Extensions.Logging
 
+
   let requestContinue (env: Env) (data: RequestContinueData) : Task<Result> =
+
+    let logger = env.Logger
+
     task {
 
-      let logger = env.Logger
+      use scope = logger.BeginScope("requestContinue {@data}", data)
 
       logger.LogDebug("Request continue  with {@data}", data)
 
@@ -37,14 +41,19 @@ module RequestContinue =
 
         logger.LogDebug("Scrapper dispatch continue {@result}", result)
 
-        //let state =
-        //  JobResult.updateStateWithJobResult
-        //    (CallChildActorData.ConfirmContinue confirmData)
-        //    state
-        //    (data.ActorId, result)
 
-        //logger.LogDebug("New state {@state}", state)
-        //do! env.SetState state
+        match result with
+        | Error _ ->
+          let state =
+            JobResult.updateStateWithJobResult
+              (CallChildActorData.ConfirmContinue confirmData)
+              state
+              (data.ActorId, result)
+
+          logger.LogError("Call scrapper dispatcher error, updated state {@state}", state)
+          do! env.SetState state
+        | _ -> ()
+
         return state |> Ok
       | None ->
         logger.LogWarning("State not found")

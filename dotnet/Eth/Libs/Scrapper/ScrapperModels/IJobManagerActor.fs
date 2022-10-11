@@ -23,6 +23,7 @@ type Status =
 type StartData =
   { EthProviderUrl: string
     ContractAddress: string
+    [<Destructurama.Attributed.NotLogged>]
     Abi: string }
 
 type CallChildActorData =

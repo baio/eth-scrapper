@@ -5,7 +5,6 @@ open ScrapperModels
 open Common.Utils.Task
 open Common.Utils
 open Context
-open System.Threading.Tasks
 
 [<Tests>]
 let tests =
@@ -37,18 +36,18 @@ let tests =
                  { EthProviderUrl = "test"
                    ContractAddress = ""
                    Abi = ""
-                   BlockRange = { From = 0u; To = 100u } }
+                   BlockRange = { From = 0u; To = 1000u } }
                Date = date |> toEpoch
                FinishDate = date |> toEpoch |> Some
                ItemsPerBlock = []
                Target =
                  { ToLatest = true
-                   Range = { From = 0u; To = 100u } }
+                   Range = { From = 0u; To = 1000u } }
                ParentId = Some(JobManagerId "1") }: ScrapperDispatcher.State
            )) ]
         |> Map.ofList }
 
-  testCase "when scrapper returns empty result (0 events) the job should finish" (fun _ ->
+  testCase "manager: when scrapper returns empty result (0 events) the job should finish" (fun _ ->
     task {
 
       let jobManagerId = JobManagerId "1"
@@ -61,11 +60,11 @@ let tests =
 
       let! _ = jobManager.Start(startData)
 
-      do! context.wait (5000)
+      do! context.wait (500)
 
       let! jobManangerState = context.JobManagerMap.GetItem jobManagerId
 
-      //Expect.equal jobManangerState (Some expected) "job mananger state is not expected"
+      Expect.equal jobManangerState (Some expected) "job mananger state is not expected"
       ()
     }
     |> runSynchronously)

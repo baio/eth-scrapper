@@ -12,6 +12,7 @@ type ContinueSuccessResult =
 type ContinueSuccessData =
   { EthProviderUrl: string
     ContractAddress: string
+    [<Destructurama.Attributed.NotLogged>]
     Abi: string
     Result: ContinueSuccessResult }
 
