@@ -14,9 +14,12 @@ module Start =
   let start (env: Env) (data: StartData) : Task<Result> =
 
     let logger = env.Logger
-    logger.LogDebug("Start with {actorId} {@data}", env.ActorId, data)
 
     task {
+      use scope = logger.BeginScope("start {actorId} {@data}", env.ActorId, data)
+
+      logger.LogDebug("Start with {actorId} {@data}", env.ActorId, data)
+
       let! state = env.GetState()
 
       logger.LogDebug("State {@state}", state)
@@ -74,14 +77,17 @@ module Start =
 
         logger.LogDebug("Result after executing start {@result}", result)
 
-        // TODO : Update only for errors !!!
-        //let state = JobResult.updateStateWithJobsListResult state result
+        let state' = JobResult.updateStateWithJobsListErrorResult state result
 
-        //do! env.SetState state
+        match state' with
+        | Some state ->
+          do! env.SetState state
+          logger.LogDebug("Updated  {@state}", state)
+          return state |> Ok
+        | _ ->
+          logger.LogDebug("No errors state doesn't need to be updated")
+          return state |> Ok
 
-        logger.LogDebug("Updated  {@state}", state)
-
-        return state |> Ok
       | None ->
         logger.LogError("State not found")
         return StateNotFound |> Error
