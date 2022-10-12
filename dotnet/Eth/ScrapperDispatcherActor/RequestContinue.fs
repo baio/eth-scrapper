@@ -14,9 +14,10 @@ module internal RequestContinue =
 
     let logger = env.Logger
 
-    logger.LogDebug("Request continue with {@data} {@state}", data, state)
-
     task {
+
+      use scope = logger.BeginScope("requestContinue {@data} {@state}", data, state)
+      logger.LogDebug("Request continue")
 
       let state: State =
         { state with

@@ -17,6 +17,7 @@ module internal Schedule =
     logger.LogInformation("Try schedule {dueTime}", dueTime)
 
     task {
+      
       let! state = env.GetState()
 
       match state with

@@ -13,9 +13,12 @@ module internal RunScrapper =
 
     let logger = env.Logger
 
-    logger.LogDebug("Run scrapper with {@data} {@state}", scrapperRequest, state)
-
     task {
+
+      use scope =
+        logger.BeginScope("runScrapper {@data} {@state}", scrapperRequest, state)
+
+      logger.LogDebug("Run scrapper")
 
       let state: State =
         { state with
@@ -32,8 +35,7 @@ module internal RunScrapper =
       logger.LogDebug("Run scrapper result {@result}", result)
 
       match result with
-      | Ok _ ->
-        return state |> Ok
+      | Ok _ -> return state |> Ok
       | Error _ ->
         let state: State =
           { state with
@@ -67,6 +69,4 @@ module internal RunScrapper =
             Range = scrapperRequest.BlockRange }
         ParentId = parentId }
 
-    task {
-      return! runScrapper env scrapperRequest state
-    }
+    task { return! runScrapper env scrapperRequest state }

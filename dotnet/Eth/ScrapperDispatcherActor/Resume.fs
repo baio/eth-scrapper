@@ -12,6 +12,11 @@ module internal Resume =
     let logger = env.Logger
 
     task {
+
+      use scope = logger.BeginScope("resume")
+
+      logger.LogDebug("Resume")
+
       let! state = env.GetState()
 
       match state with
@@ -26,13 +31,16 @@ module internal Resume =
                 Status = Status.Continue
                 Date = (env.Date() |> toEpoch) }
 
-          logger.LogInformation("Resume with {@pervState} {@state}", state, updatedState)
+          logger.LogDebug("Resume with {@pervState} {@state}", state, updatedState)
 
           return! runScrapper env updatedState.Request state
         | _ ->
-          let error = "Actor in a wrong state"
-          logger.LogDebug(error)
-          return (state, error) |> StateConflict |> Error
+          logger.LogDebug("Actor in a wrong {@state}", state)
+
+          return
+            (state, "Actor in a wrong state")
+            |> StateConflict
+            |> Error
       | _ ->
         logger.LogWarning("Resume state not found or Continue")
         return StateNotFound |> Error

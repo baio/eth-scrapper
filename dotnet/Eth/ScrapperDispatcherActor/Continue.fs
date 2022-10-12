@@ -49,8 +49,10 @@ module internal Continue =
 
     task {
 
-      logger.LogDebug("Continue with {@data}", data)
+      use scope =
+        logger.BeginScope("continue {@data}", data)
 
+      logger.LogDebug("Continue")
 
       let! state = env.GetState()
 

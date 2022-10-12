@@ -9,7 +9,15 @@ module internal Pause =
   open Common.Utils
 
   let pause (env: Env) =
+
+    let logger = env.Logger
+
     task {
+
+      use scope = logger.BeginScope("pause")
+
+      logger.LogDebug("Pause")
+
       let! state = env.GetState()
 
       match state with
@@ -25,9 +33,12 @@ module internal Pause =
 
           return state |> Ok
         else
-          let error = "Actor in a wrong state"
-          env.Logger.LogDebug(error)
-          return (state, error) |> StateConflict |> Error
+          logger.LogDebug("Actor in a wrong {@state}", state)
+
+          return
+            (state, "Actor in a wrong state")
+            |> StateConflict
+            |> Error
       | None -> return StateNotFound |> Error
 
     }

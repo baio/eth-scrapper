@@ -14,6 +14,11 @@ module internal Failure =
     let logger = env.Logger
 
     task {
+
+      use scope = logger.BeginScope("failure {@data}", data)
+
+      logger.LogDebug("Failure")
+
       let! state = env.GetState()
 
       match state with

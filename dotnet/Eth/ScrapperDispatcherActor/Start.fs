@@ -22,9 +22,13 @@ module internal Start =
 
     let logger = env.Logger
 
-    logger.LogDebug("Start with {@data}", data)
-
     task {
+
+      use scope =
+        logger.BeginScope("start {@data}", data)
+
+      logger.LogDebug("Start")
+
       let! state = env.GetState()
 
       match state with
