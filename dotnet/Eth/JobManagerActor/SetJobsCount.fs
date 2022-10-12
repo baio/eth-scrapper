@@ -11,9 +11,11 @@ module SetJobsCount =
 
     let logger = env.Logger
 
-    logger.LogDebug("SetJobsCount {count}", count)
-
     task {
+      use scope = logger.BeginScope("setJobsCount {count}", count)
+
+      logger.LogDebug("SetJobsCount {count}", count)
+
       let! state = env.GetState()
 
       match state with

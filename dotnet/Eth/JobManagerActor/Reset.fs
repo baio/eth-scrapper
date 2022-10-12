@@ -12,9 +12,12 @@ module Reset =
   let reset (env: Env) (defaultState: State) : Task<Result> =
 
     let logger = env.Logger
-    logger.LogDebug("Reset")
 
     task {
+      use scope = logger.BeginScope("reset {@defaultState}", defaultState)
+
+      logger.LogDebug("Reset")
+
       let! state = env.GetState()
 
       logger.LogDebug("State {@state}")
