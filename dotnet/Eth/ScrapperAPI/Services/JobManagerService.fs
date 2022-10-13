@@ -46,46 +46,46 @@ module JobManagerService =
 
     actor.Reset()
 
-  let collectProjectVersionsWithState (projects: ProjectWithVresions list) =
+  //let collectProjectVersionsWithState (projects: ProjectWithVresions list) =
 
-    projects
-    |> List.map (fun proj ->
-      task {
-        let! result =
-          proj.Versions
-          |> List.map (fun v ->
-            task {
-              try
-                let! st' = state proj.Project.Id v.Id
+  //  projects
+  //  |> List.map (fun proj ->
+  //    task {
+  //      let! result =
+  //        proj.Versions
+  //        |> List.map (fun v ->
+  //          task {
+  //            try
+  //              let! st' = state proj.Project.Id v.Id
 
-                let st: ScrapperModels.ScrapperDispatcher.State =
-                  { Status = ScrapperModels.ScrapperDispatcher.Status.Continue
-                    Request =
-                      { Abi = ""
-                        EthProviderUrl = ""
-                        ContractAddress = ""
-                        BlockRange = { From = 0u; To = 0u } }
-                    Date = 0
-                    FinishDate = None
-                    ItemsPerBlock = []
-                    Target =
-                      { ToLatest = true
-                        Range = { From = 0u; To = 0u } }
-                    ParentId = None }
+  //              let st: ScrapperModels.ScrapperDispatcher.State =
+  //                { Status = ScrapperModels.ScrapperDispatcher.Status.Continue
+  //                  Request =
+  //                    { Abi = ""
+  //                      EthProviderUrl = ""
+  //                      ContractAddress = ""
+  //                      BlockRange = { From = 0u; To = 0u } }
+  //                  Date = 0
+  //                  FinishDate = None
+  //                  ItemsPerBlock = []
+  //                  Target =
+  //                    { ToLatest = true
+  //                      Range = { From = 0u; To = 0u } }
+  //                  ParentId = None }
 
-                return { Version = v; State = (Some st) }
-              with
-              | _ -> return { Version = v; State = None }
-            })
-          |> Task.all
+  //              return { Version = v; State = (Some st) }
+  //            with
+  //            | _ -> return { Version = v; State = None }
+  //          })
+  //        |> Task.all
 
-        let result: ProjectWithVresionsAndState =
-          { Project = proj.Project
-            Versions = result }
+  //      let result: ProjectWithVresionsAndState =
+  //        { Project = proj.Project
+  //          Versions = result }
 
-        return result
-      })
-    |> Task.all
+  //      return result
+  //    })
+  //  |> Task.all
 
 
   type StartError =

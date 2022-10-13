@@ -18,7 +18,7 @@ module RequestContinue =
 
       use scope = logger.BeginScope("requestContinue {@data}", data)
 
-      logger.LogDebug("Request continue  with {@data}", data)
+      logger.LogDebug("Request continue")
 
       let! state = env.GetState()
 
