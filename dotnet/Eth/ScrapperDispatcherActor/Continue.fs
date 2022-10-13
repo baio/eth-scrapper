@@ -7,11 +7,9 @@ module internal Continue =
   open Dapr.Actors.Runtime
   open System.Threading.Tasks
   open ScrapperModels
+  open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
-  open Common.DaprActor.ActorResult
-  open System
-  open Nethereum.Web3
+  open Common.Utils
 
   let private LATEST_SUCCESSFULL_BLOCK_RANGES_SIZE = 5
 
@@ -19,9 +17,7 @@ module internal Continue =
     let requestRange = result.BlockRange.To - result.BlockRange.From
     let itemsLength = result.ItemsCount
 
-    let itemsPerBlock =
-      (System.Convert.ToSingle itemsLength)
-      / (System.Convert.ToSingle requestRange)
+    let itemsPerBlock = ((float) itemsLength) / ((float) requestRange)
 
     let ranges =
       itemsPerBlock :: state.ItemsPerBlock
@@ -29,24 +25,41 @@ module internal Continue =
 
     { state with ItemsPerBlock = ranges }
 
-  let private createScrapperRequest (data: ContinueData) (blockRange: BlockRange) : ScrapperRequest =
-    { EthProviderUrl = data.EthProviderUrl
-      ContractAddress = data.ContractAddress
-      Abi = data.Abi
-      BlockRange = blockRange }
+  let private continue' (env: Env) (data: ContinueData) (state: State) (blockRange: BlockRange) =
+    match state.ParentId with
+    | Some parentId ->
+      let requestContinueData: JobManager.RequestContinueData =
+        { ActorId = env.ActorId
+          BlockRange = blockRange
+          Target = state.Target }
 
-  let continue ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) (data: ContinueData) =
+      requestContinue env parentId requestContinueData state
+    | None ->
+      let request: ScrapperRequest =
+        { EthProviderUrl = data.EthProviderUrl
+          ContractAddress = data.ContractAddress
+          Abi = data.Abi
+          BlockRange = blockRange }
+
+      runScrapper env request state
+
+  let continue (env: Env) (data: ContinueData) =
 
     let logger = env.Logger
-    let runScrapper = runScrapper runScrapperEnv
-
-    logger.LogDebug("Continue with {@data}", data)
 
     task {
+
+      use scope =
+        logger.BeginScope("continue {@data}", data)
+
+      logger.LogDebug("Continue")
+
       let! state = env.GetState()
 
       match state with
       | Some state ->
+
+
         match state.Status with
         | Status.Pause ->
           let error = $"Actor in {state.Status} state, skip continue"
@@ -64,51 +77,43 @@ module internal Continue =
             | Ok success -> updateLatesSuccessfullBlockRanges state success
             | Error _ -> state
 
-          logger.LogDebug("{@state} with updated block ranges", state)
+          logger.LogDebug("{@state} with updated items per block", state)
 
-          let! checkStopResult = checkStop data.EthProviderUrl state.Target data.Result
+          let! checkStopResult = checkStop env data.EthProviderUrl state.Target data.Result
 
           logger.LogDebug("Check stop {@result}", checkStopResult)
 
           match checkStopResult with
           | CheckStop.Continue ->
 
-            let blockRange = NextBlockRangeCalc2.calc state.ItemsPerBlock data.Result
+            let blockRange =
+              NextBlockRangeCalc2.calc env.MaxEthItemsInResponse state.ItemsPerBlock data.Result
 
-            let scrapperRequest = createScrapperRequest data blockRange
+            logger.LogDebug("Stop check is CheckStop.Continue, continue with {@blockRange} {@state}", blockRange, state)
 
-            logger.LogDebug("Next scrapper request {@request}", scrapperRequest)
-
-            logger.LogDebug(
-              "Stop check is CheckStop.Continue, continue with {@request} {@state}",
-              scrapperRequest,
-              state
-            )
-
-            return! runScrapper scrapperRequest state
-          | CheckStop.ContinueToLatest (range, target) ->
-
-            let scrapperRequest = createScrapperRequest data range
+            return! continue' env data state blockRange
+          | CheckStop.ContinueToLatest (blockRange, target) ->
 
             let state = { state with Target = target }
 
             logger.LogDebug(
-              "Stop check is CheckStop.ContinueToLatest, continue with {@request} {@state} ",
-              scrapperRequest,
+              "Stop check is CheckStop.ContinueToLatest, continue with {@blockRange} {@state} ",
+              blockRange,
               state
             )
 
-            return! runScrapper scrapperRequest state
-
+            return! continue' env data state blockRange
           | CheckStop.Stop ->
 
             logger.LogInformation("Stop check is CheckStop.Stop, finish")
 
+            let epoch = env.Date() |> toEpoch
+
             let state: State =
               { state with
                   Status = Status.Finish
-                  Date = epoch ()
-                  FinishDate = epoch () |> Some }
+                  Date = epoch
+                  FinishDate = epoch |> Some }
 
             do! env.SetState state
 

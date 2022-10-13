@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="DateTime.fs" />
+    <Compile Include="TestMap.fs" />
     <Compile Include="Opt.fs" />
     <Compile Include="Task.fs" />
   </ItemGroup>

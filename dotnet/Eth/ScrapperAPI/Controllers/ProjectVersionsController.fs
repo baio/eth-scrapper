@@ -4,8 +4,9 @@ open Microsoft.AspNetCore.Mvc
 open Common.DaprState
 open Scrapper.Repo
 open Scrapper.Repo.PeojectsRepo
-open ScrapperAPI.Services.ScrapperDispatcherService
+open ScrapperAPI.Services.JobManagerService
 open Common.DaprAPI
+open JobsManagerDTO
 
 [<ApiController>]
 [<Route("projects/{projectId}/versions")>]
@@ -30,9 +31,9 @@ type ProjectVersionssController(env: DaprStoreEnv) =
       match result with
       | Error err ->
         match err with
-        | ActorFailure err -> return err |> DTO.mapScrapperDispatcherActorError
+        | ActorFailure err -> return err |> mapError
         | RepoError err -> return mapRepoError err
-      | Ok result -> return result |> DTO.mapScrapperDispatcherActorSuccess
+      | Ok result -> return result |> mapSuccess
     }
 
   [<HttpGet("{versionId}/state")>]
@@ -41,7 +42,7 @@ type ProjectVersionssController(env: DaprStoreEnv) =
       let! result = state projectId versionId
 
       match result with
-      | Some result -> return result |> DTO.mapState |> this.Ok :> IActionResult
+      | Some result -> return result |> this.Ok :> IActionResult
       | None -> return NotFoundObjectResult() :> IActionResult
     }
 
@@ -49,14 +50,14 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   member this.Pause(projectId: string, versionId: string) =
     task {
       let! result = pause projectId versionId
-      return DTO.mapScrapperDispatcherActorResult result
+      return mapResult result
     }
 
   [<HttpPost("{versionId}/resume")>]
   member this.Resume(projectId: string, versionId: string) =
     task {
       let! result = resume projectId versionId
-      return DTO.mapScrapperDispatcherActorResult result
+      return mapResult result
     }
 
   [<HttpPost("{versionId}/reset")>]
@@ -65,6 +66,6 @@ type ProjectVersionssController(env: DaprStoreEnv) =
       let! result = reset projectId versionId
 
       match result with
-      | true -> return NoContentResult() :> IActionResult
-      | false -> return NotFoundObjectResult() :> IActionResult
+      | Ok _ -> return NoContentResult() :> IActionResult
+      | Error _ -> return NotFoundObjectResult() :> IActionResult
     }

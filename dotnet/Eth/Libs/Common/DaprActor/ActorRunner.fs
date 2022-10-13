@@ -1,9 +1,17 @@
 ﻿namespace Common.DaprActor
 
+open Dapr.Actors.Client
+
 [<AutoOpen>]
 module ActorRunner =
   open Dapr.Actors
   open Dapr.Actors.Runtime
+
+  let createActorProxy (proxyFactory: Client.IActorProxyFactory) actorId (actorType: string) =
+    proxyFactory.Create(actorId, actorType)
+
+  let invokeActorProxyMethod<'a, 'r> (actor: ActorProxy) (methodName: string) (data: 'a) =
+    actor.InvokeMethodAsync<'a, 'r>(methodName, data)
 
   let invokeActor<'a, 'r>
     (proxyFactory: Client.IActorProxyFactory)
@@ -12,17 +20,11 @@ module ActorRunner =
     (methodName: string)
     (data: 'a)
     =
-    task {
+    let actor = createActorProxy proxyFactory actorId actorType
 
-      try
-        let actor = proxyFactory.Create(actorId, actorType)
+    invokeActorProxyMethod actor methodName data
+    |> Common.Utils.Task.wrapException
 
-        let! _ = actor.InvokeMethodAsync<'a, 'r>(methodName, data)
-
-        return Ok()
-      with
-      | _ as ex -> return Error(ex)
-    }
 
   let invokeActorId<'a, 'r> (actorHost: ActorHost) actorType methodName (data: 'a) =
     invokeActor actorHost.ProxyFactory actorHost.Id actorType methodName data

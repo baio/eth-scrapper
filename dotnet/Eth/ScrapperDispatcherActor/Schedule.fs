@@ -5,18 +5,19 @@ module internal Schedule =
 
   open Dapr.Actors
   open System.Threading.Tasks
-  open ScrapperModels
+  open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
+  open Common.Utils
 
   type ScheduleEnv = float -> Task<unit>
 
-  let schedule ((env, scheduleEnv): ActorEnv * ScheduleEnv) =
+  let schedule (env: Env) =
     let dueTime = 60.
     let logger = env.Logger
     logger.LogInformation("Try schedule {dueTime}", dueTime)
 
     task {
+      
       let! state = env.GetState()
 
       match state with
@@ -27,11 +28,12 @@ module internal Schedule =
           let updatedState =
             { state with
                 Status = Status.Schedule
-                Date = epoch () }
+                Date = env.Date() |> toEpoch }
 
           do! env.SetState updatedState
 
-          do! scheduleEnv dueTime
+          // TODO : !!!
+          // do! scheduleEnv dueTime
 
           return state |> Ok
         else

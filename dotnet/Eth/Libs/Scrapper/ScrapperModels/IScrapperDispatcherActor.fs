@@ -1,32 +1,28 @@
-﻿namespace ScrapperModels
+﻿namespace ScrapperModels.ScrapperDispatcher
 
+open ScrapperModels
 open Dapr.Actors
 open System.Threading.Tasks
 open Common.DaprActor.ActorResult
 open System.Runtime.Serialization
-open System.Reflection
-open Microsoft.FSharp.Reflection
 
 type TargetBlockRange = { ToLatest: bool; Range: BlockRange }
 
 type StartData =
   { EthProviderUrl: string
     ContractAddress: string
+    [<Destructurama.Attributed.NotLogged>]
     Abi: string
-    Target: TargetBlockRange option }
+    Target: TargetBlockRange option
+    ParentId: JobManagerId option }
 
 type ContinueData =
   { EthProviderUrl: string
     ContractAddress: string
+    [<Destructurama.Attributed.NotLogged>]
     Abi: string
     Result: ScrapperResult }
 
-
-[<RequireQualifiedAccess>]
-type AppId =
-  | Dispatcher
-  | ElasticStore
-  | Scrapper
 
 [<KnownType("KnownTypes")>]
 type FailureStatus =
@@ -56,8 +52,9 @@ type State =
     Request: ScrapperRequest
     Date: int64
     FinishDate: int64 option
-    ItemsPerBlock: float32 list
-    Target: TargetBlockRange }
+    ItemsPerBlock: float list
+    Target: TargetBlockRange
+    ParentId: JobManagerId option }
 
 [<KnownType("KnownTypes")>]
 type ScrapperDispatcherActorError =
@@ -67,8 +64,11 @@ type ScrapperDispatcherActorError =
   static member KnownTypes() =
     knownTypes<ScrapperDispatcherActorError> ()
 
-
 type ScrapperDispatcherActorResult = Result<State, ScrapperDispatcherActorError>
+
+type ConfirmContinueData =
+  { BlockRange: BlockRange
+    Target: TargetBlockRange }
 
 type IScrapperDispatcherActor =
   inherit IActor
@@ -78,5 +78,6 @@ type IScrapperDispatcherActor =
   abstract Resume: unit -> Task<ScrapperDispatcherActorResult>
   abstract State: unit -> Task<State option>
   abstract Reset: unit -> Task<bool>
-  abstract Schedule: unit -> Task<ScrapperDispatcherActorResult>
+  //abstract Schedule: unit -> Task<ScrapperDispatcherActorResult>
   abstract Failure: data: FailureData -> Task<ScrapperDispatcherActorResult>
+  abstract ConfirmContinue: data: ConfirmContinueData -> Task<ScrapperDispatcherActorResult>

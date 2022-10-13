@@ -20,5 +20,16 @@ type ScrapperResult = Result<Success, Error>
 type ScrapperRequest =
   { EthProviderUrl: string
     ContractAddress: string
+    [<Destructurama.Attributed.NotLogged>]
     Abi: string
     BlockRange: BlockRange }
+
+[<RequireQualifiedAccess>]
+type AppId =
+  | Dispatcher
+  | ElasticStore
+  | Scrapper
+  | JobManager
+
+type JobManagerId = JobManagerId of string
+type JobId = JobId of string

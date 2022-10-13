@@ -1,7 +1,8 @@
-﻿namespace ScrapperModels
+﻿namespace ScrapperModels.ScrapperStore
 
 open Dapr.Actors
 open System.Threading.Tasks
+open ScrapperModels
 
 type ContinueSuccessResult =
   { BlockRange: BlockRange
@@ -11,6 +12,7 @@ type ContinueSuccessResult =
 type ContinueSuccessData =
   { EthProviderUrl: string
     ContractAddress: string
+    [<Destructurama.Attributed.NotLogged>]
     Abi: string
     Result: ContinueSuccessResult }
 

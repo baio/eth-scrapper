@@ -1,10 +1,12 @@
 ﻿namespace ScrapperAPI.Services
 
+open ScrapperModels
+
 module ScrapperDispatcherService =
 
   open Dapr.Actors
   open Dapr.Actors.Client
-  open ScrapperModels
+  open ScrapperModels.ScrapperDispatcher
   open Scrapper.Repo.PeojectsRepo
   open Common.DaprState
   open Common.Repo
@@ -88,7 +90,8 @@ module ScrapperDispatcherService =
           { EthProviderUrl = proj.EthProviderUrl
             ContractAddress = proj.Address
             Abi = proj.Abi
-            Target = None }
+            Target = None
+            ParentId = None }
 
         let! result = actor.Start data
 

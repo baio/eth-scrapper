@@ -6,20 +6,23 @@
 
 	<ItemGroup>
 		<Compile Include="GetEthBlocksCount.fs" />
+    <Compile Include="ActorEnv.fs" />
+		<Compile Include="RequestContinue.fs" />
 		<Compile Include="RunScrapper.fs" />
 		<Compile Include="CheckStop.fs" />
 		<Compile Include="NextBlockRangeCalc2.fs" />
-		<Compile Include="NextBlockRangeCalc.fs" />
-		<None Include="readme.md" />
-		<Compile Include="ActorEnv.fs" />
+		<Compile Include="NextBlockRangeCalc.fs" />		
 		<Compile Include="Start.fs" />
 		<Compile Include="Continue.fs" />
+		<Compile Include="ConfirmContinue.fs" />
 		<Compile Include="Pause.fs" />
 		<Compile Include="Resume.fs" />
 		<Compile Include="Failure.fs" />
 		<Compile Include="Schedule.fs" />
+		<Compile Include="ScrapperDispatcherBaseActor.fs" />
 		<Compile Include="ScrapperDispatcherActor.fs" />
 		<Compile Include="Program.fs" />
+    <None Include="readme.md" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -31,6 +34,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Libs\Common\DaprActor\DaprActor.fsproj" />
+	  <ProjectReference Include="..\Libs\Common\Utils\Utils.fsproj" />
 	  <ProjectReference Include="..\Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj" />
 	</ItemGroup>
 

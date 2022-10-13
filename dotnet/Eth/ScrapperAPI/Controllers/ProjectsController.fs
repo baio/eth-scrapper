@@ -5,7 +5,7 @@ open Microsoft.Extensions.Logging
 open Microsoft.AspNetCore.Authorization
 open Common.DaprState
 open Scrapper.Repo.PeojectsRepo
-open ScrapperAPI.Services.ScrapperDispatcherService
+open ScrapperAPI.Services.JobManagerService
 
 [<ApiController>]
 [<Route("projects")>]
@@ -23,9 +23,9 @@ type ProjectsController(env: DaprStoreEnv) =
 
       match result with
       | Ok result ->
-        let! result = result |> collectProjectVersionsWithState
+        //let! result = result |> collectProjectVersionsWithState
 
-        let result = result |> DTO.mapProjectsWithViewStates
+        //let result = result |> DTO.mapProjectsWithViewStates
 
         return result |> Ok
       | Error err -> return err |> Error

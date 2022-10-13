@@ -1,12 +1,11 @@
 ﻿namespace Scrapper.Repo
 
-open ScrapperModels
-
 
 module PeojectsRepo =
   open Common.DaprState.StateList
   open Common.Repo
   open Common.Utils
+  open ScrapperModels.ScrapperDispatcher
 
   type CreateProjectEntity =
     { Name: string

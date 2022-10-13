@@ -4,12 +4,20 @@
 module internal Pause =
 
   open Dapr.Actors
-  open ScrapperModels
+  open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
+  open Common.Utils
 
-  let pause (env: ActorEnv) =
+  let pause (env: Env) =
+
+    let logger = env.Logger
+
     task {
+
+      use scope = logger.BeginScope("pause")
+
+      logger.LogDebug("Pause")
+
       let! state = env.GetState()
 
       match state with
@@ -19,15 +27,18 @@ module internal Pause =
           let state =
             { state with
                 Status = Status.Pause
-                Date = epoch () }
+                Date = (env.Date() |> toEpoch) }
 
           do! env.SetState state
 
           return state |> Ok
         else
-          let error = "Actor in a wrong state"
-          env.Logger.LogDebug(error)
-          return (state, error) |> StateConflict |> Error
+          logger.LogDebug("Actor in a wrong {@state}", state)
+
+          return
+            (state, "Actor in a wrong state")
+            |> StateConflict
+            |> Error
       | None -> return StateNotFound |> Error
 
     }

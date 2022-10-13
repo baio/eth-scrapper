@@ -4,14 +4,19 @@
 module internal Resume =
 
   open Dapr.Actors
-  open ScrapperModels
+  open ScrapperModels.ScrapperDispatcher
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
+  open Common.Utils
 
-  let resume ((runScrapperEnv, env): RunScrapperEnv * ActorEnv) =
+  let resume (env: Env) =
     let logger = env.Logger
 
     task {
+
+      use scope = logger.BeginScope("resume")
+
+      logger.LogDebug("Resume")
+
       let! state = env.GetState()
 
       match state with
@@ -24,15 +29,18 @@ module internal Resume =
           let updatedState =
             { state with
                 Status = Status.Continue
-                Date = epoch () }
+                Date = (env.Date() |> toEpoch) }
 
-          logger.LogInformation("Resume with {@pervState} {@state}", state, updatedState)
+          logger.LogDebug("Resume with {@pervState} {@state}", state, updatedState)
 
-          return! runScrapper runScrapperEnv updatedState.Request state
+          return! runScrapper env updatedState.Request state
         | _ ->
-          let error = "Actor in a wrong state"
-          logger.LogDebug(error)
-          return (state, error) |> StateConflict |> Error
+          logger.LogDebug("Actor in a wrong {@state}", state)
+
+          return
+            (state, "Actor in a wrong state")
+            |> StateConflict
+            |> Error
       | _ ->
         logger.LogWarning("Resume state not found or Continue")
         return StateNotFound |> Error

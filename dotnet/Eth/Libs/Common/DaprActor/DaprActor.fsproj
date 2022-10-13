@@ -7,7 +7,6 @@
 
 	<ItemGroup>
 		<Compile Include="ActorResult.fs" />
-		<Compile Include="DateTime.fs" />
 		<Compile Include="ActorRunner.fs" />
 		<Compile Include="ActorState.fs" />
 		<Compile Include="ActorLogging.fs" />
@@ -25,6 +24,10 @@
 		<PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
 		<PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.1" />
 		<PackageReference Include="Serilog.Sinks.Seq" Version="5.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Utils\Utils.fsproj" />
 	</ItemGroup>
 
 </Project>

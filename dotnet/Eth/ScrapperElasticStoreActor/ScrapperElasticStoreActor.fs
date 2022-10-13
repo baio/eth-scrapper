@@ -5,11 +5,13 @@ module ScrapperStoreActor =
 
   open Dapr.Actors
   open Dapr.Actors.Runtime
-  open ScrapperModels
+  open ScrapperModels.ScrapperDispatcher
+  open ScrapperModels.ScrapperStore
   open Microsoft.Extensions.Configuration
   open Elasticsearch.Net
   open Microsoft.Extensions.Logging
   open Common.DaprActor
+  open ScrapperModels
 
   let elasticConfig (config: IConfiguration) =
     let connectionString = config.GetConnectionString("ElasticSearch")
@@ -47,49 +49,23 @@ module ScrapperStoreActor =
 
     }
 
-  let runScrapperDispatcherContinue (proxyFactory: Client.IActorProxyFactory) id (data: ContinueSuccessData) =
-    let actor =
-      proxyFactory.CreateActorProxy<IScrapperDispatcherActor>(id, "scrapper-dispatcher")
-
-    let success = data.Result
-
-    let continueData: ContinueData =
-      { EthProviderUrl = data.EthProviderUrl
-        ContractAddress = data.ContractAddress
-        Abi = data.Abi
-        Result =
-          (Ok
-            { BlockRange = success.BlockRange
-              ItemsCount = success.ItemsCount }) }
-
-    actor.Continue continueData |> ignore
-
-  let runScrapperDispatcherFailure (proxyFactory: Client.IActorProxyFactory) id =
-    let actor =
-      proxyFactory.CreateActorProxy<IScrapperDispatcherActor>(id, "scrapper-dispatcher")
-
-
-    let failureData: FailureData =
-      { AppId = AppId.ElasticStore
-        Status = StoreFailure "Failed to store in elasticsearch" }
-
-    actor.Failure failureData |> ignore
-
-
   [<Actor(TypeName = "scrapper-elastic-store")>]
   type ScrapperElasticStoreActor(host: ActorHost, config: IConfiguration) =
     inherit Actor(host)
     let logger = ActorLogging.create host
 
+    let createScrapperDispatcherActor (JobId id) =
+      host.ProxyFactory.CreateActorProxy<IScrapperDispatcherActor>((ActorId id), "scrapper-dispatcher")
+
+    let elasticConfig = elasticConfig config
+
+    let env: Env =
+      { Logger = logger
+        Store = store logger elasticConfig
+        ActorId = JobId(host.Id.ToString()) 
+        CreateScrapperDispatcherActor = createScrapperDispatcherActor }
+
+    let actor = ScrapperElasticStoreBaseActor env :> IScrapperStoreActor
+
     interface IScrapperStoreActor with
-      member this.Store data =
-        task {
-          let config = elasticConfig config
-          let! result = store logger config data.Result.IndexPayload
-
-          match result with
-          | true -> runScrapperDispatcherContinue this.ProxyFactory this.Id data
-          | false -> runScrapperDispatcherFailure this.ProxyFactory this.Id
-
-          return result
-        }
+      member this.Store data = actor.Store data

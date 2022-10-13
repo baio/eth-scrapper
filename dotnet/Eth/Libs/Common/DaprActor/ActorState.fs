@@ -19,7 +19,15 @@ module ActorState =
 
   let removeState (name: string) (stateManager: IActorStateManager) = stateManager.TryRemoveStateAsync(name)
 
+  let tryAddState<'a> (name: string) (stateManager: IActorStateManager) (state: 'a) =
+    stateManager.TryAddStateAsync(name, state)
+
+  let addOrUpdateState<'a> (name: string) (stateManager: IActorStateManager) (addState: 'a) (updFn: 'a -> 'a) =
+    stateManager.AddOrUpdateStateAsync(name, addState, System.Func<string, 'a, 'a>(fun _ x -> updFn x))
+
   let stateManager<'a> (name: string) (stateManager: IActorStateManager) =
     {| Get = fun () -> getState<'a> name stateManager
        Set = setState<'a> name stateManager
-       Remove = fun () -> removeState name stateManager |}
+       Remove = fun () -> removeState name stateManager
+       TryAddState = tryAddState<'a> name stateManager
+       AddOrUpdateState = addOrUpdateState<'a> name stateManager |}

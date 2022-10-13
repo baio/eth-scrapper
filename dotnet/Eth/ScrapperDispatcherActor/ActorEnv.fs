@@ -1,11 +1,20 @@
 ﻿namespace ScrapperDispatcherActor
 
 open ScrapperModels
+open ScrapperModels.Scrapper
+open ScrapperModels.JobManager
+open ScrapperModels.ScrapperDispatcher
 open System.Threading.Tasks
 open Microsoft.Extensions.Logging
-open Dapr.Actors
 
-type ActorEnv =
-  { SetState: State -> Task
+type Env =
+  { MaxEthItemsInResponse: uint
+    ActorId: JobId
+    Date: unit -> System.DateTime
+    SetState: State -> Task
     GetState: unit -> Task<State option>
-    Logger: ILogger }
+    RemoveState: unit -> Task<bool>
+    Logger: ILogger
+    CreateJobManagerActor: JobManagerId -> IJobManagerActor
+    CreateScrapperActor: JobId -> IScrapperActor
+    GetEthBlocksCount: string -> Task<uint> }

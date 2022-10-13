@@ -4,42 +4,38 @@
 module internal RunScrapper =
   open Dapr.Actors
   open System.Threading.Tasks
+  open ScrapperModels.ScrapperDispatcher
   open ScrapperModels
   open Microsoft.Extensions.Logging
-  open Common.DaprActor
+  open Common.Utils
 
-  type RunScrapperEnv =
-    { InvokeActor: ScrapperRequest -> Task<Result<unit, exn>>
-      Logger: ILogger
-      SetState: State -> Task }
+  let runScrapper (env: Env) (scrapperRequest: ScrapperRequest) (state: State) =
 
-  let runScrapper
-    ({ InvokeActor = invokeActor
-       Logger = logger
-       SetState = setState }: RunScrapperEnv)
-    (scrapperRequest: ScrapperRequest)
-    (state: State)
-    =
-
-    logger.LogDebug("Run scrapper with {@data} {@state}", scrapperRequest, state)
+    let logger = env.Logger
 
     task {
-      let! result = invokeActor scrapperRequest
+
+      use scope =
+        logger.BeginScope("runScrapper {@data} {@state}", scrapperRequest, state)
+
+      logger.LogDebug("Run scrapper")
+
+      let state: State =
+        { state with
+            Status = Status.Continue
+            Request = scrapperRequest
+            Date = env.Date() |> toEpoch }
+
+      do! env.SetState state
+
+      let actor = env.CreateScrapperActor(env.ActorId)
+
+      let! result = actor.Scrap scrapperRequest |> Task.wrapException
 
       logger.LogDebug("Run scrapper result {@result}", result)
 
       match result with
-      | Ok _ ->
-
-        let state: State =
-          { state with
-              Status = Status.Continue
-              Request = scrapperRequest
-              Date = epoch () }
-
-        do! setState state
-
-        return state |> Ok
+      | Ok _ -> return state |> Ok
       | Error _ ->
         let state: State =
           { state with
@@ -50,22 +46,27 @@ module internal RunScrapper =
                   FailuresCount = 0u }
                 |> Status.Failure
               Request = scrapperRequest
-              Date = epoch () }
+              Date = env.Date() |> toEpoch }
 
-        do! setState state
+        do! env.SetState state
 
         return state |> ActorFailure |> Error
     }
 
-  let runScrapperStart (env: RunScrapperEnv) (targetIsLatest: bool) (scrapperRequest: ScrapperRequest) =
+  let runScrapperStart
+    (env: Env)
+    ((parentId, targetIsLatest): JobManagerId option * bool)
+    (scrapperRequest: ScrapperRequest)
+    =
     let state: State =
       { Status = Status.Continue
         Request = scrapperRequest
-        Date = epoch ()
+        Date = env.Date() |> toEpoch
         FinishDate = None
         ItemsPerBlock = []
         Target =
           { ToLatest = targetIsLatest
-            Range = scrapperRequest.BlockRange } }
+            Range = scrapperRequest.BlockRange }
+        ParentId = parentId }
 
-    runScrapper env scrapperRequest state
+    task { return! runScrapper env scrapperRequest state }
