@@ -16,7 +16,7 @@ export const VersionActions = ({ state, onAction }: VersionActionsProps) => {
     }
   };
 
-  if (!state) {
+  if (!state || state.status === 'initial') {
     return (
       <>
         <a onClick={() => onAction('start')}>start</a>

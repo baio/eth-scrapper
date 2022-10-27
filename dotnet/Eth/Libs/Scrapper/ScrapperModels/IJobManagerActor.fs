@@ -38,9 +38,12 @@ type JobResult = Result<Job, JobError>
 
 type JobStateData = { ActorId: JobId; Job: Job }
 
+type JobsMap = Map<JobId, JobResult>
+
 type State =
   { Status: Status
-    Jobs: Map<JobId, JobResult>
+    Jobs: JobsMap
+    LatestUpdateDate: int64 option
     AvailableJobsCount: uint }
 
 [<KnownType("KnownTypes")>]

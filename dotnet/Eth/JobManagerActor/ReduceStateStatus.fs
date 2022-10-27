@@ -22,7 +22,7 @@ module ReduceStateStatus =
     >> Option.isSome
 
   let recalcStatus (jobs) =
-    let list = jobs |> Map.toList |> List.map snd
+    let list = jobs |> Map.values |> Seq.toList
 
     if (isAllFailed list) then
       Status.Failure
@@ -33,10 +33,22 @@ module ReduceStateStatus =
     else
       Status.Continue
 
+  let recalcDate (jobs: JobsMap) =
+    jobs
+    |> Map.values
+    |> Seq.choose (function
+      | Ok x -> x.Date |> Some
+      | _ -> None)
+    |> Seq.sort
+    |> Seq.tryHead
+
 
   /// Recalc state status from Jobs statuses
   let reduce (state: State) =
     let jobs = state.Jobs
     let status = recalcStatus jobs
+    let date = recalcDate jobs
 
-    { state with Status = status }
+    { state with
+        Status = status
+        LatestUpdateDate = date }

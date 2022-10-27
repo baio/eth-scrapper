@@ -17,6 +17,7 @@ module JobManagerBaseActor =
   let private defaultState: State =
     { AvailableJobsCount = 1u
       Jobs = Map.empty
+      LatestUpdateDate = None
       Status = Initial }
 
   type JobManagerBaseActor(env: Env) =

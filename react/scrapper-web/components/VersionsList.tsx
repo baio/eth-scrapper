@@ -14,8 +14,8 @@ export const VersionsList = ({ versions, onAction, ethBlockNumber }: VersionsLis
         <>
           <br />
           <small>
-            progress: {state!.request.blockRange.from || 0} blocks of {ethBlockNumber} ~
-            {Math.round(((state!.request.blockRange.from || 0) / ethBlockNumber) * 100)} %
+            progress: {state!.request?.blockRange.from || 0} blocks of {ethBlockNumber} ~
+            {Math.round(((state!.request?.blockRange.from || 0) / ethBlockNumber) * 100)} %
           </small>
         </>
       );
@@ -34,7 +34,7 @@ export const VersionsList = ({ versions, onAction, ethBlockNumber }: VersionsLis
           <br />
           <small>
             state: [{x.state ? x.state.status : 'not started'}] [last updated
-            {x.state ? new Date(x.state.date * 1000).toISOString() : '---'}]
+            {x.state ? new Date(x.state.date).toISOString() : '---'}]
           </small>
           {renderProgress(x.state)}
         </li>

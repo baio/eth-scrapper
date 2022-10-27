@@ -45,7 +45,7 @@ module ScrapperDispatcherService =
 
     actor.Reset()
 
-  let collectProjectVersionsWithState (projects: ProjectWithVresions list) =
+  let collectProjectVersionsWithState (projects: ProjectWithVersions list) =
 
     projects
     |> List.map (fun proj ->

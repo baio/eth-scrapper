@@ -14,11 +14,11 @@ export interface AddProjectData {
   contractAddress: string;
 }
 
-type ProjectVersionStateDTO = { project: Project; versions: { version: ScrapperVersion; state: ScrapperState }[] };
+type ProjectVersionStateDTO = { project: Project; versions: ScrapperVersion[] };
 
 const mapProjectVersionStateDTO = (dto: ProjectVersionStateDTO) => ({
   ...dto.project,
-  versions: Object.fromEntries(dto.versions.map((e) => [e.version.id, { ...e.version, state: e.state }])),
+  versions: Object.fromEntries(dto.versions.map((e) => [e.id, { ...e, state: e.state }])),
 });
 
 type ProjectVersionDTO = { project: Project; versions: ScrapperVersion[] };

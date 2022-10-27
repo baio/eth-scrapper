@@ -1,0 +1,10 @@
+version: '3'
+services:
+  web_develop:
+    container_name: web_development
+    image: "mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim"
+    volumes:
+      - ./:/app
+    command: dotnet watch run --project app/dotnet/Eth/JobManagerActor 5004
+    ports:
+      - "5004:5004"

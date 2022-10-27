@@ -31,7 +31,7 @@ module PeojectsRepo =
     { Project: ProjectEntity
       Versions: VersionWithState list }
 
-  type ProjectWithVresions =
+  type ProjectWithVersions =
     { Project: ProjectEntity
       Versions: VersionEntity list }
 

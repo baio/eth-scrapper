@@ -14,6 +14,9 @@ services:
       - .docker-data/redis:/data
     networks:
       - dapr-net
+    logging:
+          driver: none      
+
   seq:
     image: datalust/seq
     environment:
@@ -22,6 +25,7 @@ services:
       - "5340:80"
     networks:
       - dapr-net 
+
   # zipkin:
   #   image: openzipkin/zipkin-slim
   #   ports:
@@ -40,6 +44,8 @@ services:
       - discovery.type=single-node
     volumes:
       - ./.docker-data/elasticsearch:/usr/share/elasticsearch/data      
+    logging:
+          driver: none      
   kibana:
     image: "kibana:7.17.6"
     environment:
@@ -50,6 +56,52 @@ services:
       - 5601:5601
     depends_on:
       - elasticsearch    
+    logging:
+          driver: none      
+
+  ############################
+  # job-manager-actor + Dapr sidecar
+  ############################
+  job-manager-actor:
+    build: 
+      context: ./dotnet/Eth
+      dockerfile: JobManagerActor/Dockerfile         
+      args:
+        - PORT=2009
+    depends_on:
+      - redis
+      - placement
+      - seq
+    networks:
+      - dapr-net
+
+  # job-manager-actor:
+  #   container_name: job-manager-actor
+  #   image: "mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim"
+  #   volumes:
+  #     - ./:/app
+  #   command: dotnet watch run --project app/dotnet/Eth/JobManagerActor --environment Production 2009
+  #   ports:
+  #     - "2009:2009"       
+  #   networks:
+  #     - dapr-net
+  #   depends_on:
+  #     - redis
+  #     - placement
+  #     - seq
+
+  job-manager-actor-dapr:
+    image: "daprio/daprd:1.8.4"
+    command: ["./daprd",
+     "-app-id", "job-manager-actor",
+     "-app-port", "2009",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./docker-compose-components/:/components"
+    depends_on:
+      - job-manager-actor
+    network_mode: "service:job-manager-actor"
   ############################
   # scrapper-dispatcher-actor + Dapr sidecar
   ############################
@@ -134,20 +186,40 @@ services:
   ############################
   # docker-scrapper-api + Dapr sidecar
   ############################
+  # scrapper-api:
+  #   build: 
+  #     context: ./dotnet/Eth
+  #     dockerfile: ScrapperAPI/Dockerfile         
+  #     args: 
+  #       - PORT=6000
+  #   ports:
+  #     - 6001:6000
+  #   depends_on:
+  #     - redis
+  #     - placement
+  #     - seq
+  #   networks:
+  #     - dapr-net
+
   scrapper-api:
-    build: 
-      context: ./dotnet/Eth
-      dockerfile: ScrapperAPI/Dockerfile         
-      args: 
-        - PORT=6000
+    container_name: scrapper-api
+    image: "mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim"
+    volumes:
+      - ./:/app
+    working_dir: 
+      /app/dotnet/Eth/ScrapperAPI
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    command: dotnet watch run 6000
     ports:
       - 6001:6000
+    networks:
+      - dapr-net
     depends_on:
       - redis
       - placement
       - seq
-    networks:
-      - dapr-net
+
   scrapper-api-dapr:
     image: "daprio/daprd:1.8.4"
     command: ["./daprd",

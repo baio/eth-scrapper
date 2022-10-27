@@ -16,6 +16,7 @@ type ProjectsController(env: DaprStoreEnv) =
   [<HttpPost>]
   member this.Post(data: CreateProjectEntity) = repo.Create data
 
+
   [<HttpGet>]
   member this.GetAll() =
     task {
@@ -23,9 +24,11 @@ type ProjectsController(env: DaprStoreEnv) =
 
       match result with
       | Ok result ->
-        //let! result = result |> collectProjectVersionsWithState
+        let! result = result |> collectProjectVersionsWithState
 
-        //let result = result |> DTO.mapProjectsWithViewStates
+        let result =
+          result
+          |> JobsManagerDTO.mapProjectsWithVersionStates
 
         return result |> Ok
       | Error err -> return err |> Error

@@ -2,10 +2,17 @@
 
 module private JobsManagerDTO =
   open ScrapperModels.JobManager
+  open Scrapper.Repo.PeojectsRepo
   open Microsoft.AspNetCore.Mvc
+
+  let toNullable =
+    function
+    | Some x -> x |> box
+    | None -> null
 
   let mapState (state: State) =
     {| jobsCount = state.AvailableJobsCount
+       date = state.LatestUpdateDate |> toNullable
        status =
         match state.Status with
         | Status.Continue -> "continue"
@@ -33,3 +40,15 @@ module private JobsManagerDTO =
     match result with
     | Ok state -> mapSuccess state
     | Error err -> mapError err
+
+  let mapProjectsWithVersionStates
+    (projects: list<ProjectWithVersions * list<Scrapper.Repo.VersionEntity * option<ScrapperModels.JobManager.State>>>)
+    =
+    projects
+    |> List.map (fun (project, vesions) ->
+      {| project with
+           Versions =
+             vesions
+             |> List.map (fun (version, state) ->
+               {| version with
+                    State = state |> Option.map mapState |> toNullable |}) |})
