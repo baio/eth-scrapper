@@ -30,7 +30,7 @@ namespace Dapr.Decorators
 
         public DaprClient DaprClient { get; }
 
-        public Task DeleteStateAsync(string storeName, string key, StateOptions? stateOptions = null, IReadOnlyDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
+        public Task Delete(string storeName, string key, StateOptions? stateOptions = null, IReadOnlyDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
         {
             return DaprClient.DeleteStateAsync(storeName, key, stateOptions, metadata, cancellationToken);
         }

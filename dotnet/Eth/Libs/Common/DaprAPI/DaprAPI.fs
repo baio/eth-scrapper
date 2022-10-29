@@ -1,5 +1,7 @@
 ﻿namespace Common.DaprAPI
 
+open Dapr.Actors.Client
+
 
 [<AutoOpen>]
 module DaprAPI =
@@ -13,13 +15,22 @@ module DaprAPI =
   open System.Text.Json.Serialization
   open Dapr.Client
   open Common.DaprState
+  open Dapr.Abstracts
+  open Dapr.Decorators
 
+  let private getStateEnv (builder: WebApplicationBuilder) (serviceProvider: IServiceProvider) =
+    let logger = serviceProvider.GetService<ILogger>()
+    let stateManager = serviceProvider.GetService<IStateManager>()
 
-  let private getDaprAppEnv (serviceProvider: IServiceProvider) =
-    let loggerFactory = serviceProvider.GetService<ILoggerFactory>()
-    let daprClient = serviceProvider.GetService<DaprClient>()
-    let logger = loggerFactory.CreateLogger()
-    { Logger = logger; Dapr = daprClient }
+    let storeName =
+      builder
+        .Configuration
+        .GetSection("Dapr")
+        .GetValue<string>("StoreName")
+
+    { Logger = logger
+      StoreName = storeName
+      StateManager = stateManager }
 
 
   let createDaprAPI (args: string []) =
@@ -56,21 +67,13 @@ module DaprAPI =
       builder.UseJsonSerializationOptions(jsonOpts)
       |> ignore)
 
-    services.AddScoped<DaprAppEnv>(Func<_, _>(getDaprAppEnv))
+    services.AddScoped<IActorFactory>(Func<_, _>(fun _ -> ActorFactory(ActorProxy.DefaultProxyFactory)))
     |> ignore
 
-    services.AddScoped<DaprStoreEnv>(
-      Func<_, _> (fun (serviceProvider: IServiceProvider) ->
-        let app = getDaprAppEnv serviceProvider
+    services.AddScoped<IStateManager>(Func<_, _>(fun x -> StateManager(x.GetService<DaprClient>())))
+    |> ignore
 
-        let storeName =
-          builder
-            .Configuration
-            .GetSection("Dapr")
-            .GetValue<string>("StoreName")
-
-        { App = app; StoreName = storeName })
-    )
+    services.AddScoped<StateEnv>(Func<_, _>(getStateEnv builder))
     |> ignore
 
     let app = builder.Build()

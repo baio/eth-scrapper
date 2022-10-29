@@ -24,6 +24,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\Dapr.Decorators\Dapr.Decorators.csproj" />
+		<ProjectReference Include="..\Dapr.Abstracts\Dapr.Abstracts.csproj" />
 		<ProjectReference Include="..\DaprState\DaprState.fsproj" />
 		<ProjectReference Include="..\Repo\Repo.fsproj" />
 	</ItemGroup>

@@ -6,12 +6,13 @@ open Microsoft.AspNetCore.Authorization
 open Common.DaprState
 open Scrapper.Repo.PeojectsRepo
 open ScrapperAPI.Services.JobManagerService
+open Dapr.Abstracts
 
 [<ApiController>]
 [<Route("projects")>]
-type ProjectsController(env: StateEnv) =
+type ProjectsController(stateEnv: StateEnv, actorFactory: IActorFactory) =
   inherit ControllerBase()
-  let repo = createRepo env
+  let repo = createRepo stateEnv
 
   [<HttpPost>]
   member this.Post(data: CreateProjectEntity) = repo.Create data
@@ -20,9 +21,8 @@ type ProjectsController(env: StateEnv) =
   [<HttpGet>]
   member this.GetAll() =
 
-    env.App.Dapr.GetStateEntryAsync
     task {
-      let! result = getProjectVersionsWithState (repo, )
+      let! result = getProjectVersionsWithState (stateEnv, actorFactory)
 
       match result with
       | Ok result ->

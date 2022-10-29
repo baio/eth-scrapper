@@ -7,17 +7,16 @@ open Scrapper.Repo.PeojectsRepo
 open ScrapperAPI.Services.JobManagerService
 open Common.DaprAPI
 open JobsManagerDTO
+open Dapr.Abstracts
 
 [<ApiController>]
 [<Route("projects/{projectId}/versions")>]
-type ProjectVersionssController(env: DaprStoreEnv) =
+type ProjectVersionssController(stateEnv: StateEnv, actorFactory: IActorFactory) =
   inherit ControllerBase()
-  let repo = createRepo env
+  let repo = createRepo stateEnv
 
   [<HttpPost>]
-  member this.Post(projectId: string, data: CreateVersionEntity) = 
-    env.App.Dapr.GetStateEntryAsync
-    repo.CreateVersion projectId data
+  member this.Post(projectId: string, data: CreateVersionEntity) = repo.CreateVersion projectId data
 
   [<HttpGet>]
   member this.GetAll(projectId: string) = repo.GetAllVersions projectId
@@ -28,7 +27,7 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   [<HttpPost("{versionId}/start")>]
   member this.Start(projectId: string, versionId: string) =
     task {
-      let! result = start env projectId versionId
+      let! result = start (stateEnv, actorFactory) projectId versionId
 
       match result with
       | Error err ->
@@ -41,7 +40,7 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   [<HttpGet("{versionId}/state")>]
   member this.State(projectId: string, versionId: string) =
     task {
-      let! result = state projectId versionId
+      let! result = state actorFactory projectId versionId
 
       match result with
       | Some result -> return result |> this.Ok :> IActionResult
@@ -51,21 +50,21 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   [<HttpPost("{versionId}/pause")>]
   member this.Pause(projectId: string, versionId: string) =
     task {
-      let! result = pause projectId versionId
+      let! result = pause actorFactory projectId versionId
       return mapResult result
     }
 
   [<HttpPost("{versionId}/resume")>]
   member this.Resume(projectId: string, versionId: string) =
     task {
-      let! result = resume projectId versionId
+      let! result = resume actorFactory projectId versionId
       return mapResult result
     }
 
   [<HttpPost("{versionId}/reset")>]
   member this.Reset(projectId: string, versionId: string) =
     task {
-      let! result = reset projectId versionId
+      let! result = reset actorFactory projectId versionId
 
       match result with
       | Ok _ -> return NoContentResult() :> IActionResult

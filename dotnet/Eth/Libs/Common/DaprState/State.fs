@@ -3,8 +3,8 @@
 [<AutoOpen>]
 module State =
 
-  open Dapr.Client
   open Microsoft.Extensions.Logging
+  open Dapr.Abstracts
 
   type UpdateResult<'a> =
     { IsSuccess: bool
@@ -29,7 +29,7 @@ module State =
     metadata
     =
     task {
-      let! res = stateManager.trySave (storeName, id, doc, NEW_ETAG, metadata = metadata)
+      let! res = stateManager.TrySave(storeName, id, doc, NEW_ETAG, metadata = metadata)
 
       match res with
       | true -> logger.LogTrace("{stateStore} updated with new {document}", storeName, "[doc]")
@@ -51,7 +51,7 @@ module State =
     metadata
     =
     task {
-      do! stateManager.save (storeName, id, doc, metadata = metadata)
+      do! stateManager.Save(storeName, id, doc, metadata = metadata)
 
       logger.LogTrace("{stateStore} record with {id} updated with new {document}", storeName, id, "[doc]")
     }
@@ -75,7 +75,7 @@ module State =
     (updateFun: 'a option -> Result<'a, 'b>)
     =
     task {
-      let! docEntry = stateManager.getEntry<'a> (storeName, id)
+      let! docEntry = stateManager.GetEntry<'a>(storeName, id)
 
       let (etag, doc) =
         match box docEntry.Value with
@@ -86,7 +86,7 @@ module State =
 
       match doc with
       | Ok doc ->
-        let! res = stateManager.trySave (storeName, id, doc, etag)
+        let! res = stateManager.TrySave(storeName, id, doc, etag)
 
         let res =
           { IsSuccess = res
@@ -113,7 +113,7 @@ module State =
     (updateFun: 'a -> 'a option)
     =
     task {
-      let! docEntry = stateManager.getEntry<'a> (storeName, id)
+      let! docEntry = stateManager.GetEntry<'a>(storeName, id)
 
       let result =
         match box docEntry.Value with
@@ -126,7 +126,7 @@ module State =
 
         match doc with
         | Some doc ->
-          let! res = stateManager.trySave (storeName, id, doc, etag)
+          let! res = stateManager.TrySave(storeName, id, doc, etag)
 
           let res =
             { IsSuccess = res
@@ -160,7 +160,7 @@ module State =
     =
     task {
 
-      let! res = stateManager.get<'a> (storeName, id)
+      let! res = stateManager.Get<'a>(storeName, id)
 
       match box res with
       | null ->
@@ -190,7 +190,7 @@ module State =
 
     id
     =
-    stateManager.delete (storeName, id)
+    stateManager.Delete(storeName, id)
 
   let getStateAndRemoveAsync<'a> ctx id =
     task {

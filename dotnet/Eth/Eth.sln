@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapr.Abstracts", "Libs\Comm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapr.Decorators", "Libs\Dapr.Decorators\Dapr.Decorators.csproj", "{24335959-9998-478C-96E8-B756000333E3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapr.Decorators.InMemory", "Libs\Dapr.Decorators.InMemory\Dapr.Decorators.InMemory.csproj", "{AA5A2253-184C-4F8B-ABD5-CCD1B929C67E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{24335959-9998-478C-96E8-B756000333E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24335959-9998-478C-96E8-B756000333E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24335959-9998-478C-96E8-B756000333E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA5A2253-184C-4F8B-ABD5-CCD1B929C67E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA5A2253-184C-4F8B-ABD5-CCD1B929C67E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA5A2253-184C-4F8B-ABD5-CCD1B929C67E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA5A2253-184C-4F8B-ABD5-CCD1B929C67E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

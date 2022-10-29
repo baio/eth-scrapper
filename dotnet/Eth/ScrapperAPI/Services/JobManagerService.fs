@@ -11,17 +11,16 @@ module JobManagerService =
   open Common.Repo
   open Common.Utils
   open ScrapperModels.JobManager
+  open Dapr.Abstracts
 
-  type IJobManagerActorFactory = JobManagerId -> IJobManagerActor
 
   let private getActorId projectId versionId =
     let actorId = $"{projectId}_{versionId}"
     actorId
 
-  let private createActor (factory: IJobManagerActorFactory) projectId versionId =
-    getActorId projectId versionId
-    |> JobManagerId
-    |> factory
+  let private createActor (factory: IActorFactory) projectId versionId =
+    let actorId = getActorId projectId versionId
+    factory.CreateActor<IJobManagerActor>(actorId)
 
 
   let state factory projectId versionId =
@@ -52,7 +51,7 @@ module JobManagerService =
     | ActorFailure of Error
     | RepoError of RepoError
 
-  let start ((stateEnv, factory): StateEnv * IJobManagerActorFactory) projectId versionId =
+  let start ((stateEnv, factory): StateEnv * IActorFactory) projectId versionId =
     let repo = createRepo stateEnv
 
     task {
@@ -78,7 +77,7 @@ module JobManagerService =
 
     }
 
-  let gettProjectVersionsWithState ((env, factory): StateEnv * IJobManagerActorFactory) =
+  let getProjectVersionsWithState ((env, factory): StateEnv * IActorFactory) =
     let repo = createRepo env
 
     task {

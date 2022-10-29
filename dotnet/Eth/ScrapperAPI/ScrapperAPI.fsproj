@@ -5,12 +5,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="AppEnv.fs" />
 		<None Include="read.me" />
 		<Compile Include="APIError.fs" />
 		<Compile Include="Controllers\JobsManagerDTO.fs" />
 		<Compile Include="Services\JobManagerService.fs" />
-		<Compile Include="Services\ScrapperDispatcherService.fs" />
 		<Compile Include="Controllers\JobDTO.fs" />
 		<Compile Include="Controllers\ProjectVersionsController.fs" />
 		<Compile Include="Controllers\ProjectsController.fs" />
