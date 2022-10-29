@@ -3,8 +3,7 @@
 [<AutoOpen>]
 module StateList =
 
-  open State
-  open System.Threading.Tasks
+  open State  
 
   let getStateList<'a> env id =
     task {

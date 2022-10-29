@@ -9,7 +9,7 @@ open ScrapperAPI.Services.JobManagerService
 
 [<ApiController>]
 [<Route("projects")>]
-type ProjectsController(env: DaprStoreEnv) =
+type ProjectsController(env: StateEnv) =
   inherit ControllerBase()
   let repo = createRepo env
 
@@ -19,13 +19,13 @@ type ProjectsController(env: DaprStoreEnv) =
 
   [<HttpGet>]
   member this.GetAll() =
+
+    env.App.Dapr.GetStateEntryAsync
     task {
-      let! result = repo.GetAllWithVerions()
+      let! result = getProjectVersionsWithState (repo, )
 
       match result with
       | Ok result ->
-        let! result = result |> collectProjectVersionsWithState
-
         let result =
           result
           |> JobsManagerDTO.mapProjectsWithVersionStates

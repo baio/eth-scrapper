@@ -1,7 +1,5 @@
 ﻿namespace ScrapperAPI.Services
 
-open ScrapperModels
-
 module ScrapperDispatcherService =
 
   open Dapr.Actors
@@ -11,6 +9,7 @@ module ScrapperDispatcherService =
   open Common.DaprState
   open Common.Repo
   open Common.Utils
+  open ScrapperModels
 
   let private getActorId projectId versionId =
     let actorId = $"{projectId}_{versionId}"

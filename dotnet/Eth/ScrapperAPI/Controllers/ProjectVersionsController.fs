@@ -15,7 +15,9 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   let repo = createRepo env
 
   [<HttpPost>]
-  member this.Post(projectId: string, data: CreateVersionEntity) = repo.CreateVersion projectId data
+  member this.Post(projectId: string, data: CreateVersionEntity) = 
+    env.App.Dapr.GetStateEntryAsync
+    repo.CreateVersion projectId data
 
   [<HttpGet>]
   member this.GetAll(projectId: string) = repo.GetAllVersions projectId

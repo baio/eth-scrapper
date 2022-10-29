@@ -14,16 +14,26 @@ module State =
 
   let private NEW_ETAG = "-1"
 
-  type StateEnv = DaprAppEnv * string
+  type StateEnv =
+    { Logger: ILogger
+      StateManager: IStateManager
+      StoreName: string }
 
   /// Create new item or fail if already exists
-  let tryCreateStateWithMetadataAsync { App = app; StoreName = storeName } id doc metadata =
+  let tryCreateStateWithMetadataAsync
+    { Logger = logger
+      StateManager = stateManager
+      StoreName = storeName }
+    id
+    doc
+    metadata
+    =
     task {
-      let! res = app.Dapr.TrySaveStateAsync(storeName, id, doc, NEW_ETAG, metadata = metadata)
+      let! res = stateManager.trySave (storeName, id, doc, NEW_ETAG, metadata = metadata)
 
       match res with
-      | true -> app.Logger.LogTrace("{stateStore} updated with new {document}", storeName, "[doc]")
-      | false -> app.Logger.LogWarning("{stateStore} failed to update, {docKey} already exists", storeName, id)
+      | true -> logger.LogTrace("{stateStore} updated with new {document}", storeName, "[doc]")
+      | false -> logger.LogWarning("{stateStore} failed to update, {docKey} already exists", storeName, id)
 
       return res
     }
@@ -32,11 +42,18 @@ module State =
     tryCreateStateWithMetadataAsync opts id doc (readOnlyDict [])
 
   // Create new item even if exists
-  let createStateWithMetadataAsync { App = app; StoreName = storeName } id doc metadata =
+  let createStateWithMetadataAsync
+    { Logger = logger
+      StateManager = stateManager
+      StoreName = storeName }
+    id
+    doc
+    metadata
+    =
     task {
-      do! app.Dapr.SaveStateAsync(storeName, id, doc, metadata = metadata)
+      do! stateManager.save (storeName, id, doc, metadata = metadata)
 
-      app.Logger.LogTrace("{stateStore} record with {id} updated with new {document}", storeName, id, "[doc]")
+      logger.LogTrace("{stateStore} record with {id} updated with new {document}", storeName, id, "[doc]")
     }
 
   let creatStateTTLAsync opts id doc (ttl: int) =
@@ -51,21 +68,25 @@ module State =
   /// Find item and update it if exists
   /// If item is not exists then create new and then update it
   let tryUpdateOrCreateStateAsync<'a, 'b>
-    { App = app; StoreName = storeName }
+    { Logger = logger
+      StateManager = stateManager
+      StoreName = storeName }
     id
     (updateFun: 'a option -> Result<'a, 'b>)
     =
-    task {      
-      let! docEntry = app.Dapr.GetStateEntryAsync<'a>(storeName, id)
+    task {
+      let! docEntry = stateManager.getEntry<'a> (storeName, id)
+
       let (etag, doc) =
         match box docEntry.Value with
         | null ->
           // document still not created
           (NEW_ETAG, updateFun None)
         | _ -> (docEntry.ETag, updateFun (Some docEntry.Value))
+
       match doc with
       | Ok doc ->
-        let! res = app.Dapr.TrySaveStateAsync(storeName, id, doc, etag)
+        let! res = stateManager.trySave (storeName, id, doc, etag)
 
         let res =
           { IsSuccess = res
@@ -74,20 +95,25 @@ module State =
             Doc = doc }
 
         match res.IsSuccess with
-        | true ->
-          app.Logger.LogTrace("{stateStore} document with {docKey} is updated with {result}", storeName, id, res)
+        | true -> logger.LogTrace("{stateStore} document with {docKey} is updated with {result}", storeName, id, res)
         | false ->
-          app.Logger.LogTrace("{stateStore} document with {docKey} fail to update with {etag}", storeName, id, etag)
+          logger.LogTrace("{stateStore} document with {docKey} fail to update with {etag}", storeName, id, etag)
 
         return Ok doc
       | Error err ->
-        app.Logger.LogTrace("{stateStore} document with {docKey} update is skipped due to {@err}", storeName, id, err)
+        logger.LogTrace("{stateStore} document with {docKey} update is skipped due to {@err}", storeName, id, err)
         return Error err
     }
 
-  let tryUpdateStateAsync'<'a> { App = app; StoreName = storeName } id (updateFun: 'a -> 'a option) =
+  let tryUpdateStateAsync'<'a>
+    { Logger = logger
+      StateManager = stateManager
+      StoreName = storeName }
+    id
+    (updateFun: 'a -> 'a option)
+    =
     task {
-      let! docEntry = app.Dapr.GetStateEntryAsync<'a>(storeName, id)
+      let! docEntry = stateManager.getEntry<'a> (storeName, id)
 
       let result =
         match box docEntry.Value with
@@ -100,7 +126,7 @@ module State =
 
         match doc with
         | Some doc ->
-          let! res = app.Dapr.TrySaveStateAsync(storeName, id, doc, etag)
+          let! res = stateManager.trySave (storeName, id, doc, etag)
 
           let res =
             { IsSuccess = res
@@ -110,9 +136,9 @@ module State =
 
           match res.IsSuccess with
           | true ->
-            app.Logger.LogTrace("{stateStore} document with {docKey} is updated with {result}", storeName, id, "[res]")
+            logger.LogTrace("{stateStore} document with {docKey} is updated with {result}", storeName, id, "[res]")
           | false ->
-            app.Logger.LogWarning("{stateStore} document with {docKey} fail to update with {etag}", storeName, id, etag)
+            logger.LogWarning("{stateStore} document with {docKey} fail to update with {etag}", storeName, id, etag)
 
           return Some(doc, doc')
         | None -> return None
@@ -126,17 +152,22 @@ module State =
     }
 
 
-  let getStateAsync<'a> { App = app; StoreName = storeName } id =
+  let getStateAsync<'a>
+    { Logger = logger
+      StateManager = stateManager
+      StoreName = storeName }
+    id
+    =
     task {
 
-      let! res = app.Dapr.GetStateAsync<'a>(storeName, id, consistencyMode = ConsistencyMode.Eventual)
+      let! res = stateManager.get<'a> (storeName, id)
 
       match box res with
       | null ->
-        app.Logger.LogWarning("{stateStore} get value for {id} not found", storeName, id)
+        logger.LogWarning("{stateStore} get value for {id} not found", storeName, id)
         return None
       | _ ->
-        app.Logger.LogTrace("{stateStore} get value for {id} return {res}", storeName, id, "[res]")
+        logger.LogTrace("{stateStore} get value for {id} return {res}", storeName, id, "[res]")
         return Some res
 
     }
@@ -152,8 +183,14 @@ module State =
     }
 
   /// Create new item or fail if already exists
-  let deleteStateAsync { App = app; StoreName = storeName } id =
-    app.Dapr.DeleteStateAsync(storeName, id)
+  let deleteStateAsync
+    { Logger = logger
+      StateManager = stateManager
+      StoreName = storeName }
+
+    id
+    =
+    stateManager.delete (storeName, id)
 
   let getStateAndRemoveAsync<'a> ctx id =
     task {

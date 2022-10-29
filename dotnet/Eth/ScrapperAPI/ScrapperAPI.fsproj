@@ -5,6 +5,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Include="AppEnv.fs" />
 		<None Include="read.me" />
 		<Compile Include="APIError.fs" />
 		<Compile Include="Controllers\JobsManagerDTO.fs" />

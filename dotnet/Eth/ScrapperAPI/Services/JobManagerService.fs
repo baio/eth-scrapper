@@ -12,37 +12,39 @@ module JobManagerService =
   open Common.Utils
   open ScrapperModels.JobManager
 
+  type IJobManagerActorFactory = JobManagerId -> IJobManagerActor
 
   let private getActorId projectId versionId =
     let actorId = $"{projectId}_{versionId}"
-    ActorId actorId
+    actorId
 
-  let private createActor projectId versionId =
-    let actorId = getActorId projectId versionId
+  let private createActor (factory: IJobManagerActorFactory) projectId versionId =
+    getActorId projectId versionId
+    |> JobManagerId
+    |> factory
 
-    ActorProxy.Create<IJobManagerActor>(actorId, "job-manager")
 
-  let state projectId versionId =
+  let state factory projectId versionId =
 
-    let actor = createActor projectId versionId
+    let actor = createActor factory projectId versionId
 
     actor.State()
 
-  let pause projectId versionId =
+  let pause factory projectId versionId =
 
-    let actor = createActor projectId versionId
+    let actor = createActor factory projectId versionId
 
     actor.Pause()
 
-  let resume projectId versionId =
+  let resume factory projectId versionId =
 
-    let actor = createActor projectId versionId
+    let actor = createActor factory projectId versionId
 
     actor.Resume()
 
-  let reset projectId versionId =
+  let reset factory projectId versionId =
 
-    let actor = createActor projectId versionId
+    let actor = createActor factory projectId versionId
 
     actor.Reset()
 
@@ -50,8 +52,8 @@ module JobManagerService =
     | ActorFailure of Error
     | RepoError of RepoError
 
-  let start (env: DaprStoreEnv) projectId versionId =
-    let repo = createRepo env
+  let start ((stateEnv, factory): StateEnv * IJobManagerActorFactory) projectId versionId =
+    let repo = createRepo stateEnv
 
     task {
 
@@ -59,7 +61,7 @@ module JobManagerService =
 
       match result with
       | Ok (proj, ver) ->
-        let actor = createActor projectId ver.Id
+        let actor = createActor factory projectId ver.Id
 
         let data: StartData =
           { EthProviderUrl = proj.EthProviderUrl
@@ -76,25 +78,38 @@ module JobManagerService =
 
     }
 
-  let collectProjectVersionsWithState (projects: ProjectWithVersions list) =
+  let gettProjectVersionsWithState ((env, factory): StateEnv * IJobManagerActorFactory) =
+    let repo = createRepo env
 
-    projects
-    |> List.map (fun proj ->
-      task {
+    task {
+      let! projects = repo.GetAllWithVerions()
+
+
+      match projects with
+      | Ok projects ->
+
         let! result =
-          proj.Versions
-          |> List.map (fun v ->
+          projects
+          |> List.map (fun proj ->
             task {
-              try
-                let! st = state proj.Project.Id v.Id
-                return (v, st)
-              with
-              | _ -> return (v, None)
+              let! result =
+                proj.Versions
+                |> List.map (fun v ->
+                  task {
+                    try
+                      let! st = state factory proj.Project.Id v.Id
+                      return (v, st)
+                    with
+                    | _ -> return (v, None)
+                  })
+                |> Task.all
+
+              let result = (proj, result)
+
+              return result
             })
           |> Task.all
 
-        let result = (proj, result)
-
-        return result
-      })
-    |> Task.all
+        return result |> Ok
+      | Error err -> return err |> Error
+    }

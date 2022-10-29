@@ -6,6 +6,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Include="IStateManager.fs" />
+		<Compile Include="DaprStateManager.fs" />
 		<Compile Include="DaprAppEnv.fs" />
 		<Compile Include="State.fs" />
 		<Compile Include="StateList.fs" />
