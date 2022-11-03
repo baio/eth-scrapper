@@ -1,10 +1,11 @@
 ﻿using Dapr.Abstracts;
 using Dapr.Client;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Dapr.Decorators.InMemory
 {
-    internal class StateEnrty<TValue> : IStateEntry<TValue>
+    internal class StateEnrty<TValue> : IStateEntry<TValue>   
     {
         internal StateEnrty(string key, TValue val, string etag)
         {
@@ -42,7 +43,7 @@ namespace Dapr.Decorators.InMemory
         {
             var val = cache.Get<IStateEntry<TValue>>(GetKey(storeName, key));
 
-            return Task.FromResult(val);
+            return Task.FromResult(val ?? new StateEnrty<TValue>(key, default, ""));
         }
 
         public Task Save<TValue>(string storeName, string key, TValue value, StateOptions? stateOptions = null, IReadOnlyDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)

@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+
+		<IsPackable>false</IsPackable>
+		<GenerateProgramFile>false</GenerateProgramFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="CreateProjectTests.fs" />
+		<Compile Include="Program.fs" />
+		<Content Include="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Expecto" Version="9.0.4" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="5.2.1" />
+		<PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.13.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\JobManagerActor\JobManagerActor.fsproj" />
+		<ProjectReference Include="..\Libs\Common\Dapr.Abstracts\Dapr.Abstracts.csproj" />
+		<ProjectReference Include="..\Libs\Common\DaprState\DaprState.fsproj" />
+		<ProjectReference Include="..\Libs\Common\Logger\Logger.fsproj" />
+		<ProjectReference Include="..\Libs\Dapr.Decorators.InMemory\Dapr.Decorators.InMemory.csproj" />
+		<ProjectReference Include="..\Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj" />
+		<ProjectReference Include="..\Libs\Scrapper\ScrapperTestContext\ScrapperTestContext.fsproj" />
+		<ProjectReference Include="..\ScrapperAPI\ScrapperAPI.fsproj" />
+		<ProjectReference Include="..\ScrapperDispatcherActor\ScrapperDispatcherActor.fsproj" />
+		<ProjectReference Include="..\ScrapperElasticStoreActor\ScrapperElasticStoreActor.fsproj" />
+	</ItemGroup>
+
+</Project>

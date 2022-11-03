@@ -1,5 +1,7 @@
 ﻿namespace ScrapperAPI.Services
 
+open Scrapper.Repo
+
 module JobManagerService =
 
   open Dapr.Actors
@@ -10,14 +12,16 @@ module JobManagerService =
   open ScrapperModels
   open ScrapperModels.JobManager
 
-  type JobManagerActorFactory = JobId -> IJobManagerActor
+  type JobManagerActorFactory = JobManagerId -> IJobManagerActor
 
   let private getActorId projectId versionId =
     let actorId = $"{projectId}_{versionId}"
     actorId
 
   let private createActor (factory: JobManagerActorFactory) projectId versionId =
-    getActorId projectId versionId |> JobId |> factory
+    getActorId projectId versionId
+    |> JobManagerId
+    |> factory
 
   let state factory projectId versionId =
 
@@ -47,8 +51,22 @@ module JobManagerService =
     | ActorFailure of Error
     | RepoError of RepoError
 
-  let start ((stateEnv, factory): StateEnv * JobManagerActorFactory) projectId versionId =
-    let repo = createRepo stateEnv
+
+  type VersionWithState =
+    { Version: VersionEntity
+      State: State option }
+
+  type ProjectWithVresionsAndState =
+    { Project: ProjectEntity
+      Versions: VersionWithState list }
+
+
+  let createProject repoEnv data =
+    let repo = createRepo repoEnv
+    repo.Create data
+
+  let start ((repoEnv, factory): RepoEnv * JobManagerActorFactory) projectId versionId =
+    let repo = createRepo repoEnv
 
     task {
 
@@ -73,8 +91,8 @@ module JobManagerService =
 
     }
 
-  let getProjectVersionsWithState ((env, factory): StateEnv * JobManagerActorFactory) =
-    let repo = createRepo env
+  let getProjectVersionsWithState ((repoEnv, factory): RepoEnv * JobManagerActorFactory) =
+    let repo = createRepo repoEnv
 
     task {
       let! projects = repo.GetAllWithVerions()
@@ -99,7 +117,11 @@ module JobManagerService =
                   })
                 |> Task.all
 
-              let result = (proj, result)
+              let result: ProjectWithVresionsAndState =
+                { Project = proj.Project
+                  Versions =
+                    result
+                    |> List.map (fun (v, s) -> { Version = v; State = s }) }
 
               return result
             })

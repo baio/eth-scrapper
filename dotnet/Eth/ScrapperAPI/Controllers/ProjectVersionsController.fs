@@ -10,9 +10,9 @@ open JobsManagerDTO
 
 [<ApiController>]
 [<Route("projects/{projectId}/versions")>]
-type ProjectVersionssController(stateEnv: StateEnv, actorFactory: JobManagerActorFactory) =
+type ProjectVersionssController(repoEnv: RepoEnv, actorFactory: JobManagerActorFactory) =
   inherit ControllerBase()
-  let repo = createRepo stateEnv
+  let repo = createRepo repoEnv
 
   [<HttpPost>]
   member this.Post(projectId: string, data: CreateVersionEntity) = repo.CreateVersion projectId data
@@ -26,7 +26,7 @@ type ProjectVersionssController(stateEnv: StateEnv, actorFactory: JobManagerActo
   [<HttpPost("{versionId}/start")>]
   member this.Start(projectId: string, versionId: string) =
     task {
-      let! result = start (stateEnv, actorFactory) projectId versionId
+      let! result = start (repoEnv, actorFactory) projectId versionId
 
       match result with
       | Error err ->

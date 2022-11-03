@@ -23,14 +23,6 @@ module PeojectsRepo =
       Prefix: string
       EthProviderUrl: string }
 
-  type VersionWithState =
-    { Version: VersionEntity
-      State: State option }
-
-  type ProjectWithVresionsAndState =
-    { Project: ProjectEntity
-      Versions: VersionWithState list }
-
   type ProjectWithVersions =
     { Project: ProjectEntity
       Versions: VersionEntity list }
@@ -42,7 +34,7 @@ module PeojectsRepo =
   let private getProjectId prefix contractAddress = $"{prefix}_{contractAddress}"
 
   let createRepo env =
-    let repo = stateListRepo<ProjectEntity> env
+    let repo = stateListRepo<ProjectEntity> env.StateEnv
     let versionRepo = ProjectVersionsRepo.createRepo env
 
     let getOne projId =

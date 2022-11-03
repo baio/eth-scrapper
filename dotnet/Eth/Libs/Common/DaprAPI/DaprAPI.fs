@@ -100,4 +100,4 @@ module DaprAPI =
 
     app.Run(url)
 
-    0
+    services

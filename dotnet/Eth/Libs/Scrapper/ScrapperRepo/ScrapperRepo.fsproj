@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="RepoEnv.fs" />
     <Compile Include="ProjectVersionsRepo.fs" />
     <Compile Include="ProjectsRepo.fs" />
   </ItemGroup>

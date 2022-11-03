@@ -12,17 +12,14 @@ module internal ProjectVersionsRepo =
 
   let getKey projId = $"project_{projId}_versions"
 
-  let createRepo env =
+  let createRepo ({ StateEnv = env; Now = now }) =
     let repo = stateListRepo<VersionEntity> env
 
     {| Create =
         fun projId (ver: CreateVersionEntity) ->
-          let key = getKey projId          
-          repo.Insert
-            key
-            (fun x -> x.Id = ver.Id)
-            { Id = ver.Id
-              Created = System.DateTime.UtcNow }
+          let key = getKey projId
+
+          repo.Insert key (fun x -> x.Id = ver.Id) { Id = ver.Id; Created = now () }
           |> taskMap errorToConflict
        GetAll = fun projId -> repo.GetAll(getKey projId) |> taskMap Ok
        GetOne = fun projId verId -> repo.GetHead (getKey projId) (fun enty -> enty.Id = verId)

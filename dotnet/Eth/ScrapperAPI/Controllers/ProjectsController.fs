@@ -7,29 +7,26 @@ open Common.DaprState
 open Scrapper.Repo.PeojectsRepo
 open ScrapperAPI.Services.JobManagerService
 open Dapr.Abstracts
+open Scrapper.Repo
 
 [<ApiController>]
 [<Route("projects")>]
-type ProjectsController(stateEnv: StateEnv, actorFactory: JobManagerActorFactory) =
+type ProjectsController(repoEnv: RepoEnv, actorFactory: JobManagerActorFactory) =
   inherit ControllerBase()
-  let repo = createRepo stateEnv
+  let repo = createRepo repoEnv
 
   [<HttpPost>]
-  member this.Post(data: CreateProjectEntity) = repo.Create data
+  member this.Post(data: CreateProjectEntity) = createProject repoEnv data
 
 
   [<HttpGet>]
   member this.GetAll() =
 
     task {
-      let! result = getProjectVersionsWithState (stateEnv, actorFactory)
+      let! result = getProjectVersionsWithState (repoEnv, actorFactory)
 
       match result with
       | Ok result ->
-        let result =
-          result
-          |> JobsManagerDTO.mapProjectsWithVersionStates
-
         return result |> Ok
       | Error err -> return err |> Error
     }

@@ -37,6 +37,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dapr.Decorators.InMemory", 
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ScrapperTestContext", "Libs\Scrapper\ScrapperTestContext\ScrapperTestContext.fsproj", "{46389D73-4525-4791-BB23-928F0490C02F}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ScrapperAPITests", "ScrapperAPITests\ScrapperAPITests.fsproj", "{FB5ED8D1-74CF-4D03-B342-02DBE8A1C138}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{46389D73-4525-4791-BB23-928F0490C02F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46389D73-4525-4791-BB23-928F0490C02F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46389D73-4525-4791-BB23-928F0490C02F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB5ED8D1-74CF-4D03-B342-02DBE8A1C138}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB5ED8D1-74CF-4D03-B342-02DBE8A1C138}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB5ED8D1-74CF-4D03-B342-02DBE8A1C138}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB5ED8D1-74CF-4D03-B342-02DBE8A1C138}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
