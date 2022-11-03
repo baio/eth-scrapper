@@ -13,7 +13,6 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Compile Include="Context.fs" />
     <Compile Include="LimitExceedsContinueJobTests.fs" />
     <Compile Include="EmptyResultFinishTests.fs" />
     <Compile Include="EmptyResultFinishJobTests.fs" />
@@ -33,6 +32,7 @@
     <ProjectReference Include="..\JobManagerActor\JobManagerActor.fsproj" />
     <ProjectReference Include="..\Libs\Common\Logger\Logger.fsproj" />
     <ProjectReference Include="..\Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj" />
+    <ProjectReference Include="..\Libs\Scrapper\ScrapperTestContext\ScrapperTestContext.fsproj" />
     <ProjectReference Include="..\ScrapperDispatcherActor\ScrapperDispatcherActor.fsproj" />
     <ProjectReference Include="..\ScrapperElasticStoreActor\ScrapperElasticStoreActor.fsproj" />
   </ItemGroup>

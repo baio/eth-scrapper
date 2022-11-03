@@ -4,7 +4,7 @@ open Expecto
 open ScrapperModels
 open Common.Utils.Task
 open Common.Utils
-open Context
+open ScrapperTestContext
 open System.Threading.Tasks
 
 let ethBlocksCount = 100u
