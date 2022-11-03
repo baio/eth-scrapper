@@ -20,7 +20,7 @@ namespace Dapr.Decorators.InMemory
 
     public class StateManager : IStateManager
     {
-        private readonly MemoryCache cache = new(new MemoryCacheOptions());
+        private static readonly MemoryCache cache = new(new MemoryCacheOptions());
 
         private string GetKey(string storeName, string key) => storeName + "_" + key;
 

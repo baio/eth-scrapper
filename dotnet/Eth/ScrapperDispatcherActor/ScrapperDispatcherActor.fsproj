@@ -33,6 +33,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\Libs\Common\Dapr.Abstracts\Dapr.Abstracts.csproj" />
 	  <ProjectReference Include="..\Libs\Common\DaprActor\DaprActor.fsproj" />
 	  <ProjectReference Include="..\Libs\Common\Utils\Utils.fsproj" />
 	  <ProjectReference Include="..\Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj" />

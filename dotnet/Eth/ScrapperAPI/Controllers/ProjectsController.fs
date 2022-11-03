@@ -10,7 +10,7 @@ open Dapr.Abstracts
 
 [<ApiController>]
 [<Route("projects")>]
-type ProjectsController(stateEnv: StateEnv, actorFactory: IActorFactory) =
+type ProjectsController(stateEnv: StateEnv, actorFactory: JobManagerActorFactory) =
   inherit ControllerBase()
   let repo = createRepo stateEnv
 

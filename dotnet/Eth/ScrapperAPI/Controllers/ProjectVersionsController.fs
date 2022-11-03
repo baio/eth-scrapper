@@ -7,11 +7,10 @@ open Scrapper.Repo.PeojectsRepo
 open ScrapperAPI.Services.JobManagerService
 open Common.DaprAPI
 open JobsManagerDTO
-open Dapr.Abstracts
 
 [<ApiController>]
 [<Route("projects/{projectId}/versions")>]
-type ProjectVersionssController(stateEnv: StateEnv, actorFactory: IActorFactory) =
+type ProjectVersionssController(stateEnv: StateEnv, actorFactory: JobManagerActorFactory) =
   inherit ControllerBase()
   let repo = createRepo stateEnv
 

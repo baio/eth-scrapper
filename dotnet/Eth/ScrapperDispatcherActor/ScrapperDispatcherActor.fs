@@ -28,7 +28,7 @@ module ScrapperDispatcherActor =
   type ScrapperDispatcherActor(host: ActorHost) as this =
     inherit Actor(host)
     let logger = ActorLogging.create host
-    let stateManager = stateManager<State> STATE_NAME this.StateManager
+    let stateManager = stateManager<State> STATE_NAME this.StateManager    
 
     let createJobManagerActor (JobManagerId id) =
       host.ProxyFactory.CreateActorProxy<JobManager.IJobManagerActor>((ActorId id), "job-manager")
