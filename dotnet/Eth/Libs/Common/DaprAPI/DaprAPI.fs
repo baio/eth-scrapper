@@ -19,8 +19,11 @@ module DaprAPI =
   open Dapr.Decorators
 
   let private getStateEnv (builder: WebApplicationBuilder) (serviceProvider: IServiceProvider) =
-    let logger = serviceProvider.GetService<ILogger>()
+
     let stateManager = serviceProvider.GetService<IStateManager>()
+
+    let loggerFactory = serviceProvider.GetService<ILoggerFactory>()
+    let logger = loggerFactory.CreateLogger()
 
     let storeName =
       builder
@@ -33,12 +36,11 @@ module DaprAPI =
       StateManager = stateManager }
 
 
-  let createDaprAPI2 (mapper: ResultMapper option) (args: string []) =
+  let createDaprAPI2 (mapper: ResultMapper option) (initServices: IServiceCollection -> unit) (args: string []) =
 
     let builder = WebApplication.CreateBuilder(args)
 
-    DaprLogging.createSerilogLogger builder.Configuration builder.Host
-    |> ignore
+    DaprLogging.createSerilogLogger builder.Configuration builder.Host |> ignore
 
     let services = builder.Services
 
@@ -60,7 +62,6 @@ module DaprAPI =
         opts.JsonSerializerOptions.Converters.Add(converter))
     |> ignore
 
-
     services.AddDaprClient (fun builder ->
       let jsonOpts = JsonSerializerOptions()
       jsonOpts.PropertyNameCaseInsensitive <- true
@@ -78,6 +79,8 @@ module DaprAPI =
 
     services.AddScoped<StateEnv>(Func<_, _>(getStateEnv builder))
     |> ignore
+
+    initServices services
 
     let app = builder.Build()
 
@@ -103,7 +106,7 @@ module DaprAPI =
 
     app.Run(url)
 
-    services
+    0
 
 
-  let createDaprAPI = createDaprAPI2 None
+  let createDaprAPI = createDaprAPI2 None (fun _ -> ())

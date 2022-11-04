@@ -14,6 +14,8 @@ open Scrapper.Repo
 type ProjectsController(repoEnv: RepoEnv, actorFactory: JobManagerActorFactory) =
   inherit ControllerBase()
   let repo = createRepo repoEnv
+  do 
+    printfn "+++ %O" repoEnv
 
   [<HttpPost>]
   member this.Post(data: CreateProjectEntity) = createProject repoEnv data

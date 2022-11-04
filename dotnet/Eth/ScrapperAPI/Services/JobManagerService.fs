@@ -1,7 +1,5 @@
 ﻿namespace ScrapperAPI.Services
 
-open Scrapper.Repo
-
 module JobManagerService =
 
   open Dapr.Actors
@@ -9,6 +7,7 @@ module JobManagerService =
   open Common.DaprState
   open Common.Repo
   open Common.Utils
+  open Scrapper.Repo
   open ScrapperModels
   open ScrapperModels.JobManager
 

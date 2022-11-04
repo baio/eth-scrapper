@@ -20,4 +20,5 @@ module DaprLogging =
         .Enrich.WithSpan()
 
     Log.Logger <- logger.CreateLogger()
-    webHostBuilder.UseSerilog()
+    webHostBuilder.UseSerilog() |> ignore
+    webHostBuilder
