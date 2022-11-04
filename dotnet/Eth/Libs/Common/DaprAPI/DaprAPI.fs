@@ -33,7 +33,7 @@ module DaprAPI =
       StateManager = stateManager }
 
 
-  let createDaprAPI (args: string []) =
+  let createDaprAPI2 (mapper: ResultMapper option) (args: string []) =
 
     let builder = WebApplication.CreateBuilder(args)
 
@@ -53,7 +53,7 @@ module DaprAPI =
       )
 
     services
-      .AddControllers(fun opts -> opts.Filters.Add(RepoResultFilter()))
+      .AddControllers(fun opts -> opts.Filters.Add(RepoResultFilter(mapper)))
       .AddJsonOptions(fun opts ->
         opts.JsonSerializerOptions.PropertyNameCaseInsensitive <- true
         opts.JsonSerializerOptions.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase
@@ -104,3 +104,6 @@ module DaprAPI =
     app.Run(url)
 
     services
+
+
+  let createDaprAPI = createDaprAPI2 None

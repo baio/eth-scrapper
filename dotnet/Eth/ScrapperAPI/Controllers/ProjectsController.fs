@@ -18,18 +18,9 @@ type ProjectsController(repoEnv: RepoEnv, actorFactory: JobManagerActorFactory) 
   [<HttpPost>]
   member this.Post(data: CreateProjectEntity) = createProject repoEnv data
 
-
   [<HttpGet>]
   member this.GetAll() =
-
-    task {
-      let! result = getProjectVersionsWithState (repoEnv, actorFactory)
-
-      match result with
-      | Ok result ->
-        return result |> Ok
-      | Error err -> return err |> Error
-    }
+    getProjectVersionsWithState (repoEnv, actorFactory)
 
   [<HttpDelete("{projectId}")>]
   member this.Delete(projectId: string) = repo.Delete projectId

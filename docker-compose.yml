@@ -186,39 +186,39 @@ services:
   ############################
   # docker-scrapper-api + Dapr sidecar
   ############################
-  # scrapper-api:
-  #   build: 
-  #     context: ./dotnet/Eth
-  #     dockerfile: ScrapperAPI/Dockerfile         
-  #     args: 
-  #       - PORT=6000
-  #   ports:
-  #     - 6001:6000
-  #   depends_on:
-  #     - redis
-  #     - placement
-  #     - seq
-  #   networks:
-  #     - dapr-net
-
   scrapper-api:
-    container_name: scrapper-api
-    image: "mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim"
-    volumes:
-      - ./:/app
-    working_dir: 
-      /app/dotnet/Eth/ScrapperAPI
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-    command: dotnet watch run 6000
+    build: 
+      context: ./dotnet/Eth
+      dockerfile: ScrapperAPI/Dockerfile         
+      args: 
+        - PORT=6000
     ports:
       - 6001:6000
-    networks:
-      - dapr-net
     depends_on:
       - redis
       - placement
       - seq
+    networks:
+      - dapr-net
+
+  # scrapper-api:
+  #   container_name: scrapper-api
+  #   image: "mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim"
+  #   volumes:
+  #     - ./:/app
+  #   working_dir: 
+  #     /app/dotnet/Eth/ScrapperAPI
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Production
+  #   command: dotnet watch run 6000
+  #   ports:
+  #     - 6001:6000
+  #   networks:
+  #     - dapr-net
+  #   depends_on:
+  #     - redis
+  #     - placement
+  #     - seq
 
   scrapper-api-dapr:
     image: "daprio/daprd:1.8.4"

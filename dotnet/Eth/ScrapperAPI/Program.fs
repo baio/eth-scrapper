@@ -7,7 +7,8 @@ module Program =
 
   [<EntryPoint>]
   let main args =
-    let services = Common.DaprAPI.DaprAPI.createDaprAPI args
+    let services =
+      Common.DaprAPI.DaprAPI.createDaprAPI2 (Some ResultMapper.mapResult) args
 
     services.AddScoped<RepoEnv> (fun x ->
       let stateEnv = x.GetService<StateEnv>()

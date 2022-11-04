@@ -1,12 +1,9 @@
 ﻿namespace ScrapperAPI.Controllers
 
 open Microsoft.AspNetCore.Mvc
-open Common.DaprState
 open Scrapper.Repo
 open Scrapper.Repo.PeojectsRepo
 open ScrapperAPI.Services.JobManagerService
-open Common.DaprAPI
-open JobsManagerDTO
 
 [<ApiController>]
 [<Route("projects/{projectId}/versions")>]
@@ -25,47 +22,16 @@ type ProjectVersionssController(repoEnv: RepoEnv, actorFactory: JobManagerActorF
 
   [<HttpPost("{versionId}/start")>]
   member this.Start(projectId: string, versionId: string) =
-    task {
-      let! result = start (repoEnv, actorFactory) projectId versionId
-
-      match result with
-      | Error err ->
-        match err with
-        | ActorFailure err -> return err |> mapError
-        | RepoError err -> return mapRepoError err
-      | Ok result -> return result |> mapSuccess
-    }
+    start (repoEnv, actorFactory) projectId versionId
 
   [<HttpGet("{versionId}/state")>]
-  member this.State(projectId: string, versionId: string) =
-    task {
-      let! result = state actorFactory projectId versionId
-
-      match result with
-      | Some result -> return result |> this.Ok :> IActionResult
-      | None -> return NotFoundObjectResult() :> IActionResult
-    }
+  member this.State(projectId: string, versionId: string) = state actorFactory projectId versionId
 
   [<HttpPost("{versionId}/pause")>]
-  member this.Pause(projectId: string, versionId: string) =
-    task {
-      let! result = pause actorFactory projectId versionId
-      return mapResult result
-    }
+  member this.Pause(projectId: string, versionId: string) = pause actorFactory projectId versionId
 
   [<HttpPost("{versionId}/resume")>]
-  member this.Resume(projectId: string, versionId: string) =
-    task {
-      let! result = resume actorFactory projectId versionId
-      return mapResult result
-    }
+  member this.Resume(projectId: string, versionId: string) = resume actorFactory projectId versionId
 
   [<HttpPost("{versionId}/reset")>]
-  member this.Reset(projectId: string, versionId: string) =
-    task {
-      let! result = reset actorFactory projectId versionId
-
-      match result with
-      | Ok _ -> return NoContentResult() :> IActionResult
-      | Error _ -> return NotFoundObjectResult() :> IActionResult
-    }
+  member this.Reset(projectId: string, versionId: string) = reset actorFactory projectId versionId

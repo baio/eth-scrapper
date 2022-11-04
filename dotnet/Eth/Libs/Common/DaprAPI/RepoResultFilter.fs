@@ -8,6 +8,8 @@ module RepoResultFilter =
   open Microsoft.FSharp.Reflection
   open Microsoft.AspNetCore.Mvc.Filters
 
+  type ResultMapper = IActionResult -> IActionResult option
+
   let mapRepoError =
     function
     | NotFound -> () |> NotFoundObjectResult :> IActionResult
@@ -43,12 +45,19 @@ module RepoResultFilter =
     | _ as actionResult -> actionResult
 
 
-  type RepoResultFilter() =
+  type RepoResultFilter(mapper: ResultMapper option) =
     interface IAsyncResultFilter with
       member this.OnResultExecutionAsync(ctx, next) =
         task {
 
-          ctx.Result <- mapActionResult ctx.Result
+          let result =
+            match mapper with
+            | Some mapper -> mapper ctx.Result
+            | None -> None
+
+          match result with
+          | Some result -> ctx.Result <- result
+          | None -> ctx.Result <- mapActionResult ctx.Result
 
           return! next.Invoke()
         }
