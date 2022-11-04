@@ -44,9 +44,12 @@ module DaprAPI =
 
     let converter =
       JsonFSharpConverter(
-        JsonUnionEncoding.ExternalTag
+        JsonUnionEncoding.InternalTag
+        ||| JsonUnionEncoding.NamedFields
+        ||| JsonUnionEncoding.UnwrapOption
         ||| JsonUnionEncoding.UnwrapSingleCaseUnions,
-        allowNullFields = true
+        allowNullFields = true,
+        unionTagName = JsonUnionTagName "kind"
       )
 
     services

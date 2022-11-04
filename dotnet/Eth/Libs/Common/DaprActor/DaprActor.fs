@@ -31,9 +31,12 @@ module DaprActor =
 
     let converter =
       JsonFSharpConverter(
-        JsonUnionEncoding.ExternalTag
+        JsonUnionEncoding.InternalTag
+        ||| JsonUnionEncoding.NamedFields
+        ||| JsonUnionEncoding.UnwrapOption
         ||| JsonUnionEncoding.UnwrapSingleCaseUnions,
-        allowNullFields = true
+        allowNullFields = true,
+        unionTagName = JsonUnionTagName "kind"
       )
 
     builder.Services.AddActors (fun opts ->
