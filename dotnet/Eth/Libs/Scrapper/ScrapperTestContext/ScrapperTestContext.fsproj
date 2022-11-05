@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\..\ScrapperElasticStoreActor\ScrapperElasticStoreActor.fsproj" />
     <ProjectReference Include="..\..\Common\Logger\Logger.fsproj" />
     <ProjectReference Include="..\..\Common\Utils\Utils.fsproj" />
+    <ProjectReference Include="..\..\Dapr.Decorators.InMemory\Dapr.Decorators.InMemory.csproj" />
     <ProjectReference Include="..\ScrapperModels\ScrapperModels.fsproj" />
   </ItemGroup>
 

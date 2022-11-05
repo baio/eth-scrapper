@@ -9,26 +9,24 @@ module Map =
 
     {| AddItem =
         fun (key: 'a) (item: 'b) ->
-          map <- Map.add key item map
-          () |> Task.FromResult :> Task
+          Task.Run (fun () ->
+            map <- Map.add key item map
+            ())
        AddIfNotExist =
         fun (key: 'a) (item: 'b) ->
-          let f = map.ContainsKey key
+          Task.Run (fun () ->
+            let f = map.ContainsKey key
 
-          match f with
-          | false -> map <- Map.add key item map
-          | true -> ()
+            match f with
+            | false -> map <- Map.add key item map
+            | true -> ()
 
-          () |> Ok |> Task.FromResult :> Task
+            () |> Ok)
+          :> Task
        RemoveItem =
         fun (key: 'a) ->
-          map <- Map.remove key map
-          true |> Task.FromResult
-       GetItem = fun (key: 'a) -> map |> Map.tryFind key |> Task.FromResult
-       GetAllItems =
-        fun () ->
-          map
-          |> Map.toList
-          |> List.map snd
-          |> Ok
-          |> Task.FromResult |}
+          Task.Run (fun () ->
+            map <- Map.remove key map
+            true)
+       GetItem = fun (key: 'a) -> Task.Run(fun () -> map |> Map.tryFind key)
+       GetAllItems = fun () -> Task.Run(fun () -> map |> Map.toList |> List.map snd |> Ok) |}

@@ -1,8 +1,7 @@
 ﻿using Dapr.Actors.Runtime;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Dapr.Decorators
+namespace Dapr.Decorators.InMemory
 {
     public class ActorStateManager : IActorStateManager
     {

@@ -30,7 +30,7 @@ let tests =
       AvailableJobsCount = 1u
       LatestUpdateDate = date |> toEpoch |> Some
       Jobs =
-        [ (JobId "1_s0",
+        [ (JobId "2_s0",
            Ok(
              { Status = ScrapperDispatcher.Status.Finish
                Request =
@@ -44,14 +44,14 @@ let tests =
                Target =
                  { ToLatest = true
                    Range = { From = 0u; To = 1000u } }
-               ParentId = Some(JobManagerId "1") }: ScrapperDispatcher.State
+               ParentId = Some(JobManagerId "2") }: ScrapperDispatcher.State
            )) ]
         |> Map.ofList }
 
   testCase "manager: when scrapper returns empty result (0 events) the job should finish" (fun _ ->
     task {
 
-      let jobManagerId = JobManagerId "1"
+      let jobManagerId = JobManagerId "2"
       let jobManager = context.createJobManager jobManagerId
 
       let startData: JobManager.StartData =
