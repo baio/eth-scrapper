@@ -68,7 +68,6 @@ module JobManagerService =
     let repo = createRepo repoEnv
 
     task {
-      printfn "wtf !!!"
       let! result = repo.GetOneWithVersion projectId versionId
 
       match result with
@@ -81,9 +80,7 @@ module JobManagerService =
             Abi = proj.Abi }
 
 
-        printfn "222"
         let! result = actor.Start data
-        printfn "333"
         match result with
         | Ok result -> return result |> Ok
         | Error err -> return err |> ActorFailure |> Error

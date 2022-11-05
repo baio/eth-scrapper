@@ -23,21 +23,16 @@ type ProjectVersionssController(repoEnv: RepoEnv, actorFactory: JobManagerActorF
 
   [<HttpPost("{versionId}/start")>]
   member this.Start(projectId: string, versionId: string) =
-    start (repoEnv, actorFactory) projectId versionId
-    
-    //task {
-    //  printfn "0000"
-    //  let! result = start (repoEnv, actorFactory) projectId versionId
-    //  printfn "2222"
-    //  match result with
-    //  | Ok result -> return Ok result
-    //  | Error err ->
-    //    match err with
-    //    | StartError.ActorFailure err -> 
-    //      printfn "111 %O" err
-    //      return err |> box |> Error
-    //    | StartError.RepoError err -> return err |> box |> Error
-    //}
+    task {
+     let! result = start (repoEnv, actorFactory) projectId versionId
+     match result with
+     | Ok result -> return Ok result
+     | Error err ->
+       match err with
+       | StartError.ActorFailure err -> 
+         return err |> box |> Error
+       | StartError.RepoError err -> return err |> box |> Error
+    }
 
   [<HttpGet("{versionId}/state")>]
   member this.State(projectId: string, versionId: string) = state actorFactory projectId versionId
