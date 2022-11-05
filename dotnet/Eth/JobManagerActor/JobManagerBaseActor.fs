@@ -9,7 +9,6 @@ module JobManagerBaseActor =
   open Microsoft.Extensions.Logging
   open Common.DaprActor
   open System
-  open ScrapperModels.ScrapperDispatcher
   open ScrapperModels.JobManager
   open System.Threading.Tasks
 
@@ -24,13 +23,11 @@ module JobManagerBaseActor =
 
     interface IJobManagerActor with
 
-      member this.Pause() : Task<Result> =
-        raise (System.NotImplementedException())
+      member this.Pause() : Task<Result> = pause env
 
       member this.Reset() : Task<Result> = reset env
 
-      member this.Resume() : Task<Result> =
-        raise (System.NotImplementedException())
+      member this.Resume() : Task<Result> = resume env
 
       member this.SetJobsCount(count: uint) : Task<Result> = setJobsCount env count
 
@@ -41,4 +38,3 @@ module JobManagerBaseActor =
       member this.State() : Task<State option> = env.GetState()
 
       member this.ReportJobState(data: JobStateData) : Task<Result> = reportJobState env data
-

@@ -1,9 +1,5 @@
 namespace ScrapperAPI
 
-open Dapr.Abstracts
-open Dapr.Client
-open Dapr.Actors
-
 module Program =
   open Scrapper.Repo
   open Common.DaprState
@@ -12,7 +8,9 @@ module Program =
   open Dapr.Actors.Client
   open ScrapperModels.JobManager
   open ScrapperModels
-
+  open Dapr.Abstracts
+  open Dapr.Client
+  open Dapr.Actors
 
   let private initServices (services: IServiceCollection) =
     services.AddScoped<RepoEnv> (fun x ->

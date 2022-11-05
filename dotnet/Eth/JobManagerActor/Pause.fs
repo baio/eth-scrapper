@@ -1,7 +1,7 @@
-﻿namespace JobManager
+namespace JobManager
 
 [<AutoOpen>]
-module Reset =
+module Pause =
 
   open ScrapperModels
   open ScrapperModels.JobManager
@@ -9,14 +9,14 @@ module Reset =
   open System.Threading.Tasks
   open System
 
-  let reset (env: Env) : Task<Result> =
+  let pause (env: Env) : Task<Result> =
 
     let logger = env.Logger
 
     task {
-      use scope = logger.BeginScope("reset")
+      use scope = logger.BeginScope("pause")
 
-      logger.LogDebug("Reset")
+      logger.LogDebug("Pause")
 
       let! state = env.GetState()
 
@@ -25,14 +25,14 @@ module Reset =
       match state with
       | Some state ->
         let jobIds = state.Jobs |> Map.keys |> List.ofSeq
-        logger.LogDebug("reset jobs {@jobIds}", jobIds)
+        logger.LogDebug("pause jobs {@jobIds}", jobIds)
 
         let calls =
           jobIds
           |> List.map (fun jobId ->
             task {
               let actor = env.CreateScrapperDispatcherActor jobId
-              let! result = actor.Reset() |> Common.Utils.Task.wrapException
+              let! result = actor.Pause() |> Common.Utils.Task.wrapException
 
               return (jobId, result)
             })
@@ -40,11 +40,7 @@ module Reset =
         // TODO : Check all 
         let! result = Common.Utils.Task.all calls
 
-        logger.LogDebug("Result for reset state", result)
-
-        let! _ = env.RemoveState()
-
-        logger.LogDebug("State removed")
+        logger.LogDebug("Result for pause state", result)
 
         return state |> Ok
       | None ->

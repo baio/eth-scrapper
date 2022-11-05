@@ -1,7 +1,7 @@
-﻿namespace JobManager
+namespace JobManager
 
 [<AutoOpen>]
-module Reset =
+module Resume =
 
   open ScrapperModels
   open ScrapperModels.JobManager
@@ -9,42 +9,38 @@ module Reset =
   open System.Threading.Tasks
   open System
 
-  let reset (env: Env) : Task<Result> =
+  let resume (env: Env) : Task<Result> =
 
     let logger = env.Logger
 
     task {
-      use scope = logger.BeginScope("reset")
+      use scope = logger.BeginScope("resume")
 
-      logger.LogDebug("Reset")
+      logger.LogDebug("Resume")
 
       let! state = env.GetState()
 
-      logger.LogDebug("State {@state}")
+      logger.LogDebug("Resume {@state}")
 
       match state with
       | Some state ->
         let jobIds = state.Jobs |> Map.keys |> List.ofSeq
-        logger.LogDebug("reset jobs {@jobIds}", jobIds)
+        logger.LogDebug("resume jobs {@jobIds}", jobIds)
 
         let calls =
           jobIds
           |> List.map (fun jobId ->
             task {
               let actor = env.CreateScrapperDispatcherActor jobId
-              let! result = actor.Reset() |> Common.Utils.Task.wrapException
+              let! result = actor.Resume() |> Common.Utils.Task.wrapException
 
               return (jobId, result)
             })
 
-        // TODO : Check all 
+        // TODO : Check all
         let! result = Common.Utils.Task.all calls
 
-        logger.LogDebug("Result for reset state", result)
-
-        let! _ = env.RemoveState()
-
-        logger.LogDebug("State removed")
+        logger.LogDebug("Result for resume state", result)
 
         return state |> Ok
       | None ->

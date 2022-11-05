@@ -5,11 +5,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="ResultMapper.fs" />
 		<None Include="read.me" />
 		<Compile Include="Services\JobManagerService.fs" />
 		<Compile Include="Controllers\ProjectVersionsController.fs" />
 		<Compile Include="Controllers\ProjectsController.fs" />
+		<Compile Include="ResultMapper.fs" />
 		<Compile Include="Program.fs" />
 	</ItemGroup>
 

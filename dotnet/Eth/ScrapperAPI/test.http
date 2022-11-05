@@ -6,12 +6,12 @@
 # docker-compose
 #@host = http://localhost:6001
 
-###
+### GET ALL
 
 GET {{host}}/projects
 dapr-app-id: {{appId}}
 
-###
+### CREATE
 
 POST {{host}}/projects
 dapr-app-id: {{appId}}
@@ -27,6 +27,12 @@ Accept: application/json
   "versionId": "v1",
   "prefix": "mainnet"
 }
+
+### DELETE
+
+DELETE {{host}}/projects/mainnet_0xdac17f958d2ee523a2206206994597c13d831ec7
+dapr-app-id: {{appId}}
+
 
 ### STATE
 
@@ -57,7 +63,7 @@ dapr-app-id: {{appId}}
 Content-Type: application/json 
 Accept: application/json
 
-###
+### RESUME
 
 POST {{host}}/projects/0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/resume
 dapr-app-id: {{appId}}
@@ -65,10 +71,6 @@ Content-Type: application/json
 Accept: application/json
 
 
-###
-
-DELETE {{host}}/projects/mainnet_0xdac17f958d2ee523a2206206994597c13d831ec7
-dapr-app-id: {{appId}}
 ###
 
 GET {{host}}/projects/20/versions

@@ -4,7 +4,6 @@ open Microsoft.AspNetCore.Mvc
 open Scrapper.Repo
 open Scrapper.Repo.PeojectsRepo
 open ScrapperAPI.Services.JobManagerService
-open ScrapperModels.JobManager
 
 [<ApiController>]
 [<Route("projects/{projectId}/versions")>]
@@ -19,20 +18,12 @@ type ProjectVersionssController(repoEnv: RepoEnv, actorFactory: JobManagerActorF
   member this.GetAll(projectId: string) = repo.GetAllVersions projectId
 
   [<HttpDelete("{versionId}")>]
-  member this.Delete(projectId: string, versionId: string) = repo.DeleteVersion projectId versionId
+  member this.Delete(projectId: string, versionId: string) =
+    deleteVesrion (repoEnv, actorFactory) projectId versionId
 
   [<HttpPost("{versionId}/start")>]
   member this.Start(projectId: string, versionId: string) =
-    task {
-     let! result = start (repoEnv, actorFactory) projectId versionId
-     match result with
-     | Ok result -> return Ok result
-     | Error err ->
-       match err with
-       | StartError.ActorFailure err -> 
-         return err |> box |> Error
-       | StartError.RepoError err -> return err |> box |> Error
-    }
+    start (repoEnv, actorFactory) projectId versionId
 
   [<HttpGet("{versionId}/state")>]
   member this.State(projectId: string, versionId: string) = state actorFactory projectId versionId

@@ -23,7 +23,9 @@ module ReportJobState =
         let jobId = data.ActorId
 
         let state1 = JobResult.updateStateWithJob state (jobId, data.Job)
+        logger.LogDebug("Update state with job: {@state}", state1)
         do! env.SetState state1
+        logger.LogDebug("State updated")      
         return state1 |> Ok
       | None ->
         logger.LogError("State not found")
