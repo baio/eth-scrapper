@@ -12,7 +12,7 @@ open Scrapper.Repo
 open ScrapperAPI.Services.JobManagerService
 open ScrapperModels.JobManager
 
-[<FTests>]
+[<Tests>]
 let tests =
 
   let onScrap: OnScrap =
@@ -50,15 +50,7 @@ let tests =
 
   let version = { Id = "v1"; Created = now }
 
-  let versionWithState: VersionWithState =
-    { Version = version
-      State =
-        Some(
-          { Status = Status.Initial
-            Jobs = Map.empty
-            LatestUpdateDate = None
-            AvailableJobsCount = 1u }
-        ) }
+  let versionWithState: VersionWithState = { Version = version; State = None }
 
   let projectWithVersions: ProjectWithVersions =
     { Project = projectEntry

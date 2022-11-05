@@ -78,6 +78,7 @@ type Context(env: ContextEnv) =
 
     { Logger = createLogger $"job_manager_{id}"
       ActorId = jobManagerId
+      RemoveState = fun () -> jobManagerMap.RemoveItem jobManagerId
       SetState = jobManagerMap.AddItem jobManagerId
       SetStateIfNotExist = jobManagerMap.AddIfNotExist jobManagerId
       GetState = fun () -> jobManagerMap.GetItem jobManagerId
@@ -90,7 +91,6 @@ type Context(env: ContextEnv) =
       |> this.createJobManagerEnv
       |> JobManager.JobManagerBaseActor.JobManagerBaseActor
 
-    actor.Init() |> ignore
     actor :> JobManager.IJobManagerActor
 
   member this.wait(scrapCnt: int) =
