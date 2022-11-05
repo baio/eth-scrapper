@@ -29,13 +29,6 @@ module DaprActor =
     createSerilogLogger builder.Configuration builder.Host
     |> ignore
 
-    // let converter =
-    //   JsonFSharpConverter(
-    //     JsonUnionEncoding.ExternalTag
-    //     ||| JsonUnionEncoding.UnwrapSingleCaseUnions,
-    //     allowNullFields = true
-    //   )
-
     let converter =
       JsonFSharpConverter(
         JsonUnionEncoding.InternalTag

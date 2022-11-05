@@ -49,23 +49,23 @@ dapr-app-id: {{appId}}
 Content-Type: application/json 
 Accept: application/json
 
-### RESET
+### RESET VERSION
 
 POST {{host}}/projects/mainnet_0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/reset
 dapr-app-id: {{appId}}
 Content-Type: application/json 
 Accept: application/json
 
-###
+### PAUSE
 
-POST {{host}}/projects/0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/pause
+POST {{host}}/projects/mainnet_0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/pause
 dapr-app-id: {{appId}}
 Content-Type: application/json 
 Accept: application/json
 
 ### RESUME
 
-POST {{host}}/projects/0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/resume
+POST {{host}}/projects/mainnet_0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/resume
 dapr-app-id: {{appId}}
 Content-Type: application/json 
 Accept: application/json

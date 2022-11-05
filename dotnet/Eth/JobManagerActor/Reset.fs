@@ -14,6 +14,8 @@ module Reset =
     let logger = env.Logger
 
     task {
+
+      
       use scope = logger.BeginScope("reset")
 
       logger.LogDebug("Reset")

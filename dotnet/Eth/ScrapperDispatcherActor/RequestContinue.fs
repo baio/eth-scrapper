@@ -30,28 +30,30 @@ module internal RequestContinue =
 
       let actor = env.CreateJobManagerActor(parentId)
 
-      let! result = actor.RequestContinue data
+      // TODO
+      actor.RequestContinue data |> ignore
 
-      logger.LogDebug("Request continue result {@result}", result)
+      return state |> Ok
+    //logger.LogDebug("Request continue result {@result}", result)
 
-      match result with
-      | Ok _ ->
+    //match result with
+    //| Ok _ ->
 
-        return state |> Ok
-      | Error _ ->
-        let state: State =
-          { state with
-              Status =
-                { Data =
-                    { AppId = AppId.Dispatcher
-                      Status = AppId.JobManager |> CallChildActorFailure }
-                  FailuresCount = 0u }
-                |> Status.Failure
-              Request = { state.Request with BlockRange = data.BlockRange }
-              Target = data.Target
-              Date = env.Date() |> toEpoch }
+    //  return state |> Ok
+    //| Error _ ->
+    //  let state: State =
+    //    { state with
+    //        Status =
+    //          { Data =
+    //              { AppId = AppId.Dispatcher
+    //                Status = AppId.JobManager |> CallChildActorFailure }
+    //            FailuresCount = 0u }
+    //          |> Status.Failure
+    //        Request = { state.Request with BlockRange = data.BlockRange }
+    //        Target = data.Target
+    //        Date = env.Date() |> toEpoch }
 
-        do! env.SetState state
+    //  do! env.SetState state
 
-        return state |> ActorFailure |> Error
+    //  return state |> ActorFailure |> Error
     }

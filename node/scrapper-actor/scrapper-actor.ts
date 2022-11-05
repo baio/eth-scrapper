@@ -31,9 +31,11 @@ const mapPublishResultSuccess = (indexId: string, result: Success) => {
   const eventsElasticPayload = events.join('\n') + '\n';
   return {
     kind: 'Ok',
-    indexPayload: eventsElasticPayload,
-    itemsCount,
-    blockRange: result.blockRange,
+    resultValue: {
+      indexPayload: eventsElasticPayload,
+      itemsCount,
+      blockRange: result.blockRange,
+    },
   };
 };
 
@@ -50,8 +52,10 @@ const mapPublishResultErrorData = (result: Error) => {
 const mapPublishResultError = (result: Error) => {
   return {
     kind: 'Error',
-    data: mapPublishResultErrorData(result),
-    blockRange: result.blockRange,
+    errorValue: {
+      data: mapPublishResultErrorData(result),
+      blockRange: result.blockRange,
+    },
   };
 };
 
@@ -131,7 +135,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     const _payload = this.mapPublishPayload(data, result);
     const payload = {
       ..._payload,
-      result: (_payload.result as any).Ok[0],
+      result: (_payload.result as any).resultValue,
     };
 
     const success = await this.invokeActor('scrapper-elastic-store', 'Store', payload);

@@ -1,5 +1,43 @@
-@host=http://localhost:5001
+@host=http://localhost:6003
 #@host=http://localhost:3500
+
+
+###
+
+PUT {{host}}/v1.0/actors/scrapper-dispatcher/v5/method/Continue
+
+{
+  "ethProviderUrl":"xxx",
+  "contractAddress":"CA",
+  "abi":"Abi",
+  "result":
+    {
+      "kind":"Error",
+      "errorValue":{
+        "data": {"kind":"LimitExceeded"},
+        "blockRange":{"from":0,"to":100}
+      }
+    }
+  }
+}
+
+
+
+{
+   "contractAddress":"0xdac17f958d2ee523a2206206994597c13d831ec7",
+   "abi":"abi",
+   "ethProviderUrl":"https://mainnet.infura.io/v3/11f741ef96ad4ce5b963ea0ba8d9703b",
+   "result":{
+      "kind":"Error",
+      "data":{
+         "kind":"LimitExceeded"
+      },
+      "blockRange":{
+         "from":0,
+         "to":15905147
+      }
+   }
+}
 
 ###
 
