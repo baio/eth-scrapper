@@ -4,6 +4,7 @@ open Microsoft.AspNetCore.Mvc
 open Scrapper.Repo
 open Scrapper.Repo.PeojectsRepo
 open ScrapperAPI.Services.JobManagerService
+open ScrapperModels.JobManager
 
 [<ApiController>]
 [<Route("projects/{projectId}/versions")>]
@@ -23,6 +24,20 @@ type ProjectVersionssController(repoEnv: RepoEnv, actorFactory: JobManagerActorF
   [<HttpPost("{versionId}/start")>]
   member this.Start(projectId: string, versionId: string) =
     start (repoEnv, actorFactory) projectId versionId
+    
+    //task {
+    //  printfn "0000"
+    //  let! result = start (repoEnv, actorFactory) projectId versionId
+    //  printfn "2222"
+    //  match result with
+    //  | Ok result -> return Ok result
+    //  | Error err ->
+    //    match err with
+    //    | StartError.ActorFailure err -> 
+    //      printfn "111 %O" err
+    //      return err |> box |> Error
+    //    | StartError.RepoError err -> return err |> box |> Error
+    //}
 
   [<HttpGet("{versionId}/state")>]
   member this.State(projectId: string, versionId: string) = state actorFactory projectId versionId

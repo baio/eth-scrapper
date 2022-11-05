@@ -29,6 +29,13 @@ module DaprActor =
     createSerilogLogger builder.Configuration builder.Host
     |> ignore
 
+    // let converter =
+    //   JsonFSharpConverter(
+    //     JsonUnionEncoding.ExternalTag
+    //     ||| JsonUnionEncoding.UnwrapSingleCaseUnions,
+    //     allowNullFields = true
+    //   )
+
     let converter =
       JsonFSharpConverter(
         JsonUnionEncoding.InternalTag
@@ -45,6 +52,8 @@ module DaprActor =
       opts.JsonSerializerOptions.Converters.Add(converter)
       registerer opts)
 
+    //builder.Services.AddDaprSidekick(builder.Configuration) |> ignore
+
     let app = builder.Build()
 
     app.UseRouting() |> ignore
@@ -56,7 +65,7 @@ module DaprActor =
       if args.Length > 0 then
         args[0]
       else
-        System.Environment.GetEnvironmentVariable("PORT")
+        builder.Configuration.GetValue<string>("PORT")
 
     let url = $"http://*:{port}"
 

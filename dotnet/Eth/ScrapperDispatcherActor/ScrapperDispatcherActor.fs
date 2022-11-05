@@ -21,7 +21,7 @@ module ScrapperDispatcherActor =
 
     interface ScrapperModels.Scrapper.IScrapperActor with
       member this.Scrap data =
-        invokeActorProxyMethod<ScrapperRequest, bool> proxy "Scrap" data
+        invokeActorProxyMethod<ScrapperRequest, bool> proxy "scrap" data
 
 
   [<Actor(TypeName = "scrapper-dispatcher")>]

@@ -11,7 +11,7 @@ module Start =
 
   let private createChildId (JobManagerId id) idx = $"{id}_s{idx}"
 
-  let start (env: Env) (data: StartData) : Task<Result> =
+  let start (env: Env) (defaultState: State) (data: StartData) : Task<Result> =
 
     let logger = env.Logger
 
@@ -25,8 +25,8 @@ module Start =
       logger.LogDebug("State {@state}", state)
 
       match state with
-      | Some state ->
-        let jobsCount = state.AvailableJobsCount
+      | None ->
+        let jobsCount = defaultState.AvailableJobsCount
         let! blocksCount = env.GetEthBlocksCount data.EthProviderUrl //getEthBlocksCount data.EthProviderUrl
         let blockSize = Math.Ceiling(blocksCount / jobsCount) |> uint
 
@@ -77,18 +77,23 @@ module Start =
 
         logger.LogDebug("Result after executing start {@result}", result)
 
-        let state' = JobResult.updateStateWithJobsListErrorResult state result
+        let state' = JobResult.updateStateWithJobsListErrorResult defaultState result
 
         match state' with
         | Some state ->
           do! env.SetState state
-          logger.LogDebug("Updated  {@state}", state)
+          logger.LogDebug("Updated {@state} after errors applied", state)
           return state |> Ok
         | _ ->
-          logger.LogDebug("No errors state doesn't need to be updated")
-          return state |> Ok
+          do! env.SetState defaultState
+          logger.LogDebug("No errors, set default {@state}")
+          return defaultState |> Ok
 
-      | None ->
-        logger.LogError("State not found")
-        return StateNotFound |> Error
+      | Some state ->
+        logger.LogError("State already exists", state)
+
+        return
+          (state, "State already exists")
+          |> StateConflict
+          |> Error
     }

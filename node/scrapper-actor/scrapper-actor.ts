@@ -17,7 +17,6 @@ interface Data {
   blockRange: BlockRange;
 }
 
-
 const mapEntry = (entry: Entry) => {
   return { chain_event: entry.event, chain_block: entry.block, chain_index: entry.index, ...entry.data };
 };
@@ -31,34 +30,28 @@ const mapPublishResultSuccess = (indexId: string, result: Success) => {
   });
   const eventsElasticPayload = events.join('\n') + '\n';
   return {
-    Ok: [
-      {
-        indexPayload: eventsElasticPayload,
-        itemsCount,
-        blockRange: result.blockRange
-      },
-    ],
+    kind: 'Ok',
+    indexPayload: eventsElasticPayload,
+    itemsCount,
+    blockRange: result.blockRange,
   };
 };
 
 const mapPublishResultErrorData = (result: Error) => {
   switch (result.error) {
     case 'empty-result':
-      return { EmptyResult: [] };
+      return { kind: 'EmptyResult' };
     case 'limit-exceeded':
-      return { LimitExceeded: [] };
+      return { kind: 'LimitExceeded' };
     case 'unknown':
-      return { Unknown: [] };
+      return { kind: 'Unknown' };
   }
 };
 const mapPublishResultError = (result: Error) => {
   return {
-    Error: [
-      {
-        data: mapPublishResultErrorData(result),
-        blockRange: result.blockRange
-      },
-    ],
+    kind: 'Error',
+    data: mapPublishResultErrorData(result),
+    blockRange: result.blockRange,
   };
 };
 
@@ -105,7 +98,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     return {
       contractAddress: data.contractAddress,
       abi: data.abi,
-      ethProviderUrl: data.ethProviderUrl,      
+      ethProviderUrl: data.ethProviderUrl,
       result: mapPublishResult(indexId, result),
     };
   }

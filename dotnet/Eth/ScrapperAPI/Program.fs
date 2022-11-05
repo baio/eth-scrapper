@@ -2,15 +2,17 @@ namespace ScrapperAPI
 
 open Dapr.Abstracts
 open Dapr.Client
+open Dapr.Actors
 
 module Program =
   open Scrapper.Repo
   open Common.DaprState
   open Microsoft.Extensions.DependencyInjection
   open ScrapperAPI.Services
-  open Dapr.Actors.Runtime
+  open Dapr.Actors.Client
   open ScrapperModels.JobManager
   open ScrapperModels
+
 
   let private initServices (services: IServiceCollection) =
     services.AddScoped<RepoEnv> (fun x ->
@@ -21,9 +23,8 @@ module Program =
     |> ignore
 
     services.AddScoped<JobManagerService.JobManagerActorFactory>(
-      System.Func<_, _> (fun x ->
-        let actorFactory = x.GetService<IActorFactory>()
-        fun (JobManagerId x) -> actorFactory.CreateActor<IJobManagerActor>(x))
+      System.Func<_, _> (fun _ ->
+        fun (JobManagerId actorId) -> ActorProxy.Create<IJobManagerActor>(ActorId(actorId), "job-manager"))
     )
     |> ignore
 

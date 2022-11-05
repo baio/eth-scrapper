@@ -22,24 +22,23 @@ module JobManagerBaseActor =
 
   type JobManagerBaseActor(env: Env) =
 
-    member this.Init() = env.SetStateIfNotExist defaultState
-
     interface IJobManagerActor with
 
       member this.Pause() : Task<Result> =
         raise (System.NotImplementedException())
 
-      member this.Reset() : Task<Result> = reset env defaultState
+      member this.Reset() : Task<Result> = reset env
 
       member this.Resume() : Task<Result> =
         raise (System.NotImplementedException())
 
       member this.SetJobsCount(count: uint) : Task<Result> = setJobsCount env count
 
-      member this.Start(data: StartData) : Task<Result> = start env data
+      member this.Start(data: StartData) : Task<Result> = start env defaultState data
 
       member this.RequestContinue(data: RequestContinueData) : Task<Result> = requestContinue env data
 
       member this.State() : Task<State option> = env.GetState()
 
       member this.ReportJobState(data: JobStateData) : Task<Result> = reportJobState env data
+

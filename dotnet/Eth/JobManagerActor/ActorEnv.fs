@@ -15,4 +15,5 @@ type Env = {
     GetState: unit -> Task<State option> 
     CreateScrapperDispatcherActor: JobId -> IScrapperDispatcherActor
     GetEthBlocksCount: string -> Task<uint>
+    RemoveState: unit -> Task<bool>
 }

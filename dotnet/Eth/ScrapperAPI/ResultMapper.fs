@@ -4,7 +4,6 @@ open Microsoft.FSharp.Reflection
 
 module internal ResultMapper =
   open ScrapperModels.JobManager
-  open Scrapper.Repo.PeojectsRepo
   open Microsoft.AspNetCore.Mvc
   open Common.DaprAPI
 
@@ -20,6 +19,7 @@ module internal ResultMapper =
         | Status.PartialFailure _ -> "partial-failure" |}
 
   let private mapError (err: Error) =
+    printfn "+++ %O" err
     match err with
     | StateConflict (state, error) ->
       ConflictObjectResult(

@@ -30,6 +30,7 @@ module JobManagerActor =
       { Logger = logger
         GetState = stateManager.Get
         SetState = stateManager.Set
+        RemoveState = stateManager.Remove
         SetStateIfNotExist = fun state -> stateManager.AddOrUpdateState state id
         CreateScrapperDispatcherActor = createScrapperDispatcherActor
         ActorId = host.Id.ToString() |> JobManagerId
@@ -38,7 +39,6 @@ module JobManagerActor =
     let actor' = env |> JobManagerBaseActor
     let actor = actor' :> IJobManagerActor
 
-    override this.OnActivateAsync() = actor'.Init()
 
     interface IJobManagerActor with
 

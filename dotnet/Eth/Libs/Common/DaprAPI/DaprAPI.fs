@@ -46,12 +46,12 @@ module DaprAPI =
 
     let converter =
       JsonFSharpConverter(
-        JsonUnionEncoding.InternalTag
+        JsonUnionEncoding.ExternalTag
         ||| JsonUnionEncoding.NamedFields
         ||| JsonUnionEncoding.UnwrapOption
         ||| JsonUnionEncoding.UnwrapSingleCaseUnions,
-        allowNullFields = true,
-        unionTagName = JsonUnionTagName "kind"
+        allowNullFields = true//,
+        //unionTagName = JsonUnionTagName "kind"
       )
 
     services
@@ -70,6 +70,8 @@ module DaprAPI =
 
       builder.UseJsonSerializationOptions(jsonOpts)
       |> ignore)
+
+    //services.AddDaprSidekick(builder.Configuration) |> ignore
 
     services.AddScoped<IActorFactory>(Func<_, _>(fun _ -> ActorFactory(ActorProxy.DefaultProxyFactory)))
     |> ignore
@@ -100,7 +102,8 @@ module DaprAPI =
       if args.Length > 0 then
         args[0]
       else
-        System.Environment.GetEnvironmentVariable("PORT")
+        builder.Configuration.GetValue<string>("PORT")
+        //System.Environment.GetEnvironmentVariable("PORT")
 
     let url = $"http://*:{port}"
 

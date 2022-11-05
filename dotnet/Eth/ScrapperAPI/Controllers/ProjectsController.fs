@@ -14,15 +14,13 @@ open Scrapper.Repo
 type ProjectsController(repoEnv: RepoEnv, actorFactory: JobManagerActorFactory) =
   inherit ControllerBase()
   let repo = createRepo repoEnv
-  do 
-    printfn "+++ %O" repoEnv
+
+  [<HttpGet>]
+  member this.GetAll(): System.Threading.Tasks.Task<Result<list<ProjectWithVresionsAndState>,obj>> =
+    getProjectVersionsWithState (repoEnv, actorFactory)
 
   [<HttpPost>]
   member this.Post(data: CreateProjectEntity) = createProject repoEnv data
-
-  [<HttpGet>]
-  member this.GetAll() =
-    getProjectVersionsWithState (repoEnv, actorFactory)
 
   [<HttpDelete("{projectId}")>]
   member this.Delete(projectId: string) = repo.Delete projectId

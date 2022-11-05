@@ -9,12 +9,12 @@ module Reset =
   open System.Threading.Tasks
   open System
 
-  let reset (env: Env) (defaultState: State) : Task<Result> =
+  let reset (env: Env) : Task<Result> =
 
     let logger = env.Logger
 
     task {
-      use scope = logger.BeginScope("reset {@defaultState}", defaultState)
+      use scope = logger.BeginScope("reset")
 
       logger.LogDebug("Reset")
 
@@ -41,11 +41,9 @@ module Reset =
 
         logger.LogDebug("Result for reset state", result)
 
-        let state = defaultState
+        let! _ = env.RemoveState()
 
-        do! env.SetState state
-
-        logger.LogDebug("updated  {@state}", state)
+        logger.LogDebug("State removed")
 
         return state |> Ok
       | None ->

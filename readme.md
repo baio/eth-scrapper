@@ -148,15 +148,15 @@ Install [elastic](https://www.elastic.co/guide/en/elasticsearch/reference/curren
 
 ```
 
-dapr run --app-port 5005 --app-id scrapper-api --components-path ./components -- dotnet watch run --project dotnet/Eth/ScrapperAPI 5005
+dapr run --app-port 5001 --app-id scrapper-api --components-path ./components -- dotnet watch run --project dotnet/Eth/ScrapperAPI 5001
+
+dapr run --app-port 5002 --app-id job-manager-actor --components-path ./components -- dotnet watch run --project dotnet/Eth/JobManagerActor 5002
 
 dapr run --app-port 5001 --app-id scrapper-dispatcher-actor --components-path ./components -- dotnet watch run --project dotnet/Eth/ScrapperDispatcherActor 5001
 
 dapr run --app-port 5003 --app-id scrapper-elastic-store --components-path ./components -- dotnet watch run --project dotnet/Eth/ScrapperElasticStoreActor 5003
 
 dapr run --app-port 5002 --app-id scrapper-actor --components-path ./components -- yarn --cwd ./node/scrapper-actor start 5002
-
-dapr run --app-port 5004 --app-id job-manager-actor --dapr-http-port 6004 --components-path ./components -- dotnet watch run --project dotnet/Eth/JobManagerActor 5004
 
 yarn --cwd ./react/scrapper-web dev
 

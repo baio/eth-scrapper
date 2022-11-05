@@ -1,6 +1,11 @@
 #@host=http://localhost:6004
-@actorId=main_0xdac17f958d2ee523a2206206994597c13d831ec7_v4
-@host=http://localhost:2009
+@actorId=mainnet_0xdac17f958d2ee523a2206206994597c13d831ec7_v1
+@host=http://localhost:6002
+
+### RESET
+
+PUT {{host}}/v1.0/actors/job-manager/{{actorId}}/method/Reset
+
 
 ###
 
@@ -18,7 +23,7 @@ PUT {{host}}/v1.0/actors/job-manager/v1/method/Resume
 
 ###
 
-PUT {{host}}/v1.0/actors/job-manager/{{actorId}}/method/Reset
+PUT {{host}}/v1.0/actors/job-manager/{{actorId}}_2/method/Test
 
 ### USDT
 PUT {{host}}/v1.0/actors/job-manager/{{actorId}}/method/Start

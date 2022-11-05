@@ -19,8 +19,10 @@ namespace Dapr.Decorators
         public T CreateActor<T>(string actorId, string? actorType = null) 
         {
             var id = new ActorId(actorId);
-            string type = actorType ?? typeof(T).GetCustomAttribute<ActorAttribute>().TypeName;
+            
+            string type = actorType ?? typeof(T).GetCustomAttribute<ActorAttribute>(true)?.TypeName;
 
+            System.Console.WriteLine("???", type);
             return (T)ActorProxyFactory.CreateActorProxy(id, typeof(T), type);
         }
     }
