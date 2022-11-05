@@ -22,7 +22,7 @@ module internal RunScrapper =
 
       let state: State =
         { state with
-            Status = Status.Continue
+            // Status = Status.Continue
             Request = scrapperRequest
             Date = env.Date() |> toEpoch }
 
