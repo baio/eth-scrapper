@@ -13,7 +13,8 @@
     <Compile Include="LimitExceedsContinueJobTests.fs" />
     <Compile Include="EmptyResultFinishTests.fs" />
     <Compile Include="EmptyResultFinishJobTests.fs" />
-    <Compile Include="PauseTests.fs" />
+    <Compile Include="StartPauseResumeTests.fs" />
+    <Compile Include="StartPauseTests.fs" />
     <Compile Include="LimitExceedsContinueTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

@@ -33,7 +33,7 @@ module internal Resume =
 
           logger.LogDebug("Resume with {@pervState} {@state}", state, updatedState)
 
-          return! runScrapper env updatedState.Request state
+          return! runScrapper env updatedState.Request updatedState
         | _ ->
           logger.LogDebug("Actor in a wrong {@state}", state)
 

@@ -1,4 +1,4 @@
-module PauseTests
+module StartPauseTests
 
 open Expecto
 open ScrapperModels
@@ -29,18 +29,6 @@ let tests =
             scrapCnt <- scrapCnt + 1
 
             { Data = LimitExceeded
-              BlockRange = request.BlockRange }
-            |> Error: ScrapperModels.ScrapperResult
-          | 1 ->
-            scrapCnt <- scrapCnt + 1
-
-            { ItemsCount = 10u
-              BlockRange = request.BlockRange }
-            |> Ok: ScrapperModels.ScrapperResult
-          | 2 ->
-            scrapCnt <- scrapCnt + 1
-
-            { Data = EmptyResult
               BlockRange = request.BlockRange }
             |> Error: ScrapperModels.ScrapperResult
           | _ -> failwith "not expected"
@@ -81,7 +69,7 @@ let tests =
         |> Map.ofList }
 
   testCaseAsync
-    "when test paused right after start, state should be paused"
+    "when started and then paused, state should be correct"
     (task {
 
       let jobId = JobId "1_s0"
