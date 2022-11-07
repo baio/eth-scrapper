@@ -4,7 +4,7 @@ open Microsoft.Extensions.Logging
 open ScrapperModels
 open System.Threading.Tasks
 
-type OnScrap = ScrapperModels.ScrapperRequest -> ScrapperResult
+type OnScrap = ScrapperModels.ScrapperRequest -> Task<ScrapperResult>
 
 type ScrapperActorEnv =
   { Logger: ILogger
@@ -17,9 +17,10 @@ type ScrapperActor(env: ScrapperActorEnv) =
 
   interface ScrapperModels.Scrapper.IScrapperActor with
     member this.Scrap data =
-      let result = env.OnScrap data
-
       task {
+
+        let! result = env.OnScrap data
+
         env.Logger.LogDebug("Scrap result {@result}", result)
 
         match result with
@@ -62,4 +63,5 @@ type ScrapperActor(env: ScrapperActorEnv) =
           |> ignore
 
           return true
-      }
+      } |> ignore
+      Task.FromResult true

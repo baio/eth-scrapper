@@ -36,7 +36,7 @@ module ReduceStateStatus =
     else if (isAllSuccess list) then
       Status.Success
     else if (isAllPaused list) then
-      Status.Success
+      Status.Pause
     else
       Status.Continue
 

@@ -19,11 +19,9 @@ module JobResult =
     |> Map.fold
          (fun s k v ->
            match Map.tryFind k m2 with
-           | Some v -> Map.add k v s
+           | Some v -> s
            | None -> Map.add k v s)
-         Map.empty
-
-
+         m2
 
   /// update state only for error results  !
   let updateStateWithJobsListErrorResult
@@ -45,6 +43,19 @@ module JobResult =
       { state with Jobs = jobs }
       |> ReduceStateStatus.reduce
       |> Some
+
+  let updateStateWithJobsListResult
+    (state: State)
+    (result: (JobId * Result<ScrapperDispatcherActorResult, exn> * CallChildActorData) list)
+    =
+    let jobs =
+      result
+      |> List.map (fun (k, v, d) -> (k, mapJobResult d (v)))
+
+    let jobs = jobs |> Map.ofList |> mergeMap state.Jobs
+
+    { state with Jobs = jobs }
+    |> ReduceStateStatus.reduce
 
   let updateStateWithJobResult
     (childData: CallChildActorData)

@@ -17,9 +17,14 @@ let tests =
 
   let onScrap: OnScrap =
     fun request ->
-      { Data = EmptyResult
-        BlockRange = request.BlockRange }
-      |> Error: ScrapperModels.ScrapperResult
+      task {
+        let result: ScrapperModels.ScrapperResult =
+          { Data = EmptyResult
+            BlockRange = request.BlockRange }
+          |> Error
+
+        return result
+      }
 
   let now = System.DateTime.UtcNow
 

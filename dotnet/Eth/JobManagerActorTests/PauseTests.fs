@@ -6,6 +6,7 @@ open Common.Utils.Task
 open Common.Utils
 open ScrapperTestContext
 open System.Threading.Tasks
+open System.Threading
 
 let ethBlocksCount = 100u
 let maxEthItemsInResponse = 50u
@@ -15,28 +16,35 @@ let tests =
 
   let mutable scrapCnt = 0
 
+  let semaphore = new SemaphoreSlim(0, 1)
+
   let onScrap: OnScrap =
     fun request ->
-      match scrapCnt with
-      | 0 ->
-        scrapCnt <- scrapCnt + 1
+      task {
+        do! semaphore.WaitAsync()
 
-        { Data = LimitExceeded
-          BlockRange = request.BlockRange }
-        |> Error: ScrapperModels.ScrapperResult
-      | 1 ->
-        scrapCnt <- scrapCnt + 1
+        return
+          match scrapCnt with
+          | 0 ->
+            scrapCnt <- scrapCnt + 1
 
-        { ItemsCount = 10u
-          BlockRange = request.BlockRange }
-        |> Ok: ScrapperModels.ScrapperResult
-      | 2 ->
-        scrapCnt <- scrapCnt + 1
+            { Data = LimitExceeded
+              BlockRange = request.BlockRange }
+            |> Error: ScrapperModels.ScrapperResult
+          | 1 ->
+            scrapCnt <- scrapCnt + 1
 
-        { Data = EmptyResult
-          BlockRange = request.BlockRange }
-        |> Error: ScrapperModels.ScrapperResult
-      | _ -> failwith "not expected"
+            { ItemsCount = 10u
+              BlockRange = request.BlockRange }
+            |> Ok: ScrapperModels.ScrapperResult
+          | 2 ->
+            scrapCnt <- scrapCnt + 1
+
+            { Data = EmptyResult
+              BlockRange = request.BlockRange }
+            |> Error: ScrapperModels.ScrapperResult
+          | _ -> failwith "not expected"
+      }
 
 
   let date = System.DateTime.UtcNow
@@ -50,21 +58,21 @@ let tests =
   let context = Context env
 
   let expected: JobManager.State =
-    { Status = JobManager.Status.Success
+    { Status = JobManager.Status.Pause
       AvailableJobsCount = 1u
       LatestUpdateDate = date |> toEpoch |> Some
       Jobs =
         [ (JobId "1_s0",
            Ok(
-             { Status = ScrapperDispatcher.Status.Finish
+             { Status = ScrapperDispatcher.Status.Pause
                Request =
                  { EthProviderUrl = ""
                    ContractAddress = ""
                    Abi = ""
-                   BlockRange = { From = 50u; To = 275u } }
+                   BlockRange = { From = 0u; To = 100u } }
                Date = date |> toEpoch
-               FinishDate = date |> toEpoch |> Some
-               ItemsPerBlock = [ 0.2 ]
+               FinishDate = None
+               ItemsPerBlock = []
                Target =
                  { ToLatest = true
                    Range = { From = 0u; To = 100u } }
@@ -73,7 +81,7 @@ let tests =
         |> Map.ofList }
 
   testCaseAsync
-    "when pause and resume should work"
+    "when test paused right after start, state should be paused"
     (task {
 
       let jobId = JobId "1_s0"
@@ -87,9 +95,13 @@ let tests =
 
       let! _ = jobManager.Start(startData)
 
-      do! context.wait (500)
+      let! _ = jobManager.Pause()
 
-      Expect.equal scrapCnt 3 "scrap calls should be 3"
+      semaphore.Release() |> ignore
+
+      do! Task.Delay(1)
+
+      Expect.equal scrapCnt 1 "scrap calls should be 1"
 
       let! jobState = context.JobMap.GetItem jobId
 

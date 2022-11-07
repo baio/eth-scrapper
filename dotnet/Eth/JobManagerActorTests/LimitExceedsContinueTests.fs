@@ -17,27 +17,29 @@ let tests =
 
   let onScrap: OnScrap =
     fun request ->
-      match scrapCnt with
-      | 0 ->
-        scrapCnt <- scrapCnt + 1
+      task {
+        return
+          match scrapCnt with
+          | 0 ->
+            scrapCnt <- scrapCnt + 1
 
-        { Data = LimitExceeded
-          BlockRange = request.BlockRange }
-        |> Error: ScrapperModels.ScrapperResult
-      | 1 ->
-        scrapCnt <- scrapCnt + 1
+            { Data = LimitExceeded
+              BlockRange = request.BlockRange }
+            |> Error: ScrapperModels.ScrapperResult
+          | 1 ->
+            scrapCnt <- scrapCnt + 1
 
-        { ItemsCount = 10u
-          BlockRange = request.BlockRange }
-        |> Ok: ScrapperModels.ScrapperResult
-      | 2 ->
-        scrapCnt <- scrapCnt + 1
+            { ItemsCount = 10u
+              BlockRange = request.BlockRange }
+            |> Ok: ScrapperModels.ScrapperResult
+          | 2 ->
+            scrapCnt <- scrapCnt + 1
 
-        { Data = EmptyResult
-          BlockRange = request.BlockRange }
-        |> Error: ScrapperModels.ScrapperResult
-      | _ -> failwith "not expected"
-
+            { Data = EmptyResult
+              BlockRange = request.BlockRange }
+            |> Error: ScrapperModels.ScrapperResult
+          | _ -> failwith "not expected"
+      }
 
   let date = System.DateTime.UtcNow
 

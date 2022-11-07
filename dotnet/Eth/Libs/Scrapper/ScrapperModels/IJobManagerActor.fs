@@ -19,6 +19,7 @@ type Status =
   | Success
   | PartialFailure
   | Failure
+  | Pause
 
 type StartData =
   { EthProviderUrl: string

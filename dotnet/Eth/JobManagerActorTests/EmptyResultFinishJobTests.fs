@@ -13,9 +13,15 @@ let tests =
 
   let onScrap: OnScrap =
     fun request ->
-      { Data = EmptyResult
-        BlockRange = request.BlockRange }
-      |> Error: ScrapperModels.ScrapperResult
+      task {
+        let result: ScrapperModels.ScrapperResult =
+          { Data = EmptyResult
+            BlockRange = request.BlockRange }
+          |> Error
+
+        return result
+      }
+
 
   let date = System.DateTime.UtcNow
 
@@ -43,8 +49,9 @@ let tests =
       ParentId = None }: ScrapperDispatcher.State
 
 
-  testCaseAsync "job: when scrapper returns limit exceeds the job should continue" (
-    task {
+  testCaseAsync
+    "job: when scrapper returns limit exceeds the job should continue"
+    (task {
 
       let jobId = JobId "1"
       let job = context.createScrapperDispatcher jobId
@@ -64,5 +71,5 @@ let tests =
 
       Expect.equal jobManangerState (Some expected) "job state is not expected"
 
-    }
-    |> Async.AwaitTask)
+     }
+     |> Async.AwaitTask)

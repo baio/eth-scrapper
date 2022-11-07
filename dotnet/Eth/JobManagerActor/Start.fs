@@ -77,17 +77,23 @@ module Start =
 
         logger.LogDebug("Result after executing start {@result}", result)
 
-        let state' = JobResult.updateStateWithJobsListErrorResult defaultState result
+        let state2 = JobResult.updateStateWithJobsListResult defaultState result//updateStateWithJobsListErrorResult defaultState result
 
-        match state' with
-        | Some state ->
-          do! env.SetState state
-          logger.LogDebug("Updated {@state} after errors applied", state)
-          return state |> Ok
-        | _ ->
-          do! env.SetState defaultState
-          logger.LogDebug("No errors, set default {@state}")
-          return defaultState |> Ok
+        logger.LogDebug("Updated {@state} after jobs result applied", state2)
+
+        do! env.SetState state2
+
+        return state2 |> Ok
+        //match state' with
+        //| Some state ->
+        //  do! env.SetState state
+        //  logger.LogDebug("Updated {@state} after errors applied", state)
+        //  return state |> Ok
+        //| _ ->
+          
+        //  do! env.SetState defaultState
+        //  logger.LogDebug("No errors, set default {@state}")
+        //  return defaultState |> Ok
 
       | Some state ->
         logger.LogError("State already exists", state)

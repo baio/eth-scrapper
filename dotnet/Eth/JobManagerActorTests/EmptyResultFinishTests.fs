@@ -11,9 +11,14 @@ let tests =
 
   let onScrap: OnScrap =
     fun request ->
-      { Data = EmptyResult
-        BlockRange = request.BlockRange }
-      |> Error: ScrapperModels.ScrapperResult
+      task {
+        let result: ScrapperModels.ScrapperResult =
+          { Data = EmptyResult
+            BlockRange = request.BlockRange }
+          |> Error
+
+        return result
+      }
 
   let date = System.DateTime.UtcNow
 
@@ -48,8 +53,9 @@ let tests =
            )) ]
         |> Map.ofList }
 
-  testCaseAsync "manager: when scrapper returns empty result (0 events) the job should finish" (
-    task {
+  testCaseAsync
+    "manager: when scrapper returns empty result (0 events) the job should finish"
+    (task {
 
       let jobManagerId = JobManagerId "2"
       let jobManager = context.createJobManager jobManagerId
@@ -67,5 +73,5 @@ let tests =
 
       Expect.equal jobManangerState (Some expected) "job mananger state is not expected"
       ()
-    }
-    |> Async.AwaitTask)
+     }
+     |> Async.AwaitTask)

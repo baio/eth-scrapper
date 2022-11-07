@@ -15,26 +15,29 @@ let tests =
 
   let onScrap: OnScrap =
     fun request ->
-      match scrapCnt with
-      | 0 ->
-        scrapCnt <- scrapCnt + 1
+      task {
+        return
+          match scrapCnt with
+          | 0 ->
+            scrapCnt <- scrapCnt + 1
 
-        { Data = LimitExceeded
-          BlockRange = request.BlockRange }
-        |> Error: ScrapperModels.ScrapperResult
-      | 1 ->
-        scrapCnt <- scrapCnt + 1
+            { Data = LimitExceeded
+              BlockRange = request.BlockRange }
+            |> Error: ScrapperModels.ScrapperResult
+          | 1 ->
+            scrapCnt <- scrapCnt + 1
 
-        { ItemsCount = 10u
-          BlockRange = request.BlockRange }
-        |> Ok: ScrapperModels.ScrapperResult
-      | 2 ->
-        scrapCnt <- scrapCnt + 1
+            { ItemsCount = 10u
+              BlockRange = request.BlockRange }
+            |> Ok: ScrapperModels.ScrapperResult
+          | 2 ->
+            scrapCnt <- scrapCnt + 1
 
-        { Data = EmptyResult
-          BlockRange = request.BlockRange }
-        |> Error: ScrapperModels.ScrapperResult
-      | _ -> failwith "not expected"
+            { Data = EmptyResult
+              BlockRange = request.BlockRange }
+            |> Error: ScrapperModels.ScrapperResult
+          | _ -> failwith "not expected"
+      }
 
   let date = System.DateTime.UtcNow
 
@@ -63,8 +66,9 @@ let tests =
           Range = { From = 0u; To = ethBlocksCount } }
       ParentId = None }: ScrapperDispatcher.State
 
-  testCaseAsync "job: when scrapper returns empty result (0 events) the job should finish" (
-    task {
+  testCaseAsync
+    "job: when scrapper returns empty result (0 events) the job should finish"
+    (task {
 
       let jobId = JobId "1"
       let job = context.createScrapperDispatcher jobId
@@ -86,5 +90,5 @@ let tests =
 
       Expect.equal jobState (Some expected) "job state is not expected"
 
-    }
-    |> Async.AwaitTask)
+     }
+     |> Async.AwaitTask)
