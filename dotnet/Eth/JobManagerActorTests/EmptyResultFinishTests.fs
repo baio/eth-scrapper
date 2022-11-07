@@ -48,7 +48,7 @@ let tests =
            )) ]
         |> Map.ofList }
 
-  testCase "manager: when scrapper returns empty result (0 events) the job should finish" (fun _ ->
+  testCaseAsync "manager: when scrapper returns empty result (0 events) the job should finish" (
     task {
 
       let jobManagerId = JobManagerId "2"
@@ -68,4 +68,4 @@ let tests =
       Expect.equal jobManangerState (Some expected) "job mananger state is not expected"
       ()
     }
-    |> runSynchronously)
+    |> Async.AwaitTask)

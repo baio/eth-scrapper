@@ -63,7 +63,7 @@ let tests =
           Range = { From = 0u; To = ethBlocksCount } }
       ParentId = None }: ScrapperDispatcher.State
 
-  testCase "job: when scrapper returns empty result (0 events) the job should finish" (fun _ ->
+  testCaseAsync "job: when scrapper returns empty result (0 events) the job should finish" (
     task {
 
       let jobId = JobId "1"
@@ -87,4 +87,4 @@ let tests =
       Expect.equal jobState (Some expected) "job state is not expected"
 
     }
-    |> runSynchronously)
+    |> Async.AwaitTask)

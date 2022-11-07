@@ -43,7 +43,7 @@ let tests =
       ParentId = None }: ScrapperDispatcher.State
 
 
-  testCase "job: when scrapper returns limit exceeds the job should continue" (fun _ ->
+  testCaseAsync "job: when scrapper returns limit exceeds the job should continue" (
     task {
 
       let jobId = JobId "1"
@@ -65,4 +65,4 @@ let tests =
       Expect.equal jobManangerState (Some expected) "job state is not expected"
 
     }
-    |> runSynchronously)
+    |> Async.AwaitTask)

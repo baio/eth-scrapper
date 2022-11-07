@@ -21,6 +21,11 @@ module ReduceStateStatus =
       | Error _ -> true)
     >> Option.isSome
 
+  let private isAllPaused =
+    List.forall (function
+      | Ok (job: Job) -> job.Status = ScrapperModels.ScrapperDispatcher.Status.Pause
+      | Error _ -> true)
+
   let recalcStatus (jobs) =
     let list = jobs |> Map.values |> Seq.toList
 
@@ -29,6 +34,8 @@ module ReduceStateStatus =
     else if (isSomeFailed list) then
       Status.PartialFailure
     else if (isAllSuccess list) then
+      Status.Success
+    else if (isAllPaused list) then
       Status.Success
     else
       Status.Continue

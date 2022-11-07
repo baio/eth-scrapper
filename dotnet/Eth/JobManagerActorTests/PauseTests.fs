@@ -1,4 +1,4 @@
-module LimitExceedsContinueTests
+module PauseTests
 
 open Expecto
 open ScrapperModels
@@ -73,7 +73,7 @@ let tests =
         |> Map.ofList }
 
   testCaseAsync
-    "manager: when scrapper returns limit exceeds and then success state should be success"
+    "when pause and resume should work"
     (task {
 
       let jobId = JobId "1_s0"

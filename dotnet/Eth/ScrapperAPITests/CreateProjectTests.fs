@@ -63,10 +63,11 @@ let tests =
   testSequenced
   <| testList
        "create project"
-       [ testCase "create project" (fun _ ->
-           let expected = projectWithVersions |> Ok
+       [ testCaseAsync
+           "create project"
+           (task {
+             let expected = projectWithVersions |> Ok
 
-           task {
              let projectEntry: CreateProjectEntity =
                { Name = "name"
                  Prefix = "prefix"
@@ -79,15 +80,15 @@ let tests =
 
              Expect.equal actual expected "create project result is not expected"
              ()
-           }
-           |> runSynchronously)
+            }
+            |> Async.AwaitTask)
 
-         testCase "get all projects" (fun _ ->
-           let expected = [ projectWithVersionsAndState ] |> Ok
-
-           task {
+         testCaseAsync
+           "get all projects"
+           (task {
+             let expected = [ projectWithVersionsAndState ] |> Ok
              let! actual = JobManagerService.getProjectVersionsWithState (repoEnv, context.createJobManager)
              Expect.equal actual expected "getProjectVersionsWithState is not expected"
              ()
-           }
-           |> runSynchronously) ]
+            }
+            |> Async.AwaitTask) ]

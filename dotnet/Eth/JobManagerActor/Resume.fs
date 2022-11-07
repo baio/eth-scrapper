@@ -40,7 +40,7 @@ module Resume =
         // TODO : Check all
         let! result = Common.Utils.Task.all calls
 
-        logger.LogDebug("Result for resume state", result)
+        logger.LogDebug("Result for resume state {@result}", result)
 
         return state |> Ok
       | None ->
