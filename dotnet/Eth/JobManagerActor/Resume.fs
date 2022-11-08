@@ -18,7 +18,7 @@ module Resume =
 
       logger.LogDebug("Resume")
 
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
 
       logger.LogDebug("Resume {@state}")
 

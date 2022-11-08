@@ -20,7 +20,7 @@ module RequestContinue =
 
       logger.LogDebug("Request continue")
 
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
 
       match state with
       | Some state ->
@@ -51,7 +51,7 @@ module RequestContinue =
               (data.ActorId, result)
 
           logger.LogError("Call scrapper dispatcher error, updated state {@state}", state)
-          do! env.SetState state
+          do! env.StateStore.Set state
         | _ -> ()
 
         return state |> Ok

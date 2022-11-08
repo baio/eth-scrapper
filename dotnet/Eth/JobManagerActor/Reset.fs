@@ -15,12 +15,11 @@ module Reset =
 
     task {
 
-      
       use scope = logger.BeginScope("reset")
 
       logger.LogDebug("Reset")
 
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
 
       logger.LogDebug("State {@state}")
 
@@ -39,12 +38,13 @@ module Reset =
               return (jobId, result)
             })
 
-        // TODO : Check all 
+        // TODO : Check all
         let! result = Common.Utils.Task.all calls
 
         logger.LogDebug("Result for reset state", result)
 
-        let! _ = env.RemoveState()
+        let! _ = env.StateStore.Remove()
+        let! _ = env.ConfigStore.Remove()
 
         logger.LogDebug("State removed")
 

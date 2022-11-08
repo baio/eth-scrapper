@@ -12,13 +12,6 @@ module JobManagerBaseActor =
   open ScrapperModels.JobManager
   open System.Threading.Tasks
 
-
-  let private defaultState: State =
-    { AvailableJobsCount = 1u
-      Jobs = Map.empty
-      LatestUpdateDate = None
-      Status = Initial }
-
   type JobManagerBaseActor(env: Env) =
 
     interface IJobManagerActor with
@@ -29,12 +22,14 @@ module JobManagerBaseActor =
 
       member this.Resume() : Task<Result> = resume env
 
-      member this.SetJobsCount(count: uint) : Task<Result> = setJobsCount env count
+      member this.SetJobsCount(count: uint) : Task<Result<Config, string>> = setJobsCount env count
 
-      member this.Start(data: StartData) : Task<Result> = start env defaultState data
+      member this.Start(data: StartData) : Task<Result> = start env data
 
       member this.RequestContinue(data: RequestContinueData) : Task<Result> = requestContinue env data
 
-      member this.State() : Task<State option> = env.GetState()
+      member this.State() : Task<State option> = env.StateStore.Get()
 
       member this.ReportJobState(data: JobStateData) : Task<Result> = reportJobState env data
+
+      member this.Config() : Task<Config> = getConfig env

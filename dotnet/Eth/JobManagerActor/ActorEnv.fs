@@ -6,14 +6,15 @@ open ScrapperModels.JobManager
 open Microsoft.Extensions.Logging
 open System.Threading.Tasks
 
+type ActorStore<'a> =
+  { Set: 'a -> Task
+    Get: unit -> Task<'a option>
+    Remove: unit -> Task<bool> }
 
-type Env = {
-    Logger: ILogger
+type Env =
+  { Logger: ILogger
     ActorId: JobManagerId
-    SetState: State -> Task
-    SetStateIfNotExist: State -> Task
-    GetState: unit -> Task<State option> 
+    StateStore: ActorStore<State>
+    ConfigStore: ActorStore<Config>
     CreateScrapperDispatcherActor: JobId -> IScrapperDispatcherActor
-    GetEthBlocksCount: string -> Task<uint>
-    RemoveState: unit -> Task<bool>
-}
+    GetEthBlocksCount: string -> Task<uint> }

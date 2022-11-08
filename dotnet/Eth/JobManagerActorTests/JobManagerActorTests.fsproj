@@ -10,6 +10,7 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+    <Compile Include="ParallelStartFinishTests.fs" />
     <Compile Include="LimitExceedsContinueJobTests.fs" />
     <Compile Include="EmptyResultFinishTests.fs" />
     <Compile Include="EmptyResultFinishJobTests.fs" />

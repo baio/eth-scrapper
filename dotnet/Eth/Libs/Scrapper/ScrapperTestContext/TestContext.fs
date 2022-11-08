@@ -17,6 +17,8 @@ type Context(env: ContextEnv) =
 
   let jobManagerMap = createMapHelper<JobManagerId, JobManager.State> ()
 
+  let managerConfigMap = createMapHelper<JobManagerId, JobManager.Config> ()
+
   let jobMap = createMapHelper<JobId, ScrapperDispatcher.State> ()
 
   member this.JobManagerMap = jobManagerMap
@@ -76,12 +78,20 @@ type Context(env: ContextEnv) =
   member this.createJobManagerEnv(jobManagerId: JobManagerId) : JobManager.Env =
     let (JobManagerId id) = jobManagerId
 
+    let stateStore: JobManager.ActorStore<JobManager.State> =
+      { Get = fun () -> jobManagerMap.GetItem jobManagerId
+        Set = jobManagerMap.AddItem jobManagerId
+        Remove = fun () -> jobManagerMap.RemoveItem jobManagerId }
+
+    let configStore: JobManager.ActorStore<JobManager.Config> =
+      { Get = fun () -> managerConfigMap.GetItem jobManagerId
+        Set = managerConfigMap.AddItem jobManagerId
+        Remove = fun () -> managerConfigMap.RemoveItem jobManagerId }
+
     { Logger = createLogger $"job_manager_{id}"
       ActorId = jobManagerId
-      RemoveState = fun () -> jobManagerMap.RemoveItem jobManagerId
-      SetState = jobManagerMap.AddItem jobManagerId
-      SetStateIfNotExist = jobManagerMap.AddIfNotExist jobManagerId
-      GetState = fun () -> jobManagerMap.GetItem jobManagerId
+      StateStore = stateStore
+      ConfigStore = configStore
       CreateScrapperDispatcherActor = this.createScrapperDispatcher
       GetEthBlocksCount = fun _ -> env.EthBlocksCount |> Task.FromResult }
 

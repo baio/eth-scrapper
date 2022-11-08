@@ -18,7 +18,7 @@ module Pause =
 
       logger.LogDebug("Pause")
 
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
 
       logger.LogDebug("State {@state}")
 

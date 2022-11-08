@@ -48,6 +48,7 @@ let tests =
           | 3 ->
             scrapCnt <- scrapCnt + 1
             semaphore2.Release() |> ignore
+
             { Data = EmptyResult
               BlockRange = request.BlockRange }
             |> Error: ScrapperModels.ScrapperResult
@@ -68,7 +69,6 @@ let tests =
 
   let expected: JobManager.State =
     { Status = JobManager.Status.Success
-      AvailableJobsCount = 1u
       LatestUpdateDate = date |> toEpoch |> Some
       Jobs =
         [ (JobId "1_s0",
@@ -116,7 +116,7 @@ let tests =
 
       do! semaphore2.WaitAsync()
 
-      do! Task.Delay(100)
+      do! Task.Delay(500)
 
       Expect.equal scrapCnt 4 "scrap calls should be 4"
 

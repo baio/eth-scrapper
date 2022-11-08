@@ -9,9 +9,14 @@ module Start =
   open System.Threading.Tasks
   open System
 
+  let private defaultState: State =
+    { Jobs = Map.empty
+      LatestUpdateDate = None
+      Status = Initial }
+
   let private createChildId (JobManagerId id) idx = $"{id}_s{idx}"
 
-  let start (env: Env) (defaultState: State) (data: StartData) : Task<Result> =
+  let start (env: Env) (data: StartData) : Task<Result> =
 
     let logger = env.Logger
 
@@ -20,13 +25,14 @@ module Start =
 
       logger.LogDebug("Start with {actorId} {@data}", env.ActorId, data)
 
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
 
       logger.LogDebug("State {@state}", state)
 
       match state with
       | None ->
-        let jobsCount = defaultState.AvailableJobsCount
+        let! config = getConfig env
+        let jobsCount = config.AvailableJobsCount
         let! blocksCount = env.GetEthBlocksCount data.EthProviderUrl //getEthBlocksCount data.EthProviderUrl
         let blockSize = Math.Ceiling(blocksCount / jobsCount) |> uint
 
@@ -77,23 +83,23 @@ module Start =
 
         logger.LogDebug("Result after executing start {@result}", result)
 
-        let state2 = JobResult.updateStateWithJobsListResult defaultState result//updateStateWithJobsListErrorResult defaultState result
+        let state2 = JobResult.updateStateWithJobsListResult defaultState result //updateStateWithJobsListErrorResult defaultState result
 
         logger.LogDebug("Updated {@state} after jobs result applied", state2)
 
-        do! env.SetState state2
+        do! env.StateStore.Set state2
 
         return state2 |> Ok
-        //match state' with
-        //| Some state ->
-        //  do! env.SetState state
-        //  logger.LogDebug("Updated {@state} after errors applied", state)
-        //  return state |> Ok
-        //| _ ->
-          
-        //  do! env.SetState defaultState
-        //  logger.LogDebug("No errors, set default {@state}")
-        //  return defaultState |> Ok
+      //match state' with
+      //| Some state ->
+      //  do! env.SetState state
+      //  logger.LogDebug("Updated {@state} after errors applied", state)
+      //  return state |> Ok
+      //| _ ->
+
+      //  do! env.SetState defaultState
+      //  logger.LogDebug("No errors, set default {@state}")
+      //  return defaultState |> Ok
 
       | Some state ->
         logger.LogError("State already exists", state)

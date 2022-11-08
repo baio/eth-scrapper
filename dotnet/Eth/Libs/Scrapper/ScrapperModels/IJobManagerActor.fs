@@ -44,8 +44,9 @@ type JobsMap = Map<JobId, JobResult>
 type State =
   { Status: Status
     Jobs: JobsMap
-    LatestUpdateDate: int64 option
-    AvailableJobsCount: uint }
+    LatestUpdateDate: int64 option }
+
+type Config = { AvailableJobsCount: uint }
 
 [<KnownType("KnownTypes")>]
 type Error =
@@ -61,7 +62,8 @@ type IJobManagerActor =
   inherit IActor
   abstract Start: data: StartData -> Task<Result>
   abstract RequestContinue: data: RequestContinueData -> Task<Result>
-  abstract SetJobsCount: count: uint -> Task<Result>
+  abstract SetJobsCount: count: uint -> Task<Result<Config, string>>
+  abstract Config: unit -> Task<Config>
   abstract State: unit -> Task<State option>
   abstract Pause: unit -> Task<Result>
   abstract Resume: unit -> Task<Result>

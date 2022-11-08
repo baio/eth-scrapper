@@ -13,12 +13,14 @@ module JobManagerActor =
   open System.Threading.Tasks
 
   let private STATE_NAME = "state"
+  let private CONFIG_NAME = "config"
 
   [<Actor(TypeName = "job-manager")>]
   type JobManagerActor(host: ActorHost) as this =
     inherit Actor(host)
     let logger = ActorLogging.create host
-    let stateManager = stateManager<State> STATE_NAME this.StateManager
+    let stateStore = stateManager<State> STATE_NAME this.StateManager
+    let configStore = stateManager<Config> CONFIG_NAME this.StateManager
 
     let createScrapperDispatcherActor (JobId id) =
       host.ProxyFactory.CreateActorProxy<ScrapperDispatcher.IScrapperDispatcherActor>(
@@ -26,12 +28,20 @@ module JobManagerActor =
         "scrapper-dispatcher"
       )
 
+    let stateStore: ActorStore<State> =
+      { Set = stateStore.Set
+        Get = stateStore.Get
+        Remove = stateStore.Remove }
+
+    let configStore: ActorStore<Config> =
+      { Set = configStore.Set
+        Get = configStore.Get
+        Remove = configStore.Remove }
+
     let env: Env =
       { Logger = logger
-        GetState = stateManager.Get
-        SetState = stateManager.Set
-        RemoveState = stateManager.Remove
-        SetStateIfNotExist = fun state -> stateManager.AddOrUpdateState state id
+        StateStore = stateStore
+        ConfigStore = configStore
         CreateScrapperDispatcherActor = createScrapperDispatcherActor
         ActorId = host.Id.ToString() |> JobManagerId
         GetEthBlocksCount = getEthBlocksCount }
@@ -48,7 +58,7 @@ module JobManagerActor =
 
       member this.Resume() : Task<Result> = actor.Resume()
 
-      member this.SetJobsCount(count: uint) : Task<Result> = actor.SetJobsCount(count)
+      member this.SetJobsCount(count: uint) : Task<Result<Config, string>> = actor.SetJobsCount(count)
 
       member this.Start(data: StartData) : Task<Result> = actor.Start data
 
@@ -57,3 +67,5 @@ module JobManagerActor =
       member this.State() : Task<State option> = actor.State()
 
       member this.ReportJobState(data: JobStateData) : Task<Result> = actor.ReportJobState data
+
+      member this.Config() : Task<Config> = actor.Config()

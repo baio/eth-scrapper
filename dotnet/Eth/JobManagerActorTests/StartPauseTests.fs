@@ -47,7 +47,6 @@ let tests =
 
   let expected: JobManager.State =
     { Status = JobManager.Status.Pause
-      AvailableJobsCount = 1u
       LatestUpdateDate = date |> toEpoch |> Some
       Jobs =
         [ (JobId "1_s0",

@@ -15,18 +15,18 @@ module ReportJobState =
     task {
       use scope = logger.BeginScope("reportJobState {@data}", data)
       logger.LogDebug("reportJobState")
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
       logger.LogDebug("Previous state: {@state}", state)
 
       match state with
       | Some state ->
         let jobId = data.ActorId
 
-        let state1 = JobResult.updateStateWithJob state (jobId, data.Job)
-        logger.LogDebug("Update state with job: {@state}", state1)
-        do! env.SetState state1
-        logger.LogDebug("State updated")      
-        return state1 |> Ok
+        let state2 = JobResult.updateStateWithJob state (jobId, data.Job)
+        logger.LogDebug("Update state with job: {@state}", state2)
+        do! env.StateStore.Set state2
+        logger.LogDebug("State updated")
+        return state2 |> Ok
       | None ->
         logger.LogError("State not found")
         return StateNotFound |> Error

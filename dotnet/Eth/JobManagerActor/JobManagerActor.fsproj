@@ -6,6 +6,7 @@
     <Compile Include="ReduceStateStatus.fs" />
     <Compile Include="JobResult.fs" />
     <Compile Include="ActorEnv.fs" />
+    <Compile Include="GetConfig.fs" />
     <Compile Include="GetEthBlocksCount.fs" />
     <Compile Include="SetJobsCount.fs" />
     <Compile Include="Start.fs" />

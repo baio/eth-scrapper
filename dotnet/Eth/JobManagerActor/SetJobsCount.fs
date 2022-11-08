@@ -7,7 +7,7 @@ module SetJobsCount =
   open Microsoft.Extensions.Logging
   open System.Threading.Tasks
 
-  let setJobsCount (env: Env) (count: uint) : Task<Result> =
+  let setJobsCount (env: Env) (count: uint) : Task<Result<Config, string>> =
 
     let logger = env.Logger
 
@@ -16,25 +16,20 @@ module SetJobsCount =
 
       logger.LogDebug("SetJobsCount {count}", count)
 
-      let! state = env.GetState()
+      if count = 0u && count > 10u then
+        logger.LogDebug("Attemt to set wrong jobs count {count}", count)
 
-      match state with
-      | Some state ->
-        logger.LogDebug("State found {state}", state)
+        return
+          "Wrong jobs count, must be in the range of [1, 10]"
+          |> Error
+      else
+        let! config = getConfig env
 
-        if count = 0u && count > 10u then
-          logger.LogDebug("Attemt to set wrong jobs count {count}", count)
+        logger.LogDebug("Config {config}", config)
 
-          return
-            "Wrong jobs count, must be in the range of [1, 10]"
-            |> ValidationFailure
-            |> Error
-        else
-          let state = { state with AvailableJobsCount = count }
-          do! env.SetState state
-          logger.LogDebug("Jobs count updated {state}", state)
-          return state |> Ok
-      | None ->
-        logger.LogError("State not found")
-        return StateNotFound |> Error
+        let config = { config with AvailableJobsCount = count }
+        do! env.ConfigStore.Set config
+        logger.LogDebug("Jobs count updated {@config}", config)
+        return config |> Ok
+
     }
