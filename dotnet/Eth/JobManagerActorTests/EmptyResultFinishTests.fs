@@ -6,7 +6,7 @@ open Common.Utils.Task
 open Common.Utils
 open ScrapperTestContext
 
-[<Tests>]
+//[<Tests>]
 let tests =
 
   let onScrap: OnScrap =
@@ -26,6 +26,7 @@ let tests =
     { EthBlocksCount = 1000u
       MaxEthItemsInResponse = 100u
       OnScrap = onScrap
+      OnReportJobStateChanged = None
       Date = fun () -> date }
 
   let context = Context env

@@ -30,6 +30,10 @@ module JobManagerBaseActor =
 
       member this.State() : Task<State option> = env.StateStore.Get()
 
-      member this.ReportJobState(data: JobStateData) : Task<Result> = reportJobState env data
+      // TODO !
+      member this.ReportJobState(data: JobStateData) : Task<Result> = this.OnReportJobState data
 
       member this.Config() : Task<Config> = getConfig env
+
+    abstract member OnReportJobState: JobStateData -> Task<Result>
+    default this.OnReportJobState data = reportJobState env data

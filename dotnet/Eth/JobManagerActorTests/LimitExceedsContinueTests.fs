@@ -10,7 +10,7 @@ open System.Threading.Tasks
 let ethBlocksCount = 100u
 let maxEthItemsInResponse = 50u
 
-[<Tests>]
+//[<Tests>]
 let tests =
 
   let mutable scrapCnt = 0
@@ -47,6 +47,7 @@ let tests =
     { EthBlocksCount = ethBlocksCount
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
+      OnReportJobStateChanged = None
       Date = fun () -> date }
 
   let context = Context env

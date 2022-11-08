@@ -6,11 +6,13 @@ open Common.Utils.Task
 open Common.Utils
 open ScrapperTestContext
 open System.Threading
+open System.Threading.Tasks
 
 [<Tests>]
 let tests =
 
   let semaphore = new SemaphoreSlim(0, 2)
+  let semaphore2 = new SemaphoreSlim(0, 1)
 
   let onScrap: OnScrap =
     fun request ->
@@ -27,10 +29,18 @@ let tests =
 
   let date = System.DateTime.UtcNow
 
+  let stateChanged: ReportJobStateChanged =
+    fun (perv, curr) ->
+      if curr.Status = JobManager.Status.Success then
+        semaphore2.Release() |> ignore
+      else
+        ()
+
   let env =
     { EthBlocksCount = 1000u
       MaxEthItemsInResponse = 100u
       OnScrap = onScrap
+      OnReportJobStateChanged = Some stateChanged
       Date = fun () -> date }
 
   let context = Context env
@@ -73,7 +83,7 @@ let tests =
            )) ]
         |> Map.ofList }
 
-  testCaseAsync
+  ftestCaseAsync
     "parallel start finish"
     (task {
 
@@ -90,7 +100,7 @@ let tests =
 
       do! semaphore.WaitAsync()
       do! semaphore.WaitAsync()
-      do! context.wait (1500)
+      do! semaphore2.WaitAsync()
 
       let! jobManangerState = context.JobManagerMap.GetItem jobManagerId
 

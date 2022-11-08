@@ -69,4 +69,7 @@ module internal RunScrapper =
             Range = scrapperRequest.BlockRange }
         ParentId = parentId }
 
-    task { return! runScrapper env scrapperRequest state }
+    task {
+      do! env.SetState state
+      return! runScrapper env scrapperRequest state
+    }

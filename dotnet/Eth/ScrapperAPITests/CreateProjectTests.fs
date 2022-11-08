@@ -32,6 +32,7 @@ let tests =
     { EthBlocksCount = 1000u
       MaxEthItemsInResponse = 100u
       OnScrap = onScrap
+      OnReportJobStateChanged = None
       Date = fun () -> now }
 
   let context = Context contextEnv

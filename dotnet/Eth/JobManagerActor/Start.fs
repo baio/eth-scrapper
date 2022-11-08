@@ -32,6 +32,9 @@ module Start =
       match state with
       | None ->
         let! config = getConfig env
+
+        logger.LogDebug("Config {@config}", config)
+
         let jobsCount = config.AvailableJobsCount
         let! blocksCount = env.GetEthBlocksCount data.EthProviderUrl //getEthBlocksCount data.EthProviderUrl
         let blockSize = Math.Ceiling(blocksCount / jobsCount) |> uint

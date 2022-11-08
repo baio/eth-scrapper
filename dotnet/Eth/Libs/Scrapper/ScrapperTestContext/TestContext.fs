@@ -4,12 +4,35 @@ open Microsoft.Extensions.Logging
 open ScrapperModels
 open System.Threading.Tasks
 open Common.Utils.Test
+open ScrapperModels.JobManager
+
+type ReportJobStateChanged = ScrapperModels.JobManager.State * ScrapperModels.JobManager.State -> unit
 
 type ContextEnv =
   { EthBlocksCount: uint
     MaxEthItemsInResponse: uint
     Date: unit -> System.DateTime
-    OnScrap: OnScrap }
+    OnScrap: OnScrap
+    OnReportJobStateChanged: ReportJobStateChanged option }
+
+
+type JobManagerBaseActor(env, fn: ReportJobStateChanged option) =
+  inherit JobManager.JobManagerBaseActor.JobManagerBaseActor(env)
+
+  member this.ReportJobState data = base.OnReportJobState data
+
+  override this.OnReportJobState data =
+    task {
+      let! pervState = (this :> IJobManagerActor).State()
+      let! result = this.ReportJobState data
+      let! currState = (this :> IJobManagerActor).State()
+
+      match (pervState, currState, fn) with
+      | Some pervState, Some currState, Some fn -> fn (pervState, currState)
+      | _ -> ()
+
+      return result
+    }
 
 type Context(env: ContextEnv) =
 
@@ -99,7 +122,7 @@ type Context(env: ContextEnv) =
     let actor =
       id
       |> this.createJobManagerEnv
-      |> JobManager.JobManagerBaseActor.JobManagerBaseActor
+      |> fun jobManagerEnv -> JobManagerBaseActor(jobManagerEnv, env.OnReportJobStateChanged)
 
     actor :> JobManager.IJobManagerActor
 
