@@ -17,6 +17,7 @@ let tests =
   let mutable scrapCnt = 0
 
   let semaphore = new SemaphoreSlim(0, 4)
+  let semaphore2 = new SemaphoreSlim(0, 1)
 
   let onScrap: OnScrap =
     fun request ->
@@ -46,7 +47,7 @@ let tests =
             |> Ok: ScrapperModels.ScrapperResult
           | 3 ->
             scrapCnt <- scrapCnt + 1
-
+            semaphore2.Release() |> ignore
             { Data = EmptyResult
               BlockRange = request.BlockRange }
             |> Error: ScrapperModels.ScrapperResult
@@ -113,7 +114,9 @@ let tests =
 
       semaphore.Release(3) |> ignore
 
-      do! Task.Delay(500)
+      do! semaphore2.WaitAsync()
+
+      do! Task.Delay(100)
 
       Expect.equal scrapCnt 4 "scrap calls should be 4"
 
