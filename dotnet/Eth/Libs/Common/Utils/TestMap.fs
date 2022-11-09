@@ -7,11 +7,7 @@ module Map =
   let createMapHelper<'a, 'b when 'a: comparison> () =
     let mutable map = Map.empty
 
-    {| AddItem =
-        fun (key: 'a) (item: 'b) ->
-          Task.Run (fun () ->
-            map <- Map.add key item map
-            ())
+    {| AddItem = fun (key: 'a) (item: 'b) -> task { map <- Map.add key item map } :> Task
        AddIfNotExist =
         fun (key: 'a) (item: 'b) ->
           Task.Run (fun () ->
@@ -25,8 +21,9 @@ module Map =
           :> Task
        RemoveItem =
         fun (key: 'a) ->
-          Task.Run (fun () ->
+          task {
             map <- Map.remove key map
-            true)
-       GetItem = fun (key: 'a) -> Task.Run(fun () -> map |> Map.tryFind key)
-       GetAllItems = fun () -> Task.Run(fun () -> map |> Map.toList |> List.map snd |> Ok) |}
+            return true
+          }
+       GetItem = fun (key: 'a) -> task { return map |> Map.tryFind key }
+       GetAllItems = fun () -> task { return map |> Map.toList |> List.map snd |> Ok } |}

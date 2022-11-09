@@ -1,28 +1,26 @@
 {
+  "profiles": {
+    "ScrapperStoreActor": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": false,
+      "applicationUrl": "http://localhost:5097"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  },
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:21891",
-      "sslPort": 0
-    }
-  },
-  "profiles": {
-    "ScrapperStoreActor": {
-      "commandName": "Project",
-      "dotnetRunMessages": false,
-      "launchBrowser": false,
-      "applicationUrl": "http://localhost:5097",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": false,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      "applicationUrl": "http://localhost:56513/",
+      "sslPort": 44344
     }
   }
 }

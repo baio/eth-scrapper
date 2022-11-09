@@ -29,18 +29,11 @@ let tests =
 
   let date = System.DateTime.UtcNow
 
-  let stateChanged: ReportJobStateChanged =
-    fun (perv, curr) ->
-      if curr.Status = JobManager.Status.Success then
-        semaphore2.Release() |> ignore
-      else
-        ()
-
   let env =
     { EthBlocksCount = 1000u
       MaxEthItemsInResponse = 100u
       OnScrap = onScrap
-      OnReportJobStateChanged = Some stateChanged
+      OnReportJobStateChanged = releaseOnSuccess semaphore2
       Date = fun () -> date }
 
   let context = Context env
@@ -83,7 +76,7 @@ let tests =
            )) ]
         |> Map.ofList }
 
-  ftestCaseAsync
+  testCaseAsync
     "parallel start finish"
     (task {
 

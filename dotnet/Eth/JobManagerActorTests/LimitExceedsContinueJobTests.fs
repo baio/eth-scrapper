@@ -5,17 +5,22 @@ open ScrapperModels
 open Common.Utils.Task
 open Common.Utils
 open ScrapperTestContext
+open System.Threading
 
-//[<Tests>]
+[<Tests>]
 let tests =
   let ethBlocksCount = 1000u
   let maxEthItemsInResponse = 100u
 
   let mutable scrapCnt = 0
+  let semaphore = new SemaphoreSlim(0, 3)
+  let semaphore2 = new SemaphoreSlim(0, 1)
 
   let onScrap: OnScrap =
     fun request ->
       task {
+        semaphore.Release() |> ignore
+
         return
           match scrapCnt with
           | 0 ->
@@ -45,7 +50,7 @@ let tests =
     { EthBlocksCount = ethBlocksCount
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
-      OnReportJobStateChanged = None
+      OnReportJobStateChanged = releaseOnSuccess semaphore2
       Date = fun () -> date }
 
   let context = Context env
@@ -68,7 +73,7 @@ let tests =
       ParentId = None }: ScrapperDispatcher.State
 
   testCaseAsync
-    "job: when scrapper returns empty result (0 events) the job should finish"
+    "job: LimitExceeded,  OK 10, EmptyResult finish"
     (task {
 
       let jobId = JobId "1"
@@ -83,9 +88,13 @@ let tests =
 
       let! _ = job.Start(startData)
 
-      do! context.wait (500)
+      do! semaphore.WaitAsync()
+      do! semaphore.WaitAsync()
+      do! semaphore.WaitAsync()
 
       Expect.equal scrapCnt 3 "scrap should be called 3 times"
+
+      let! _ = semaphore2.WaitAsync(100)
 
       let! jobState = context.JobMap.GetItem jobId
 

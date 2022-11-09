@@ -11,7 +11,7 @@ open System.Threading
 let ethBlocksCount = 100u
 let maxEthItemsInResponse = 50u
 
-//[<Tests>]
+[<Tests>]
 let tests =
 
   let mutable scrapCnt = 0
@@ -47,7 +47,6 @@ let tests =
             |> Ok: ScrapperModels.ScrapperResult
           | 3 ->
             scrapCnt <- scrapCnt + 1
-            semaphore2.Release() |> ignore
 
             { Data = EmptyResult
               BlockRange = request.BlockRange }
@@ -63,7 +62,7 @@ let tests =
     { EthBlocksCount = ethBlocksCount
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
-      OnReportJobStateChanged = None
+      OnReportJobStateChanged = releaseOnSuccess semaphore2
       Date = fun () -> date }
 
   let context = Context env
@@ -116,8 +115,6 @@ let tests =
       semaphore.Release(3) |> ignore
 
       do! semaphore2.WaitAsync()
-
-      do! Task.Delay(500)
 
       Expect.equal scrapCnt 4 "scrap calls should be 4"
 

@@ -5,11 +5,13 @@ open ScrapperModels
 open Common.Utils.Task
 open Common.Utils
 open ScrapperTestContext
+open System.Threading
 
-//[<Tests>]
+[<Tests>]
 let tests =
   let ethBlocksCount = 1000u
   let maxEthItemsInResponse = 100u
+  let semaphore = new SemaphoreSlim(0, 1)
 
   let onScrap: OnScrap =
     fun request ->
@@ -29,7 +31,7 @@ let tests =
     { EthBlocksCount = ethBlocksCount
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
-      OnReportJobStateChanged = None
+      OnReportJobStateChanged = releaseOnSuccess semaphore
       Date = fun () -> date }
 
   let context = Context env
@@ -66,7 +68,7 @@ let tests =
 
       let! _ = job.Start(startData)
 
-      do! context.wait (500)
+      let! _ = semaphore.WaitAsync 100
 
       let! jobManangerState = context.JobMap.GetItem jobId
 

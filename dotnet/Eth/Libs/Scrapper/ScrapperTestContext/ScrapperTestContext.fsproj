@@ -6,8 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="JobManagerActor.fs" />
     <Compile Include="MockScrapperActor.fs" />
     <Compile Include="TestContext.fs" />
+    <Compile Include="ReleaseOnSuccess.fs" />
   </ItemGroup>
 
   <ItemGroup>

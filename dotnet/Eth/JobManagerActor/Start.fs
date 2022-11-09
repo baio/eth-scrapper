@@ -65,6 +65,8 @@ module Start =
 
         logger.LogDebug("Calculated start data {@rangeStartData}", rangeStartData)
 
+        do! env.StateStore.Set defaultState
+
         let calls =
           rangeStartData
           |> List.mapi (fun i data ->
@@ -82,27 +84,17 @@ module Start =
               return jobId, result, (CallChildActorData.Start data)
             })
 
-        let! result = Common.Utils.Task.all calls
+        Common.Utils.Task.all calls |> ignore
 
-        logger.LogDebug("Result after executing start {@result}", result)
+        //logger.LogDebug("Start executed")
 
-        let state2 = JobResult.updateStateWithJobsListResult defaultState result //updateStateWithJobsListErrorResult defaultState result
+        //let state2 = JobResult.updateStateWithJobsListResult defaultState result
 
-        logger.LogDebug("Updated {@state} after jobs result applied", state2)
+        //logger.LogDebug("Updated {@state} after jobs result applied", state2)
 
-        do! env.StateStore.Set state2
+        //do! env.StateStore.Set state2
 
-        return state2 |> Ok
-      //match state' with
-      //| Some state ->
-      //  do! env.SetState state
-      //  logger.LogDebug("Updated {@state} after errors applied", state)
-      //  return state |> Ok
-      //| _ ->
-
-      //  do! env.SetState defaultState
-      //  logger.LogDebug("No errors, set default {@state}")
-      //  return defaultState |> Ok
+        return defaultState |> Ok
 
       | Some state ->
         logger.LogError("State already exists", state)

@@ -6,8 +6,6 @@ open System.Threading.Tasks
 open Common.Utils.Test
 open ScrapperModels.JobManager
 
-type ReportJobStateChanged = ScrapperModels.JobManager.State * ScrapperModels.JobManager.State -> unit
-
 type ContextEnv =
   { EthBlocksCount: uint
     MaxEthItemsInResponse: uint
@@ -15,26 +13,9 @@ type ContextEnv =
     OnScrap: OnScrap
     OnReportJobStateChanged: ReportJobStateChanged option }
 
-
-type JobManagerBaseActor(env, fn: ReportJobStateChanged option) =
-  inherit JobManager.JobManagerBaseActor.JobManagerBaseActor(env)
-
-  member this.ReportJobState data = base.OnReportJobState data
-
-  override this.OnReportJobState data =
-    task {
-      let! pervState = (this :> IJobManagerActor).State()
-      let! result = this.ReportJobState data
-      let! currState = (this :> IJobManagerActor).State()
-
-      match (pervState, currState, fn) with
-      | Some pervState, Some currState, Some fn -> fn (pervState, currState)
-      | _ -> ()
-
-      return result
-    }
-
 type Context(env: ContextEnv) =
+
+  let mutable jobManagers = Map.empty<JobManagerId, IJobManagerActor>
 
   let createLogger = Common.Logger.SerilogLogger.createDefault
 
@@ -119,12 +100,19 @@ type Context(env: ContextEnv) =
       GetEthBlocksCount = fun _ -> env.EthBlocksCount |> Task.FromResult }
 
   member this.createJobManager(id: JobManagerId) =
-    let actor =
-      id
-      |> this.createJobManagerEnv
-      |> fun jobManagerEnv -> JobManagerBaseActor(jobManagerEnv, env.OnReportJobStateChanged)
+    let jobManager = Map.tryFind id jobManagers
 
-    actor :> JobManager.IJobManagerActor
+    match jobManager with
+    | Some jobManager -> jobManager
+    | None ->
+      let actor =
+        id
+        |> this.createJobManagerEnv
+        |> fun jobManagerEnv -> JobManagerActor(jobManagerEnv, env.OnReportJobStateChanged)
+        :> JobManager.IJobManagerActor
+
+      jobManagers <- jobManagers.Add(id, actor)
+      actor
 
   member this.wait(scrapCnt: int) =
     Task.Delay(scrapCnt + 1) |> Async.AwaitTask

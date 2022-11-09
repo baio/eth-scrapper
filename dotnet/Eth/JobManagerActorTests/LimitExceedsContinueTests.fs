@@ -6,18 +6,23 @@ open Common.Utils.Task
 open Common.Utils
 open ScrapperTestContext
 open System.Threading.Tasks
+open System.Threading
 
 let ethBlocksCount = 100u
 let maxEthItemsInResponse = 50u
 
-//[<Tests>]
+[<Tests>]
 let tests =
 
   let mutable scrapCnt = 0
+  let semaphore = new SemaphoreSlim(0, 3)
+  let semaphore2 = new SemaphoreSlim(0, 1)
 
   let onScrap: OnScrap =
     fun request ->
       task {
+        semaphore.Release() |> ignore
+
         return
           match scrapCnt with
           | 0 ->
@@ -47,7 +52,7 @@ let tests =
     { EthBlocksCount = ethBlocksCount
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
-      OnReportJobStateChanged = None
+      OnReportJobStateChanged = releaseOnSuccess semaphore2
       Date = fun () -> date }
 
   let context = Context env
@@ -89,9 +94,13 @@ let tests =
 
       let! _ = jobManager.Start(startData)
 
-      do! context.wait (500)
+      do! semaphore.WaitAsync()
+      do! semaphore.WaitAsync()
+      do! semaphore.WaitAsync()
 
       Expect.equal scrapCnt 3 "scrap calls should be 3"
+
+      do! semaphore2.WaitAsync()
 
       let! jobState = context.JobMap.GetItem jobId
 

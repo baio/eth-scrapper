@@ -11,12 +11,13 @@ open System.Threading
 let ethBlocksCount = 100u
 let maxEthItemsInResponse = 50u
 
-//[<Tests>]
+[<Tests>]
 let tests =
 
   let mutable scrapCnt = 0
 
   let semaphore = new SemaphoreSlim(0, 1)
+  let semaphore2 = new SemaphoreSlim(0, 1)
 
   let onScrap: OnScrap =
     fun request ->
@@ -41,7 +42,7 @@ let tests =
     { EthBlocksCount = ethBlocksCount
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
-      OnReportJobStateChanged = None
+      OnReportJobStateChanged = releaseOnStatus JobManager.Status.Pause semaphore2
       Date = fun () -> date }
 
   let context = Context env
@@ -87,9 +88,11 @@ let tests =
 
       semaphore.Release() |> ignore
 
-      do! Task.Delay(1)
+      do! Task.Delay 100
 
       Expect.equal scrapCnt 1 "scrap calls should be 1"
+
+      let! _ = semaphore2.WaitAsync 100
 
       let! jobState = context.JobMap.GetItem jobId
 
