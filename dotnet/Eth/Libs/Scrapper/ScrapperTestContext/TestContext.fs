@@ -5,6 +5,7 @@ open ScrapperModels
 open System.Threading.Tasks
 open Common.Utils.Test
 open ScrapperModels.JobManager
+open ScrapperModels.ScrapperDispatcher
 
 type ContextEnv =
   { EthBlocksCount: uint
@@ -16,6 +17,7 @@ type ContextEnv =
 type Context(env: ContextEnv) =
 
   let mutable jobManagers = Map.empty<JobManagerId, IJobManagerActor>
+  let mutable jobs = Map.empty<JobId, IScrapperDispatcherActor>
 
   let createLogger = Common.Logger.SerilogLogger.createDefault
 
@@ -73,10 +75,17 @@ type Context(env: ContextEnv) =
       GetEthBlocksCount = fun _ -> env.EthBlocksCount |> Task.FromResult }
 
   member this.createScrapperDispatcher(id: JobId) =
-    id
-    |> this.createScrapperDispatcherEnv
-    |> ScrapperDispatcherActor.ScrapperDispatcherBaseActor.ScrapperDispatcherBaseActor
-    :> ScrapperDispatcher.IScrapperDispatcherActor
+    let job = Map.tryFind id jobs
+
+    match job with
+    | Some job -> job
+    | None ->
+      let actor =
+        id |> this.createScrapperDispatcherEnv |> JobActor :> ScrapperDispatcher.IScrapperDispatcherActor
+
+      jobs <- jobs.Add(id, actor)
+      actor
+
 
   // job manager
   member this.createJobManagerEnv(jobManagerId: JobManagerId) : JobManager.Env =

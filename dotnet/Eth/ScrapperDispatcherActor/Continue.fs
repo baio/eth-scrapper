@@ -105,7 +105,7 @@ module internal Continue =
             return! continue' env data state blockRange
           | CheckStop.Stop ->
 
-            logger.LogInformation("Stop check is CheckStop.Stop, finish")
+            logger.LogDebug("Stop check is CheckStop.Stop, finish")
 
             let epoch = env.Date() |> toEpoch
 
@@ -117,7 +117,7 @@ module internal Continue =
 
             do! env.SetState state
 
-            logger.LogDebug("New {@state} set", state)
+            logger.LogDebug("New state {@state} set", state)
 
             return state |> Ok
       | None ->

@@ -25,7 +25,7 @@ module ReportJobState =
         let state2 = JobResult.updateStateWithJob state (jobId, data.Job)
         logger.LogDebug("Update state with job: {@state}", state2)
         do! env.StateStore.Set state2
-        logger.LogDebug("State updated")
+        logger.LogDebug("State updated {@state}", state2)
         return state2 |> Ok
       | None ->
         logger.LogError("State not found")

@@ -2,10 +2,10 @@ module LimitExceedsContinueJobTests
 
 open Expecto
 open ScrapperModels
-open Common.Utils.Task
 open Common.Utils
 open ScrapperTestContext
 open System.Threading
+open System.Threading.Tasks
 
 [<Tests>]
 let tests =
@@ -21,6 +21,7 @@ let tests =
             BlockRange = request.BlockRange }
           |> Error
 
+        semaphore.Release() |> ignore
         return result
       }
 
@@ -31,7 +32,7 @@ let tests =
     { EthBlocksCount = ethBlocksCount
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
-      OnReportJobStateChanged = releaseOnSuccess semaphore
+      OnReportJobStateChanged = None
       Date = fun () -> date }
 
   let context = Context env
@@ -53,7 +54,7 @@ let tests =
 
 
   testCaseAsync
-    "job: when scrapper returns limit exceeds the job should continue"
+    "job: empty result finish job"
     (task {
 
       let jobId = JobId "1"
@@ -68,11 +69,13 @@ let tests =
 
       let! _ = job.Start(startData)
 
-      let! _ = semaphore.WaitAsync 100
+      do! semaphore.WaitAsync()
 
-      let! jobManangerState = context.JobMap.GetItem jobId
+      do! Task.Delay 1000
 
-      Expect.equal jobManangerState (Some expected) "job state is not expected"
+      let! actual = context.JobMap.GetItem jobId
+
+      Expect.equal actual (Some expected) "job state is not expected"
 
      }
      |> Async.AwaitTask)
