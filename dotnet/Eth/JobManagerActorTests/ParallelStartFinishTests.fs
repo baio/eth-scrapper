@@ -93,10 +93,7 @@ let tests =
 
       do! semaphore.WaitAsync()
       do! semaphore.WaitAsync()
-      do! Task.Delay 100
-      let! _ = semaphore2.WaitAsync(500)
-      do! Task.Delay 1500
-      printfn "=============================================="
+      let! _ = semaphore2.WaitAsync()
 
       let! jobManangerState = context.JobManagerMap.GetItem jobManagerId
 

@@ -14,10 +14,11 @@ type ContextEnv =
     OnReportJobStateChanged: ReportJobStateChanged option }
 
 module private Helpers =
+
   let createActorFactory<'k, 'v when 'k: comparison> fn =
     let mutable map = Map.empty<'k, 'v>
 
-    let getOrCreate id =
+    fun id ->
       let actor = Map.tryFind id map
 
       match actor with
@@ -27,15 +28,28 @@ module private Helpers =
         map <- map.Add(id, actor)
         actor
 
-    getOrCreate
 
 
-type Context(env: ContextEnv) =
+type Context(env: ContextEnv) as this =
 
-  let jobManagers = Helpers.createActorFactory<JobManagerId, IJobManagerActor>
-  let jobs = Helpers.createActorFactory<JobId, IScrapperDispatcherActor>
-  let scrappers = Helpers.createActorFactory<JobId, Scrapper.IScrapperActor>
-  let stores = Helpers.createActorFactory<JobId, ScrapperStore.IScrapperStoreActor>
+  let jobManagersFactory =
+    Helpers.createActorFactory<JobManagerId, IJobManagerActor> (fun id ->
+      id
+      |> this.createJobManagerEnv
+      |> fun jobManagerEnv -> JobManagerActor(jobManagerEnv, env.OnReportJobStateChanged)
+      :> JobManager.IJobManagerActor)
+
+  let jobsFactory =
+    Helpers.createActorFactory<JobId, IScrapperDispatcherActor> (fun id ->
+      id |> this.createScrapperDispatcherEnv |> JobActor :> ScrapperDispatcher.IScrapperDispatcherActor)
+
+  let scrappersFactory =
+    Helpers.createActorFactory<JobId, Scrapper.IScrapperActor> (fun id ->
+      id |> this.createScrapperEnv |> ScrapperActor :> Scrapper.IScrapperActor)
+
+  let storesFactory =
+    Helpers.createActorFactory<JobId, ScrapperStore.IScrapperStoreActor> (fun id ->
+      id |> this.createStoreEnv |> StoreActor :> ScrapperStore.IScrapperStoreActor)
 
   let createLogger = Common.Logger.SerilogLogger.createDefault
 
@@ -58,8 +72,7 @@ type Context(env: ContextEnv) =
       CreateStoreActor = this.createStore
       OnScrap = env.OnScrap }
 
-  member this.createScrapper =
-    scrappers (fun id -> id |> this.createScrapperEnv |> ScrapperActor :> Scrapper.IScrapperActor)
+  member this.createScrapper = scrappersFactory
 
   // store
   member this.createStoreEnv(jobId: JobId) : ScrapperElasticStoreActor.Env =
@@ -70,8 +83,7 @@ type Context(env: ContextEnv) =
       Store = fun _ -> Task.FromResult true
       CreateScrapperDispatcherActor = this.createScrapperDispatcher }
 
-  member this.createStore =
-    stores (fun id -> id |> this.createStoreEnv |> StoreActor :> ScrapperStore.IScrapperStoreActor)
+  member this.createStore = storesFactory
 
 
   // scrapper dispatcher / job
@@ -89,8 +101,7 @@ type Context(env: ContextEnv) =
       CreateScrapperActor = this.createScrapper
       GetEthBlocksCount = fun _ -> env.EthBlocksCount |> Task.FromResult }
 
-  member this.createScrapperDispatcher =
-    jobs (fun id -> id |> this.createScrapperDispatcherEnv |> JobActor :> ScrapperDispatcher.IScrapperDispatcherActor)
+  member this.createScrapperDispatcher = jobsFactory
 
   // job manager
   member this.createJobManagerEnv(jobManagerId: JobManagerId) : JobManager.Env =
@@ -113,9 +124,4 @@ type Context(env: ContextEnv) =
       CreateScrapperDispatcherActor = this.createScrapperDispatcher
       GetEthBlocksCount = fun _ -> env.EthBlocksCount |> Task.FromResult }
 
-  member this.createJobManager =
-    jobManagers (fun id ->
-      id
-      |> this.createJobManagerEnv
-      |> fun jobManagerEnv -> JobManagerActor(jobManagerEnv, env.OnReportJobStateChanged)
-      :> JobManager.IJobManagerActor)
+  member this.createJobManager = jobManagersFactory
