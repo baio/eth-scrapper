@@ -7,7 +7,13 @@ module Map =
   let createMapHelper<'a, 'b when 'a: comparison> () =
     let mutable map = Map.empty
 
-    {| AddItem = fun (key: 'a) (item: 'b) -> task { map <- Map.add key item map } :> Task
+    {| AddItem =
+        fun (key: 'a) (item: 'b) ->
+          task {
+            map <- Map.add key item map
+            printfn "STATE SET !!!"
+          }
+          :> Task
        AddIfNotExist =
         fun (key: 'a) (item: 'b) ->
           Task.Run (fun () ->

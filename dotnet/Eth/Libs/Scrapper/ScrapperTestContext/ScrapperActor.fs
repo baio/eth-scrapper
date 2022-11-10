@@ -13,55 +13,64 @@ type ScrapperActorEnv =
     CreateStoreActor: JobId -> ScrapperModels.ScrapperStore.IScrapperStoreActor
     OnScrap: OnScrap }
 
-type ScrapperActor(env: ScrapperActorEnv) =
+type ScrapperActor(env: ScrapperActorEnv) as this =
+
+  let lockt (fn: 'a -> Task<_>) (x: 'a) =
+    task { return lock this (fun () -> (fn x).Result) }
 
   interface ScrapperModels.Scrapper.IScrapperActor with
-    member this.Scrap data =
-      task {
+    member this.Scrap data = lockt this._Scrap data
 
-        let! result = env.OnScrap data
+  member this._Scrap data =
+    task {
 
-        env.Logger.LogDebug("Scrap result {@result}", result)
+      let! result = env.OnScrap data
 
-        match result with
-        | Ok result ->
-          let data: ScrapperModels.ScrapperStore.ContinueSuccessData =
-            { EthProviderUrl = data.EthProviderUrl
-              Abi = data.Abi
-              ContractAddress = data.ContractAddress
-              Result =
-                { BlockRange = result.BlockRange
-                  ItemsCount = result.ItemsCount
-                  IndexPayload = "test payload" } }
+      env.Logger.LogDebug("Scrap result {@result}", result)
 
-          let actor = env.CreateStoreActor(env.ActorId)
+      match result with
+      | Ok result ->
+        let data: ScrapperModels.ScrapperStore.ContinueSuccessData =
+          { EthProviderUrl = data.EthProviderUrl
+            Abi = data.Abi
+            ContractAddress = data.ContractAddress
+            Result =
+              { BlockRange = result.BlockRange
+                ItemsCount = result.ItemsCount
+                IndexPayload = "test payload" } }
 
-          task {
-            // imitate waiting
-            do! Task.Delay(1) |> Async.AwaitTask
-            let! _ = actor.Store data
-            return ()
-          }
-          |> ignore
+        let actor = env.CreateStoreActor(env.ActorId)
 
-          return true
-        | Error _ ->
-          let data: ScrapperModels.ScrapperDispatcher.ContinueData =
-            { EthProviderUrl = data.EthProviderUrl
-              Abi = data.Abi
-              ContractAddress = data.ContractAddress
-              Result = result }
+        task {
+          // imitate waiting
+          do! Task.Delay(1)
+          let! _ = actor.Store data
+          return ()
+        }
+        |> ignore
 
-          let actor = env.CreateScrapperDispatcherActor(env.ActorId)
+        return true
+      | Error _ ->
+        let data: ScrapperModels.ScrapperDispatcher.ContinueData =
+          { EthProviderUrl = data.EthProviderUrl
+            Abi = data.Abi
+            ContractAddress = data.ContractAddress
+            Result = result }
 
-          task {
-            // imitate waiting
-            do! Task.Delay(1) |> Async.AwaitTask
-            let! _ = actor.Continue data
-            return ()
-          }
-          |> ignore
+        let actor = env.CreateScrapperDispatcherActor(env.ActorId)
 
-          return true
-      } |> ignore
-      Task.FromResult true
+        task {
+          // imitate waiting
+          do! Task.Delay(1)
+          let! _ = actor.Continue data
+          return ()
+        }
+        |> ignore
+
+        return true
+    }
+    |> ignore
+    task {
+      do! Task.Delay(1)
+      return true
+    }

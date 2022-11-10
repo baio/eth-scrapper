@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="StoreActor.fs" />
     <Compile Include="JobActor.fs" />
     <Compile Include="JobManagerActor.fs" />
     <Compile Include="ScrapperActor.fs" />

@@ -14,7 +14,6 @@ module ScrapperDispatcherBaseActor =
 
       task {
         do! env.SetState state
-        printfn "setState %O" state
 
         manager.ReportJobState { Job = state; ActorId = env.ActorId }
         |> ignore

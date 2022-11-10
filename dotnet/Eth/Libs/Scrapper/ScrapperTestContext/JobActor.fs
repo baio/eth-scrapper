@@ -10,7 +10,6 @@ type JobActor(env) as this =
   let actor =
     ScrapperDispatcherActor.ScrapperDispatcherBaseActor.ScrapperDispatcherBaseActor(env) :> IScrapperDispatcherActor
 
-
   let lockt (fn: 'a -> Task<_>) (x: 'a) =
     task { return lock this (fun () -> (fn x).Result) }
 

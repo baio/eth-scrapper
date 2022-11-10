@@ -8,7 +8,7 @@ open ScrapperTestContext
 open System.Threading
 open System.Threading.Tasks
 
-[<Tests>]
+//[<Tests>]
 let tests =
   let ethBlocksCount = 1000u
   let maxEthItemsInResponse = 100u

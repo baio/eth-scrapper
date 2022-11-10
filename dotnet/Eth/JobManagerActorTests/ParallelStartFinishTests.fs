@@ -16,9 +16,9 @@ let tests =
 
   let onScrap: OnScrap =
     fun request ->
-      semaphore.Release() |> ignore
-
+      
       task {
+        semaphore.Release() |> ignore
         let result: ScrapperModels.ScrapperResult =
           { Data = EmptyResult
             BlockRange = request.BlockRange }
@@ -93,7 +93,10 @@ let tests =
 
       do! semaphore.WaitAsync()
       do! semaphore.WaitAsync()
-      do! semaphore2.WaitAsync()
+      do! Task.Delay 100
+      let! _ = semaphore2.WaitAsync(500)
+      do! Task.Delay 1500
+      printfn "=============================================="
 
       let! jobManangerState = context.JobManagerMap.GetItem jobManagerId
 
