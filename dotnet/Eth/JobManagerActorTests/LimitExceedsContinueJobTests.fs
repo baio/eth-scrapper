@@ -7,6 +7,7 @@ open Common.Utils
 open ScrapperTestContext
 open System.Threading
 open System.Threading.Tasks
+open ScrapperModels.ScrapperDispatcher
 
 [<Tests>]
 let tests =
@@ -14,7 +15,7 @@ let tests =
   let maxEthItemsInResponse = 100u
 
   let mutable scrapCnt = 0
-  let semaphore = new SemaphoreSlim(0, 3)
+  let semaphore = new SemaphoreSlim(0, 4)
 
   let onScrap: OnScrap =
     fun request ->
@@ -44,12 +45,28 @@ let tests =
           | _ -> failwith "not expected"
       }
 
+  let onAfter: OnAfter =
+    fun (actorName, methodName) (_, result, _) ->
+      task {
+        match (actorName, methodName) with
+        | "JobActor", "Continue" ->
+          let result = result :?> Result<State, ScrapperDispatcherActorError>
+
+          match result with
+          | Ok state when state.Status = Status.Finish -> semaphore.Release() |> ignore
+          | _ -> ()
+        | _ -> ()
+
+        return ()
+      }
+
   let date = System.DateTime.UtcNow
 
   let env =
     { EthBlocksCount = ethBlocksCount
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
+      MailboxHooks = None, (Some onAfter)
       OnReportJobStateChanged = None
       Date = fun () -> date }
 
@@ -94,7 +111,7 @@ let tests =
 
       Expect.equal scrapCnt 3 "scrap should be called 3 times"
 
-      do! Task.Delay 1000
+      do! semaphore.WaitAsync()
 
       let! jobState = context.JobMap.GetItem jobId
 

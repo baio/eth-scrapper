@@ -7,7 +7,7 @@ open Common.Utils
 open ScrapperTestContext
 open System.Threading
 
-[<Tests>]
+//[<Tests>]
 let tests =
 
   let semaphore = new SemaphoreSlim(0, 1)
@@ -29,6 +29,7 @@ let tests =
     { EthBlocksCount = 1000u
       MaxEthItemsInResponse = 100u
       OnScrap = onScrap
+      MailboxHooks = None, None
       OnReportJobStateChanged = releaseOnSuccess semaphore
       Date = fun () -> date }
 

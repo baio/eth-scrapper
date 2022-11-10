@@ -11,7 +11,7 @@ open System.Threading
 let ethBlocksCount = 100u
 let maxEthItemsInResponse = 50u
 
-[<Tests>]
+//[<Tests>]
 let tests =
 
   let mutable scrapCnt = 0
@@ -48,6 +48,7 @@ let tests =
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
       OnReportJobStateChanged = releaseOnStatus JobManager.Status.Pause semaphore2
+      MailboxHooks = None, None
       Date = fun () -> date }
 
   let context = Context env

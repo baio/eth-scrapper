@@ -21,18 +21,28 @@ let tests =
             BlockRange = request.BlockRange }
           |> Error
 
-        semaphore.Release() |> ignore
         return result
       }
 
 
   let date = System.DateTime.UtcNow
 
+  let onAfter: OnAfter =
+    fun (actorName, methodName) _ ->
+      task {
+        match (actorName, methodName) with
+        | "JobActor", "Continue" -> semaphore.Release() |> ignore
+        | _ -> ()
+
+        return ()
+      }
+
   let env =
     { EthBlocksCount = ethBlocksCount
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
       OnReportJobStateChanged = None
+      MailboxHooks = None, (Some onAfter)
       Date = fun () -> date }
 
   let context = Context env
@@ -70,8 +80,6 @@ let tests =
       let! _ = job.Start(startData)
 
       do! semaphore.WaitAsync()
-
-      do! Task.Delay 1000
 
       let! actual = context.JobMap.GetItem jobId
 

@@ -109,17 +109,17 @@ module internal Continue =
 
             let epoch = env.Date() |> toEpoch
 
-            let state: State =
+            let state2: State =
               { state with
                   Status = Status.Finish
                   Date = epoch
                   FinishDate = epoch |> Some }
 
-            do! env.SetState state
+            do! env.SetState state2
 
-            logger.LogDebug("New state {@state} set", state)
+            logger.LogDebug("New state {@state} set", state2)
 
-            return state |> Ok
+            return state2 |> Ok
       | None ->
         logger.LogError("State not found")
         return StateNotFound |> Error

@@ -12,7 +12,7 @@ open Scrapper.Repo
 open ScrapperAPI.Services.JobManagerService
 open ScrapperModels.JobManager
 
-[<Tests>]
+//[<Tests>]
 let tests =
 
   let onScrap: OnScrap =
@@ -33,6 +33,7 @@ let tests =
       MaxEthItemsInResponse = 100u
       OnScrap = onScrap
       OnReportJobStateChanged = None
+      MailboxHooks = None, None
       Date = fun () -> now }
 
   let context = Context contextEnv

@@ -6,9 +6,9 @@ open System.Threading.Tasks
 open System.Threading
 open Microsoft.Extensions.Logging
 
-type JobActor(env) =
+type JobActor(env, hooks) =
 
-  let mailbox = createMailbox ()
+  let mailbox = createMailbox' "JobActor" hooks
 
   let actor =
     ScrapperDispatcherActor.ScrapperDispatcherBaseActor.ScrapperDispatcherBaseActor(env) :> IScrapperDispatcherActor

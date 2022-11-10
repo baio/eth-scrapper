@@ -11,6 +11,7 @@ type ContextEnv =
     MaxEthItemsInResponse: uint
     Date: unit -> System.DateTime
     OnScrap: OnScrap
+    MailboxHooks: MailboxHooks
     OnReportJobStateChanged: ReportJobStateChanged option }
 
 module private Helpers =
@@ -41,7 +42,10 @@ type Context(env: ContextEnv) as this =
 
   let jobsFactory =
     Helpers.createActorFactory<JobId, IScrapperDispatcherActor> (fun id ->
-      id |> this.createScrapperDispatcherEnv |> JobActor :> ScrapperDispatcher.IScrapperDispatcherActor)
+      let env' = id |> this.createScrapperDispatcherEnv
+
+      let actor = JobActor(env', env.MailboxHooks)
+      actor :> ScrapperDispatcher.IScrapperDispatcherActor)
 
   let scrappersFactory =
     Helpers.createActorFactory<JobId, Scrapper.IScrapperActor> (fun id ->
