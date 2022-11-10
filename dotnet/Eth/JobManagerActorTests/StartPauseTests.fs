@@ -11,7 +11,7 @@ open System.Threading
 let ethBlocksCount = 100u
 let maxEthItemsInResponse = 50u
 
-//[<Tests>]
+[<FTests>]
 let tests =
 
   let mutable scrapCnt = 0
@@ -92,7 +92,9 @@ let tests =
 
       Expect.equal scrapCnt 1 "scrap calls should be 1"
 
-      let! _ = semaphore2.WaitAsync 100
+      let! _ = semaphore2.WaitAsync 500
+
+      do! Task.Delay 100
 
       let! jobState = context.JobMap.GetItem jobId
 
