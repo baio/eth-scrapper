@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="MailboxSync.fs" />
     <Compile Include="StoreActor.fs" />
     <Compile Include="JobActor.fs" />
     <Compile Include="JobManagerActor.fs" />

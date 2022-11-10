@@ -8,7 +8,7 @@ open ScrapperTestContext
 open System.Threading
 open System.Threading.Tasks
 
-//[<Tests>]
+[<Tests>]
 let tests =
 
   let semaphore = new SemaphoreSlim(0, 2)

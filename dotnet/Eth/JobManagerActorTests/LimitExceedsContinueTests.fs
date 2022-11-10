@@ -11,7 +11,7 @@ open System.Threading
 let ethBlocksCount = 100u
 let maxEthItemsInResponse = 50u
 
-//[<Tests>]
+[<Tests>]
 let tests =
 
   let mutable scrapCnt = 0

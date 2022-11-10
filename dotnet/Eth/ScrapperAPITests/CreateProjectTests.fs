@@ -12,7 +12,7 @@ open Scrapper.Repo
 open ScrapperAPI.Services.JobManagerService
 open ScrapperModels.JobManager
 
-//[<Tests>]
+[<Tests>]
 let tests =
 
   let onScrap: OnScrap =
