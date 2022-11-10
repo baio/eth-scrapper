@@ -37,7 +37,6 @@ module Pause =
               return (jobId, result)
             })
 
-        // TODO : Check all 
         let! result = Common.Utils.Task.all calls
 
         logger.LogDebug("Result for pause state", result)

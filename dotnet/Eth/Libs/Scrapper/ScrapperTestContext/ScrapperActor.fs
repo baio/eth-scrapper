@@ -13,13 +13,12 @@ type ScrapperActorEnv =
     CreateStoreActor: JobId -> ScrapperModels.ScrapperStore.IScrapperStoreActor
     OnScrap: OnScrap }
 
-type ScrapperActor(env: ScrapperActorEnv) as this =
+type ScrapperActor(env: ScrapperActorEnv) =
 
-  let lockt (fn: 'a -> Task<_>) (x: 'a) =
-    task { return lock this (fun () -> (fn x).Result) }
+  let mailbox = createMailbox ()
 
   interface ScrapperModels.Scrapper.IScrapperActor with
-    member this.Scrap data = lockt this._Scrap data
+    member this.Scrap data = sync mailbox <@ this._Scrap @> data
 
   member this._Scrap data =
     task {
@@ -70,6 +69,7 @@ type ScrapperActor(env: ScrapperActorEnv) as this =
         return true
     }
     |> ignore
+
     task {
       do! Task.Delay(1)
       return true

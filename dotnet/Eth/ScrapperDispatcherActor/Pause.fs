@@ -24,14 +24,14 @@ module internal Pause =
       | Some state ->
         if state.Status = Status.Continue
            || state.Status = Status.Schedule then
-          let state =
+          let state2 =
             { state with
                 Status = Status.Pause
                 Date = (env.Date() |> toEpoch) }
 
-          do! env.SetState state
+          do! env.SetState state2
 
-          return state |> Ok
+          return state2 |> Ok
         else
           logger.LogDebug("Actor in a wrong {@state}", state)
 

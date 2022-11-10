@@ -4,13 +4,11 @@ open ScrapperModels.ScrapperStore
 open ScrapperElasticStoreActor
 open System.Threading.Tasks
 
-type StoreActor(env) as this =
+type StoreActor(env) =
   let actor = ScrapperElasticStoreBaseActor(env) :> IScrapperStoreActor
 
-
-  let lockt (fn: 'a -> Task<_>) (x: 'a) =
-    task { return lock this (fun () -> (fn x).Result) }
+  let mailbox = createMailbox ()
 
   interface IScrapperStoreActor with
 
-    member this.Store data = lockt actor.Store data
+    member this.Store data = sync mailbox <@ actor.Store @> data

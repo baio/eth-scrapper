@@ -18,10 +18,12 @@ let tests =
 
   let semaphore = new SemaphoreSlim(0, 4)
   let semaphore2 = new SemaphoreSlim(0, 1)
+  let semaphore3 = new SemaphoreSlim(0, 1)
 
   let onScrap: OnScrap =
     fun request ->
       task {
+        semaphore3.Release() |> ignore
         let! _ = semaphore.WaitAsync()
 
         return
@@ -104,11 +106,13 @@ let tests =
 
       let! _ = jobManager.Start(startData)
 
+      do! semaphore3.WaitAsync()
+
       let! _ = jobManager.Pause()
 
       semaphore.Release() |> ignore
 
-      do! Task.Delay(1)
+      do! Task.Delay(100)
 
       let! _ = jobManager.Resume()
 

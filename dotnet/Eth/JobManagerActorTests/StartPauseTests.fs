@@ -18,16 +18,21 @@ let tests =
 
   let semaphore = new SemaphoreSlim(0, 1)
   let semaphore2 = new SemaphoreSlim(0, 1)
+  let semaphore3 = new SemaphoreSlim(0, 1)
+  let semaphore4 = new SemaphoreSlim(0, 1)
 
   let onScrap: OnScrap =
     fun request ->
       task {
+        // continue emitted !
+        semaphore4.Release() |> ignore
         do! semaphore.WaitAsync()
 
         return
           match scrapCnt with
           | 0 ->
             scrapCnt <- scrapCnt + 1
+            semaphore3.Release() |> ignore
 
             { Data = LimitExceeded
               BlockRange = request.BlockRange }
@@ -84,17 +89,26 @@ let tests =
 
       let! _ = jobManager.Start(startData)
 
+      // jobs still not initialized wait till continue emitted 
+      do! semaphore4.WaitAsync()
+
       let! _ = jobManager.Pause()
 
+      // job manager state is not changed !
+
+      Expect.equal scrapCnt 0 "scrap calls should be 0"
+
+      let! _ = semaphore2.WaitAsync()
+
+      // now changed
+
+      // finish scrap
       semaphore.Release() |> ignore
 
-      do! Task.Delay 100
+      // wait counter chnage
+      do! semaphore3.WaitAsync()
 
       Expect.equal scrapCnt 1 "scrap calls should be 1"
-
-      let! _ = semaphore2.WaitAsync 500
-
-      do! Task.Delay 100
 
       let! jobState = context.JobMap.GetItem jobId
 
