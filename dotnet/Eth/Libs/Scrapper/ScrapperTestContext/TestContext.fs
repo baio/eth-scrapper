@@ -29,7 +29,7 @@ module private Helpers =
         map <- map.Add(id, actor)
         actor
 
-
+  let withHooks<'a> (env: ContextEnv) (x: 'a) = x, env.MailboxHooks
 
 type Context(env: ContextEnv) as this =
 
@@ -37,15 +37,16 @@ type Context(env: ContextEnv) as this =
     Helpers.createActorFactory<JobManagerId, IJobManagerActor> (fun id ->
       id
       |> this.createJobManagerEnv
-      |> fun jobManagerEnv -> JobManagerActor(jobManagerEnv, env.OnReportJobStateChanged)
+      |> fun jobManagerEnv -> JobManagerActor(jobManagerEnv, env.MailboxHooks, env.OnReportJobStateChanged)
       :> JobManager.IJobManagerActor)
 
   let jobsFactory =
     Helpers.createActorFactory<JobId, IScrapperDispatcherActor> (fun id ->
-      let env' = id |> this.createScrapperDispatcherEnv
-
-      let actor = JobActor(env', env.MailboxHooks)
-      actor :> ScrapperDispatcher.IScrapperDispatcherActor)
+      id
+      |> this.createScrapperDispatcherEnv
+      |> Helpers.withHooks env
+      |> JobActor
+      :> ScrapperDispatcher.IScrapperDispatcherActor)
 
   let scrappersFactory =
     Helpers.createActorFactory<JobId, Scrapper.IScrapperActor> (fun id ->

@@ -39,7 +39,7 @@ module Mailbox =
 
                 do!
                   (match onAfter with
-                   | Some onAfter -> onAfter (className, funName) (arg, result, beforeResult)
+                   | Some onAfter -> onAfter (className, funName) (result, arg, beforeResult)
                    | None -> () |> box |> Task.FromResult :> Task)
 
                 return result

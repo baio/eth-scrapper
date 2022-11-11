@@ -6,8 +6,9 @@ open Common.Utils.Task
 open Common.Utils
 open ScrapperTestContext
 open System.Threading
+open ScrapperModels.JobManager
 
-//[<Tests>]
+[<Tests>]
 let tests =
 
   let semaphore = new SemaphoreSlim(0, 1)
@@ -25,11 +26,13 @@ let tests =
 
   let date = System.DateTime.UtcNow
 
+  let onAfter: OnAfter = jobManagerSuccessReleaseOnAfter semaphore
+
   let env =
     { EthBlocksCount = 1000u
       MaxEthItemsInResponse = 100u
       OnScrap = onScrap
-      MailboxHooks = None, None
+      MailboxHooks = None, (Some onAfter)
       OnReportJobStateChanged = releaseOnSuccess semaphore
       Date = fun () -> date }
 

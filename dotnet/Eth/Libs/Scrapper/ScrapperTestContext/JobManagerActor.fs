@@ -6,9 +6,9 @@ open System.Threading.Tasks
 
 type ReportJobStateChanged = ScrapperModels.JobManager.State * ScrapperModels.JobManager.State -> unit
 
-type JobManagerActor(env, fn: ReportJobStateChanged option) =
+type JobManagerActor(env, hooks, fn: ReportJobStateChanged option) =
 
-  let mailbox = createMailbox ()
+  let mailbox = createMailbox' "JobManagerActor" hooks
 
   let actor =
     JobManager.JobManagerBaseActor.JobManagerBaseActor(env) :> IJobManagerActor
@@ -44,6 +44,7 @@ type JobManagerActor(env, fn: ReportJobStateChanged option) =
 
     member this.State() : Task<State option> = sync mailbox <@ actor.State @> ()
 
-    member this.ReportJobState(data: JobStateData) : Task<Result> = sync mailbox <@ reportJobState @> data
+    member this.ReportJobState(data: JobStateData) : Task<Result> =
+      sync mailbox <@ actor.ReportJobState @> data
 
     member this.Config() : Task<Config> = sync mailbox <@ actor.Config @> ()

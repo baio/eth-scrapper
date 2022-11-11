@@ -46,7 +46,7 @@ let tests =
       }
 
   let onAfter: OnAfter =
-    fun (actorName, methodName) (_, result, _) ->
+    fun (actorName, methodName) (result, _, _) ->
       task {
         match (actorName, methodName) with
         | "JobActor", "Continue" ->

@@ -30,7 +30,6 @@ module internal RequestContinue =
 
       let actor = env.CreateJobManagerActor(parentId)
 
-      // TODO
       actor.RequestContinue data |> ignore
 
       return state |> Ok

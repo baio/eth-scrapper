@@ -86,7 +86,7 @@ module Start =
 
         Common.Utils.Task.all calls |> ignore
 
-        //logger.LogDebug("Start executed")
+        logger.LogDebug("Start executed")
 
         //let state2 = JobResult.updateStateWithJobsListResult defaultState result
 
