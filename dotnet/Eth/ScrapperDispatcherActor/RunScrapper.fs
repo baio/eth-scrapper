@@ -22,11 +22,10 @@ module internal RunScrapper =
 
       let state: State =
         { state with
-            // Status = Status.Continue
             Request = scrapperRequest
             Date = env.Date() |> toEpoch }
 
-      do! env.SetState state
+      do! env.StateStore.Set state
 
       let actor = env.CreateScrapperActor(env.ActorId)
 
@@ -48,7 +47,7 @@ module internal RunScrapper =
               Request = scrapperRequest
               Date = env.Date() |> toEpoch }
 
-        do! env.SetState state
+        do! env.StateStore.Set state
 
         return state |> ActorFailure |> Error
     }
@@ -70,6 +69,6 @@ module internal RunScrapper =
         ParentId = parentId }
 
     task {
-      do! env.SetState state
+      do! env.StateStore.Set state
       return! runScrapper env scrapperRequest state
     }

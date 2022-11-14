@@ -17,8 +17,8 @@ module internal Schedule =
     logger.LogInformation("Try schedule {dueTime}", dueTime)
 
     task {
-      
-      let! state = env.GetState()
+
+      let! state = env.StateStore.Get()
 
       match state with
       | Some state ->
@@ -30,10 +30,7 @@ module internal Schedule =
                 Status = Status.Schedule
                 Date = env.Date() |> toEpoch }
 
-          do! env.SetState updatedState
-
-          // TODO : !!!
-          // do! scheduleEnv dueTime
+          do! env.StateStore.Set updatedState
 
           return state |> Ok
         else

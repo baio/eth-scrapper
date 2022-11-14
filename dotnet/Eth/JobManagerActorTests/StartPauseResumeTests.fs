@@ -153,13 +153,13 @@ let tests =
 
       Expect.equal scrapCnt 4 "scrap calls should be 4"
 
-      let! jobState = context.JobMap.GetItem jobId
+      let! jobState = context.JobStateMap.GetItem jobId
 
       let job = Map.tryFind jobId expected.Jobs
 
       Expect.equal (jobState |> Option.map Ok) job "job state is not expected"
 
-      let! jobManangerState = context.JobManagerMap.GetItem jobManagerId
+      let! jobManangerState = context.JobManagerStateMap.GetItem jobManagerId
 
       Expect.equal jobManangerState (Some expected) "job mananger state is not expected"
 

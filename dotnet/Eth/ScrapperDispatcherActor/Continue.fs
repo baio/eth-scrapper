@@ -49,12 +49,11 @@ module internal Continue =
 
     task {
 
-      use scope =
-        logger.BeginScope("continue {@data}", data)
+      use scope = logger.BeginScope("continue {@data}", data)
 
       logger.LogDebug("Continue")
 
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
 
       match state with
       | Some state ->
@@ -115,7 +114,7 @@ module internal Continue =
                   Date = epoch
                   FinishDate = epoch |> Some }
 
-            do! env.SetState state2
+            do! env.StateStore.Set state2
 
             logger.LogDebug("New state {@state} set", state2)
 

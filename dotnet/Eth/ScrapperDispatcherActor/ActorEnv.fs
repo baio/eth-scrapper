@@ -11,9 +11,7 @@ type Env =
   { MaxEthItemsInResponse: uint
     ActorId: JobId
     Date: unit -> System.DateTime
-    SetState: State -> Task
-    GetState: unit -> Task<State option>
-    RemoveState: unit -> Task<bool>
+    StateStore: ActorStore<State>
     Logger: ILogger
     CreateJobManagerActor: JobManagerId -> IJobManagerActor
     CreateScrapperActor: JobId -> IScrapperActor

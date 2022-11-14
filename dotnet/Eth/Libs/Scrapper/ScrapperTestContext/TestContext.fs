@@ -58,14 +58,14 @@ type Context(env: ContextEnv) as this =
 
   let createLogger = Common.Logger.SerilogLogger.createDefault
 
-  let jobManagerMap = createMapHelper<JobManagerId, JobManager.State> ()
+  let jobManagerStateMap = createMapHelper<JobManagerId, JobManager.State> ()
+
+  let jobStateMap = createMapHelper<JobId, ScrapperDispatcher.State> ()
 
   let managerConfigMap = createMapHelper<JobManagerId, JobManager.Config> ()
 
-  let jobMap = createMapHelper<JobId, ScrapperDispatcher.State> ()
-
-  member this.JobManagerMap = jobManagerMap
-  member this.JobMap = jobMap
+  member this.JobManagerStateMap = jobManagerStateMap
+  member this.JobStateMap = jobStateMap
 
   // store
   member this.createScrapperEnv(jobId: JobId) : ScrapperActorEnv =
@@ -93,15 +93,17 @@ type Context(env: ContextEnv) as this =
 
   // scrapper dispatcher / job
   member this.createScrapperDispatcherEnv(jobId: JobId) : ScrapperDispatcherActor.Env =
-    let (JobId id) = jobId
+
+    let stateStore: ActorStore<ScrapperDispatcher.State> =
+      { Get = fun () -> jobStateMap.GetItem jobId
+        Set = jobStateMap.AddItem jobId
+        Remove = fun () -> jobStateMap.RemoveItem jobId }
 
     { MaxEthItemsInResponse = env.MaxEthItemsInResponse
       Logger = createLogger $"job_{id}"
       ActorId = jobId
       Date = env.Date
-      SetState = jobMap.AddItem jobId
-      RemoveState = fun () -> jobMap.RemoveItem jobId
-      GetState = fun () -> jobMap.GetItem jobId
+      StateStore = stateStore
       CreateJobManagerActor = this.createJobManager
       CreateScrapperActor = this.createScrapper
       GetEthBlocksCount = fun _ -> env.EthBlocksCount |> Task.FromResult }
@@ -112,12 +114,12 @@ type Context(env: ContextEnv) as this =
   member this.createJobManagerEnv(jobManagerId: JobManagerId) : JobManager.Env =
     let (JobManagerId id) = jobManagerId
 
-    let stateStore: JobManager.ActorStore<JobManager.State> =
-      { Get = fun () -> jobManagerMap.GetItem jobManagerId
-        Set = jobManagerMap.AddItem jobManagerId
-        Remove = fun () -> jobManagerMap.RemoveItem jobManagerId }
+    let stateStore: ActorStore<JobManager.State> =
+      { Get = fun () -> jobManagerStateMap.GetItem jobManagerId
+        Set = jobManagerStateMap.AddItem jobManagerId
+        Remove = fun () -> jobManagerStateMap.RemoveItem jobManagerId }
 
-    let configStore: JobManager.ActorStore<JobManager.Config> =
+    let configStore: ActorStore<JobManager.Config> =
       { Get = fun () -> managerConfigMap.GetItem jobManagerId
         Set = managerConfigMap.AddItem jobManagerId
         Remove = fun () -> managerConfigMap.RemoveItem jobManagerId }

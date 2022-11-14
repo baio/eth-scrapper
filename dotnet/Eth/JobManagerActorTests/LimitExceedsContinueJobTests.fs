@@ -113,7 +113,7 @@ let tests =
 
       do! semaphore.WaitAsync()
 
-      let! jobState = context.JobMap.GetItem jobId
+      let! jobState = context.JobStateMap.GetItem jobId
 
       Expect.equal jobState (Some expected) "job state is not expected"
 

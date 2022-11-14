@@ -17,7 +17,7 @@ module internal Resume =
 
       logger.LogDebug("Resume")
 
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
 
       match state with
       | Some state ->

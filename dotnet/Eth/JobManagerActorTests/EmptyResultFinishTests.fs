@@ -76,7 +76,7 @@ let tests =
 
       do! semaphore.WaitAsync()
 
-      let! jobManangerState = context.JobManagerMap.GetItem jobManagerId
+      let! jobManangerState = context.JobManagerStateMap.GetItem jobManagerId
 
       Expect.equal jobManangerState (Some expected) "job mananger state is not expected"
       ()

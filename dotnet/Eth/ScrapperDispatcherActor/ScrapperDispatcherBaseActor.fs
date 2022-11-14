@@ -13,7 +13,7 @@ module ScrapperDispatcherBaseActor =
       let manager = env.CreateJobManagerActor(parentId)
 
       task {
-        do! env.SetState state
+        do! env.StateStore.Set state
 
         manager.ReportJobState { Job = state; ActorId = env.ActorId }
         |> ignore
@@ -25,9 +25,9 @@ module ScrapperDispatcherBaseActor =
     let setState (state: State) =
       match state.ParentId with
       | Some parentId -> setState' parentId state
-      | None -> env.SetState state
+      | None -> env.StateStore.Set state
 
-    let env = { env with SetState = setState }
+    let env = { env with StateStore = { env.StateStore with Set = setState } }
 
     interface IScrapperDispatcherActor with
 
@@ -39,9 +39,9 @@ module ScrapperDispatcherBaseActor =
 
       member this.Resume() = resume env
 
-      member this.State() = env.GetState()
+      member this.State() = env.StateStore.Get()
 
-      member this.Reset() = env.RemoveState()
+      member this.Reset() = env.StateStore.Remove()
 
       member this.Failure(data: FailureData) = failure env data
 

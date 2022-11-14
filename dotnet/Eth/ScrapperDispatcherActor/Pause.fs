@@ -18,7 +18,7 @@ module internal Pause =
 
       logger.LogDebug("Pause")
 
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
 
       match state with
       | Some state ->
@@ -29,7 +29,7 @@ module internal Pause =
                 Status = Status.Pause
                 Date = (env.Date() |> toEpoch) }
 
-          do! env.SetState state2
+          do! env.StateStore.Set state2
 
           return state2 |> Ok
         else

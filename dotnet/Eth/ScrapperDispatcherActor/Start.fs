@@ -24,12 +24,11 @@ module internal Start =
 
     task {
 
-      use scope =
-        logger.BeginScope("start {@data}", data)
+      use scope = logger.BeginScope("start {@data}", data)
 
       logger.LogDebug("Start")
 
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
 
       match state with
       | Some state ->

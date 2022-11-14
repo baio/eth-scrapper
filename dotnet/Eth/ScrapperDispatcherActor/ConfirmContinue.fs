@@ -14,12 +14,11 @@ module internal ConfirmContinue =
 
     task {
 
-      use scope =
-        logger.BeginScope("confirmContinue {@data}", data)
+      use scope = logger.BeginScope("confirmContinue {@data}", data)
 
       logger.LogDebug("Confirm continue")
 
-      let! state = env.GetState()
+      let! state = env.StateStore.Get()
 
       match state with
       | Some state ->

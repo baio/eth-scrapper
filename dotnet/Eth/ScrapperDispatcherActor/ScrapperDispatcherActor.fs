@@ -28,7 +28,7 @@ module ScrapperDispatcherActor =
   type ScrapperDispatcherActor(host: ActorHost) as this =
     inherit Actor(host)
     let logger = ActorLogging.create host
-    let stateManager = stateManager<State> STATE_NAME this.StateManager    
+    let stateManager = stateManager<State> STATE_NAME this.StateManager
 
     let createJobManagerActor (JobManagerId id) =
       host.ProxyFactory.CreateActorProxy<JobManager.IJobManagerActor>((ActorId id), "job-manager")
@@ -36,13 +36,16 @@ module ScrapperDispatcherActor =
     let createScrapperActor jobId =
       ScrapperActor(host.ProxyFactory, jobId) :> ScrapperModels.Scrapper.IScrapperActor
 
+    let stateStore: ActorStore<State> =
+      { Set = stateManager.Set
+        Get = stateManager.Get
+        Remove = stateManager.Remove }
+
     let env: Env =
       { MaxEthItemsInResponse = 10000u
         ActorId = JobId(host.Id.ToString())
         Date = fun () -> System.DateTime.UtcNow
-        GetState = stateManager.Get
-        SetState = stateManager.Set
-        RemoveState = stateManager.Remove
+        StateStore = stateStore
         Logger = logger
         CreateJobManagerActor = createJobManagerActor
         CreateScrapperActor = createScrapperActor
