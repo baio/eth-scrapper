@@ -7,32 +7,29 @@ open Common.Utils
 open ScrapperTestContext
 open System.Threading.Tasks
 open System.Threading
+open ScrapperModels.JobManager
 
 let ethBlocksCount = 100u
 let maxEthItemsInResponse = 50u
 
-//[<Tests>]
+[<Tests>]
 let tests =
 
   let mutable scrapCnt = 0
 
-  let semaphore = new SemaphoreSlim(0, 1)
-  let semaphore2 = new SemaphoreSlim(0, 1)
-  let semaphore3 = new SemaphoreSlim(0, 1)
-  let semaphore4 = new SemaphoreSlim(0, 1)
+  let scrapSemaphore = new SemaphoreSlim(0, 1)
+  let startSemaphore = new SemaphoreSlim(0, 1)
+  let pauseSemaphore = new SemaphoreSlim(0, 1)
 
   let onScrap: OnScrap =
     fun request ->
       task {
-        // continue emitted !
-        semaphore4.Release() |> ignore
-        do! semaphore.WaitAsync()
+        do! scrapSemaphore.WaitAsync()
 
         return
           match scrapCnt with
           | 0 ->
             scrapCnt <- scrapCnt + 1
-            semaphore3.Release() |> ignore
 
             { Data = LimitExceeded
               BlockRange = request.BlockRange }
@@ -43,12 +40,38 @@ let tests =
 
   let date = System.DateTime.UtcNow
 
+  let mutable status = Status.Initial
+
+  let onAfter: OnAfter =
+    fun (actorName, methodName) (result, _, _) ->
+      task {
+        match (actorName, methodName) with
+        | "JobManagerActor", "ReportJobState" ->
+          let result = result :?> Result<State, Error>
+
+          match result with
+          | Ok state ->
+            if state.Status = Status.Continue
+               && status = Status.Initial then
+              startSemaphore.Release() |> ignore
+
+            if state.Status = Status.Pause then
+              pauseSemaphore.Release() |> ignore
+
+            status <- state.Status
+          | _ -> ()
+
+        | _ -> ()
+
+        return ()
+      }
+
   let env =
     { EthBlocksCount = ethBlocksCount
       MaxEthItemsInResponse = maxEthItemsInResponse
       OnScrap = onScrap
-      OnReportJobStateChanged = releaseOnStatus JobManager.Status.Pause semaphore2
-      MailboxHooks = None, None
+      OnReportJobStateChanged = None
+      MailboxHooks = None, (Some onAfter)
       Date = fun () -> date }
 
   let context = Context env
@@ -90,8 +113,8 @@ let tests =
 
       let! _ = jobManager.Start(startData)
 
-      // jobs still not initialized wait till continue emitted 
-      do! semaphore4.WaitAsync()
+      // jobs still not initialized wait till continue emitted
+      do! startSemaphore.WaitAsync()
 
       let! _ = jobManager.Pause()
 
@@ -99,15 +122,9 @@ let tests =
 
       Expect.equal scrapCnt 0 "scrap calls should be 0"
 
-      let! _ = semaphore2.WaitAsync()
+      scrapSemaphore.Release() |> ignore
 
-      // now changed
-
-      // finish scrap
-      semaphore.Release() |> ignore
-
-      // wait counter chnage
-      do! semaphore3.WaitAsync()
+      let! _ = pauseSemaphore.WaitAsync()
 
       Expect.equal scrapCnt 1 "scrap calls should be 1"
 
