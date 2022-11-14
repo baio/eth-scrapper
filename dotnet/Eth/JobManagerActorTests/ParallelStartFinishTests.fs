@@ -8,7 +8,7 @@ open ScrapperTestContext
 open System.Threading
 open System.Threading.Tasks
 
-//[<Tests>]
+[<Tests>]
 let tests =
 
   let semaphore = new SemaphoreSlim(0, 2)
@@ -16,9 +16,10 @@ let tests =
 
   let onScrap: OnScrap =
     fun request ->
-      
+
       task {
         semaphore.Release() |> ignore
+
         let result: ScrapperModels.ScrapperResult =
           { Data = EmptyResult
             BlockRange = request.BlockRange }
@@ -29,12 +30,14 @@ let tests =
 
   let date = System.DateTime.UtcNow
 
+  let onAfter = jobManagerSuccessReleaseOnAfter semaphore2
+
   let env =
     { EthBlocksCount = 1000u
       MaxEthItemsInResponse = 100u
       OnScrap = onScrap
-      MailboxHooks = None, None
-      OnReportJobStateChanged = releaseOnSuccess semaphore2
+      MailboxHooks = None, (Some onAfter)
+      OnReportJobStateChanged = None
       Date = fun () -> date }
 
   let context = Context env
